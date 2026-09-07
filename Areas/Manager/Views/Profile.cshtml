@@ -1,0 +1,134 @@
+@model CloudMVCApplication.ViewModels.AreaDashboardViewModel
+@{
+    Layout = "~/Areas/Manager/Views/Shared/_ManagerLayout.cshtml";
+    ViewData["Title"] = "Profile & Account Settings";
+}
+@if (TempData["SuccessMessage"] is string successMessage)
+{
+    <div class="alert alert-success" role="alert">@successMessage</div>
+}
+<div class="pm-page-header">
+    <h1 class="pm-page-title">Profile &amp; account settings</h1>
+    <p class="pm-page-lead">Update your manager account details and security settings.</p>
+</div>
+
+<div class="row g-4">
+    <div class="col-lg-8 d-flex flex-column gap-4">
+        <div class="pm-card">
+            <div class="pm-card__body">
+                <div class="row align-items-center g-4">
+                    <div class="col-auto text-center">
+                        @if (!string.IsNullOrWhiteSpace(Model.CurrentUserAvatarUrl))
+                        {
+                            <img src="@Model.CurrentUserAvatarUrl" alt="Profile" class="pm-avatar-lg d-block mx-auto" style="object-fit: cover;" />
+                        }
+                        else
+                        {
+                            <div class="pm-avatar-lg d-flex align-items-center justify-content-center" style="background:#374151;color:#fff;font-weight:700;font-size:2rem">@Model.CurrentUserInitials</div>
+                        }
+                    </div>
+                    <div class="col">
+                        <h2 class="h4 mb-1">@Model.CurrentUserName</h2>
+                        <p class="pm-muted mb-2">@Model.CurrentUserEmail</p>
+                        <div class="d-flex flex-wrap gap-2 mb-3">
+                            <span class="pm-badge pm-badge--low">@Model.Requests.Count managed requests</span>
+                            <span class="pm-badge pm-badge--low">@Model.Technicians.Count technicians</span>
+                        </div>
+                        <div class="d-flex flex-wrap gap-2">
+                            <a class="pm-btn pm-btn--secondary" asp-area="Manager" asp-controller="Manager" asp-action="ChangeAvatar">Change Avatar</a>
+                            @if (!string.IsNullOrWhiteSpace(Model.CurrentUserAvatarUrl))
+                            {
+                                <form method="post" asp-area="Manager" asp-controller="Manager" asp-action="RemoveAvatar" class="d-inline">
+                                    @Html.AntiForgeryToken()
+                                    <button type="submit" class="pm-btn pm-btn--link" style="color: #ba1a1a;"
+                                            data-confirm-title="Remove profile photo?"
+                                            data-confirm-message="Your current avatar will be removed from this manager profile."
+                                            data-confirm-action="Remove photo">Remove</button>
+                                </form>
+                            }
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="pm-card">
+            <div class="pm-card__body">
+                <form method="post" asp-area="Manager" asp-controller="Manager" asp-action="Profile">
+                    @Html.AntiForgeryToken()
+                    <div asp-validation-summary="All" class="pm-validation-summary"></div>
+                    <h3 class="h6 border-bottom pb-2 mb-3"><span class="material-symbols-outlined align-middle">badge</span> Account information</h3>
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label class="pm-label pm-label--required" for="fullName">Full name</label>
+                            <input class="pm-input" id="fullName" name="FullName" value="@Model.CurrentUserName" required />
+                        </div>
+                        <div class="col-md-6">
+                            <label class="pm-label" for="company">Company / property scope</label>
+                            <input class="pm-input" id="company" value="@(Model.CurrentCompanyName ?? "No company")" readonly />
+                            <p class="pm-field-hint">Your manager assignment is controlled by an administrator.</p>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="pm-label pm-label--required" for="email">Email</label>
+                            <input class="pm-input" id="email" name="Email" type="email" value="@Model.CurrentUserEmail" required autocomplete="email" />
+                            <p class="pm-field-hint">Use the address tenants and administrators should contact.</p>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="pm-label" for="phone">Phone</label>
+                            <input class="pm-input" id="phone" name="PhoneNumber" type="tel" value="@(Model.CurrentUserPhoneNumber ?? string.Empty)" autocomplete="tel" />
+                        </div>
+                    </div>
+
+                    <h3 class="h6 border-bottom pb-2 mb-3 mt-4"><span class="material-symbols-outlined align-middle">lock</span> Password</h3>
+                    <p class="pm-muted">Leave these fields blank if you do not want to change your password.</p>
+                    <div class="row g-3">
+                        <div class="col-md-4">
+                            <label class="pm-label" for="currentPassword">Current password</label>
+                            <input class="pm-input" id="currentPassword" name="CurrentPassword" type="password" autocomplete="current-password" />
+                        </div>
+                        <div class="col-md-4">
+                            <label class="pm-label" for="newPassword">New password</label>
+                            <input class="pm-input" id="newPassword" name="NewPassword" type="password" autocomplete="new-password" minlength="8" />
+                            <p class="pm-field-hint">Use at least 8 characters.</p>
+                        </div>
+                        <div class="col-md-4">
+                            <label class="pm-label" for="confirmPassword">Confirm new password</label>
+                            <input class="pm-input" id="confirmPassword" name="ConfirmPassword" type="password" autocomplete="new-password" />
+                        </div>
+                    </div>
+
+                    <div class="pm-actions border-top pt-3 mt-4" style="border-color:var(--pm-border)">
+                        <a class="pm-btn pm-btn--outline" asp-area="Manager" asp-controller="Manager" asp-action="Dashboard">Cancel</a>
+                        <button type="submit" class="pm-btn pm-btn--primary">Save changes</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-4 d-flex flex-column gap-4">
+        <div class="pm-card">
+            <div class="pm-card__header"><h2 class="pm-card__title">Account status</h2></div>
+            <div class="pm-card__body">
+                <ul class="list-unstyled mb-0 pm-stack">
+                    <li class="d-flex justify-content-between"><span class="pm-muted">Role</span><span class="pm-badge pm-badge--low">Property manager</span></li>
+                    <li class="d-flex justify-content-between"><span class="pm-muted">Status</span><span class="pm-badge pm-badge--completed">Active</span></li>
+                    <li class="d-flex justify-content-between"><span class="pm-muted">Cloud access</span><span class="pm-badge pm-badge--assigned">Enabled</span></li>
+                    <li class="d-flex justify-content-between border-top pt-2" style="border-color:var(--pm-border)"><span class="pm-muted">Last login</span><span>May 14, 2026</span></li>
+                </ul>
+            </div>
+        </div>
+        <div class="pm-card">
+            <div class="pm-card__header"><h2 class="pm-card__title">Session</h2></div>
+            <div class="pm-card__body">
+                <p class="pm-muted">Sign out of this manager session and return to the home page.</p>
+                <form asp-area="Identity" asp-page="/Account/Logout" asp-route-returnUrl="@Url.Action("Index", "Home", new { area = "" })"
+                      data-confirm-title="Log out?"
+                      data-confirm-message="You will leave this manager session and return to the home page."
+                      data-confirm-action="Log out">
+                    <button type="submit" class="pm-btn pm-btn--outline pm-w-100">Log out</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>

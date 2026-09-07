@@ -1,0 +1,48 @@
+@model CloudMVCApplication.ViewModels.ChatViewModel
+
+<div class="chat-panel">
+    <div class="chat-panel__header">
+        <h2 class="chat-panel__title">@Model.RequestDisplayId · @Model.RequestTitle</h2>
+        <p class="chat-panel__subtitle">@Model.TypeLabel</p>
+    </div>
+
+    <div id="chat-messages" class="chat-messages">
+        @foreach (var message in Model.Messages)
+        {
+            <div class="chat-message @(message.IsMine ? "chat-message--mine" : "chat-message--theirs")" data-message-id="@message.MessageId">
+                <div class="chat-message__bubble">
+                    <div class="chat-message__meta">@message.SenderName · @message.SentAt.ToLocalTime().ToString("g")</div>
+                    <div class="chat-message__body">@message.Body</div>
+                </div>
+            </div>
+        }
+    </div>
+
+    <div id="chat-typing" class="chat-typing"></div>
+
+    <form id="chat-form"
+          class="chat-form"
+          method="post"
+          action="@ViewData["SendUrl"]">
+        @Html.AntiForgeryToken()
+        <input type="hidden" name="id" value="@Model.ConversationId" />
+        <input id="chat-input"
+               class="chat-form__input"
+               type="text"
+               name="body"
+               maxlength="4000"
+               placeholder="Type a message..."
+               autocomplete="off"
+               required />
+        <button id="chat-send-btn" class="chat-form__button" type="submit">Send</button>
+    </form>
+</div>
+
+<script>
+    window.chatConfig = {
+        conversationId: @Model.ConversationId,
+        currentUserId: '@Model.CurrentUserId'
+    };
+</script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/microsoft-signalr/8.0.7/signalr.min.js" crossorigin="anonymous"></script>
+<script src="~/js/chat.js" asp-append-version="true"></script>

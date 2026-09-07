@@ -1,0 +1,91 @@
+@model CloudMVCApplication.ViewModels.AreaDashboardViewModel
+@{
+    Layout = "~/Areas/Administrator/Views/Shared/_AdministratorLayout.cshtml";
+    ViewData["Title"] = "User Details";
+    var user = Model.SelectedUser;
+    var badgeClass = user?.Status == "Active" ? "pm-badge--completed" : "pm-badge--pending";
+}
+
+<div class="pm-flex-between pm-page-header">
+    <div>
+        <h1 class="pm-page-title">User Details</h1>
+        <p class="pm-page-lead">View and manage user account information.</p>
+    </div>
+    <div class="d-flex gap-2 flex-wrap">
+        <a class="pm-btn pm-btn--secondary" asp-controller="Administrator" asp-action="Users">
+            <span class="material-symbols-outlined">arrow_back</span> Back to Users
+        </a>
+    </div>
+</div>
+
+@if (TempData["SuccessMessage"] is string successMessage)
+{
+    <div class="pm-card mb-3" style="border-left: 4px solid #0a5c2e;">
+        <div class="pm-card__body" style="color: #0a5c2e; font-weight: 600;">@successMessage</div>
+    </div>
+}
+
+<div class="row g-3" style="grid-template-columns: 1fr 2fr; gap: 24px;">
+    <div class="pm-card">
+        <div class="pm-card__body" style="text-align: center;">
+            <div style="width: 100px; height: 100px; border-radius: 999px; background: #800000; color: #fff; display: flex; align-items: center; justify-content: center; font-size: 32px; font-weight: 700; margin: 0 auto 16px;">@(user?.Initials ?? "NA")</div>
+            <h3 style="font-size: 20px; font-weight: 600; margin: 0 0 4px;">@(user?.FullName ?? "No user selected")</h3>
+            <p class="pm-muted">@(user?.Role ?? "User")</p>
+            <span class="pm-badge @badgeClass" style="margin-top: 12px;">@(user?.Status ?? "Unknown")</span>
+        </div>
+    </div>
+    <div class="pm-card">
+        <div class="pm-card__header">
+            <h3 class="pm-card__title">Account Information</h3>
+        </div>
+        <form asp-controller="Administrator" asp-action="UpdateUser" asp-route-id="@user?.Id" method="post">
+            @Html.AntiForgeryToken()
+            <div class="pm-card__body">
+                <div asp-validation-summary="All" class="small" style="color: #ba1a1a; margin-bottom: 16px;"></div>
+            <div class="row g-3">
+                <div class="mb-3">
+                    <label class="pm-label">Full Name</label>
+                    <input type="text" name="FullName" class="pm-input" value="@(user?.FullName ?? string.Empty)" required />
+                </div>
+                <div class="mb-3">
+                    <label class="pm-label">Email</label>
+                    <input type="email" name="Email" class="pm-input" value="@(user?.Email ?? string.Empty)" required />
+                </div>
+                <div class="mb-3">
+                    <label class="pm-label">Phone</label>
+                    <input type="tel" name="PhoneNumber" class="pm-input" value="@(user?.PhoneNumber ?? string.Empty)" />
+                </div>
+                <div class="mb-3">
+                    <label class="pm-label">Role</label>
+                    <select name="Role" class="pm-select" required>
+                        @if (ViewBag.CanAssignAdministratorRole == true)
+                        {
+                            <option value="Administrator" selected="@(user?.Role == "Administrator")">Admin</option>
+                        }
+                        <option value="Manager" selected="@(user?.Role == "Manager")">Property Manager</option>
+                        <option value="Tenant" selected="@(user?.Role == "Tenant")">Tenant</option>
+                    </select>
+                    @if (ViewBag.CanAssignAdministratorRole != true && user?.Role != "Administrator")
+                    {
+                        <p class="pm-muted small" style="margin-top: 4px;">This company already has an administrator. Only one admin account is allowed per company.</p>
+                    }
+                </div>
+            </div>
+            </div>
+            <div class="pm-card__body border-top d-flex gap-2 justify-content-end pt-3">
+                <button type="submit" class="pm-btn pm-btn--primary">Save Changes</button>
+            </div>
+        </form>
+        <form asp-controller="Administrator" asp-action="ToggleUserStatus" asp-route-id="@user?.Id" method="post" class="pm-card__body border-top d-flex gap-2 justify-content-end pt-3" style="border-top: 0; padding-top: 0;"
+              data-confirm-title="@(user?.Status == "Active" ? "Deactivate user?" : "Activate user?")"
+              data-confirm-message="This changes whether the user can access their account."
+              data-confirm-action="@(user?.Status == "Active" ? "Deactivate user" : "Activate user")">
+            @Html.AntiForgeryToken()
+            <button type="submit" class="pm-btn pm-btn--secondary" style="color: #ba1a1a; border-color: #ba1a1a;">@(user?.Status == "Active" ? "Deactivate User" : "Activate User")</button>
+        </form>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

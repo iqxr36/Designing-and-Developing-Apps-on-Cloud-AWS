@@ -1,0 +1,318 @@
+@model CloudMVCApplication.ViewModels.AreaDashboardViewModel
+@{
+    Layout = "~/Areas/Manager/Views/Shared/_ManagerLayout.cshtml";
+    ViewData["Title"] = "Request Details";
+    var request = Model.SelectedRequest;
+    var technician = Model.Technicians.FirstOrDefault(t => t.TechnicianId == request?.TechnicianId);
+    var statusClass = request?.Status == "Completed" ? "pm-badge--avail" : request?.Status == "In Progress" ? "pm-badge--inprogress" : request?.Status == "Assigned" ? "pm-badge--assigned" : "pm-badge--pending";
+    var priorityClass = request?.Priority == "High" || request?.Priority == "Urgent" ? "pm-badge--high" : request?.Priority == "Low" ? "pm-badge--low" : "pm-badge--medium";
+    var progress = request?.Status switch
+    {
+        "Completed" => 100,
+        "In Progress" => 70,
+        "Assigned" => 45,
+        "Pending" => 20,
+        _ => 0
+    };
+    var payment = Model.SelectedRequestPayment;
+}
+@if (TempData["SuccessMessage"] is string successMessage)
+{
+    <div class="alert alert-success" role="alert">@successMessage</div>
+}
+@if (TempData["ErrorMessage"] is string errorMessage)
+{
+    <div class="alert alert-danger" role="alert">@errorMessage</div>
+}
+<div class="pm-flex-between pm-page-header">
+    <div>
+        <a class="pm-link-back" asp-area="Manager" asp-controller="Manager" asp-action="MaintenanceRequests"><span class="material-symbols-outlined" style="font-size:18px">arrow_back</span> Back to Requests</a>
+        <div class="d-flex flex-wrap align-items-center gap-2">
+            <h1 class="pm-page-title mb-0">Request Details</h1>
+            <span class="pm-badge @statusClass">@(request?.Status ?? "No status")</span>
+        </div>
+        <p class="pm-page-lead pm-mt-1">@(request == null ? "No request selected." : $"{request.DisplayId} - {request.Category}")</p>
+    </div>
+    <div class="pm-actions">
+        <a class="pm-btn pm-btn--secondary" asp-area="Manager" asp-controller="Manager" asp-action="ChatByRequest" asp-route-requestId="@request?.RequestId" asp-route-type="@CloudMVCApplication.Models.ConversationType.TenantSupport"><span class="material-symbols-outlined" style="font-size:18px">chat</span> Tenant Chat</a>
+        @if (request?.TechnicianId != null)
+        {
+            <a class="pm-btn pm-btn--secondary" asp-area="Manager" asp-controller="Manager" asp-action="ChatByRequest" asp-route-requestId="@request?.RequestId" asp-route-type="@CloudMVCApplication.Models.ConversationType.JobCoordination"><span class="material-symbols-outlined" style="font-size:18px">engineering</span> Job Chat</a>
+        }
+        <a class="pm-btn pm-btn--primary" asp-area="Manager" asp-controller="Manager" asp-action="AssignTechnician" asp-route-id="@request?.RequestId"><span class="material-symbols-outlined" style="font-size:18px">person_add</span> Assign Technician</a>
+    </div>
+</div>
+
+<div class="pm-grid pm-grid--12">
+    <div class="d-flex flex-column gap-3">
+        <div class="pm-card">
+            <div class="pm-card__body">
+                <div class="pm-flex-between mb-3">
+                    <div>
+                        <h2 class="h5 mb-1">@(request?.Title ?? "No request")</h2>
+                        <p class="pm-muted mb-0">@(request?.DisplayId ?? "N/A")</p>
+                    </div>
+                    <span class="pm-badge @priorityClass">@(request?.Priority ?? "Priority")</span>
+                </div>
+                <div class="row g-4">
+                    <div class="col-md-6">
+                        <div class="pm-label">Location</div>
+                        <p class="mb-0"><strong>@(request?.PropertyName ?? "No property")</strong></p>
+                        <p class="pm-muted mb-0">Unit @(request?.UnitNumber ?? "N/A")</p>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="pm-label">Tenant</div>
+                        <p class="mb-0"><strong>@(request?.TenantName ?? "No tenant")</strong></p>
+                        <p class="pm-muted mb-0">Tenant profile</p>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="pm-label">Category</div>
+                        <p class="mb-0">@(request?.Category ?? "N/A")</p>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="pm-label">Date submitted</div>
+                        <p class="mb-0">@(request?.CreatedAt.ToLocalTime().ToString("MMM d, yyyy - HH:mm") ?? "N/A")</p>
+                    </div>
+                </div>
+                <hr class="my-4" />
+                <div class="pm-label">Description</div>
+                <p class="mb-0">@(request?.Description ?? "No description provided.")</p>
+            </div>
+        </div>
+
+        @if (request != null)
+        {
+            <div class="pm-card">
+                <div class="pm-card__header">
+                    <h2 class="pm-card__title">Manager update</h2>
+                </div>
+                <div class="pm-card__body">
+                    <form method="post" asp-area="Manager" asp-controller="Manager" asp-action="UpdateRequest">
+                        @Html.AntiForgeryToken()
+                        <input type="hidden" name="RequestId" value="@request.RequestId" />
+                        <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+                        <div class="row g-3">
+                            <div class="col-md-4">
+                                <label class="pm-label" for="status">Status</label>
+                                <select id="status" class="pm-select" name="Status">
+                                    @foreach (var statusOption in new[] { "Pending", "Assigned", "In Progress", "Completed", "Cancelled" })
+                                    {
+                                        <option value="@statusOption" selected="@(request.Status == statusOption)">@statusOption</option>
+                                    }
+                                </select>
+                            </div>
+                            <div class="col-md-4">
+                                <label class="pm-label" for="priority">Priority</label>
+                                <select id="priority" class="pm-select" name="Priority">
+                                    @foreach (var priorityOption in new[] { "Low", "Medium", "High", "Urgent" })
+                                    {
+                                        <option value="@priorityOption" selected="@(request.Priority == priorityOption)">@priorityOption</option>
+                                    }
+                                </select>
+                            </div>
+                            <div class="col-12">
+                                <label class="pm-label" for="notes">Update notes</label>
+                                <textarea id="notes" class="pm-textarea" rows="3" name="Notes" placeholder="Add notes for the tenant or technician"></textarea>
+                            </div>
+                        </div>
+                        <div class="pm-actions border-top pt-3 mt-3" style="border-color:var(--pm-border)">
+                            <button type="submit" class="pm-btn pm-btn--primary">Save update</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        }
+
+        @if (request?.Status == "Completed" && payment != null)
+        {
+            <div class="pm-card">
+                <div class="pm-card__header">
+                    <h2 class="pm-card__title">Technician payment</h2>
+                </div>
+                <div class="pm-card__body">
+                    @if (!string.IsNullOrWhiteSpace(payment.PaymentStatus))
+                    {
+                        <div class="mb-3">
+                            <div class="pm-label">Payment status</div>
+                            <span class="pm-badge @(payment.PaymentStatus == "Paid" ? "pm-badge--avail" : payment.PaymentStatus == "Failed" ? "pm-badge--high" : "pm-badge--pending")">@payment.PaymentStatus</span>
+                            @if (payment.PaidAt.HasValue)
+                            {
+                                <span class="pm-muted ms-2">Paid @payment.PaidAt.Value.ToLocalTime().ToString("MMM d, yyyy")</span>
+                            }
+                            @if (!string.IsNullOrWhiteSpace(payment.TransactionReference))
+                            {
+                                <span class="pm-muted ms-2">@payment.TransactionReference</span>
+                            }
+                            @if (!string.IsNullOrWhiteSpace(payment.FailureReason))
+                            {
+                                <p class="text-danger mb-0 mt-2" style="font-size:.875rem">@payment.FailureReason</p>
+                            }
+                        </div>
+                    }
+
+                    @if (!string.IsNullOrWhiteSpace(payment.BlockReason) && !payment.CanRelease)
+                    {
+                        <div class="alert alert-warning" role="alert">@payment.BlockReason</div>
+                    }
+
+                    @if (payment.CanRelease)
+                    {
+                        <form method="post" asp-area="Manager" asp-controller="Manager" asp-action="ReleasePayment"
+                              data-confirm-title="Release technician payment?"
+                              data-confirm-message="This will start the Xendit payment flow for the entered gross amount."
+                              data-confirm-action="Release payment">
+                            @Html.AntiForgeryToken()
+                            <input type="hidden" name="RequestId" value="@request.RequestId" />
+                            <div class="row g-3">
+                                <div class="col-md-6">
+                                    <div class="pm-label">Maintenance request</div>
+                                    <p class="mb-0"><strong>@payment.RequestTitle</strong></p>
+                                    <p class="pm-muted mb-0" style="font-size:.875rem">@(payment.RequestDescription ?? "No description provided.")</p>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="pm-label">Technician</div>
+                                    <p class="mb-0"><strong>@payment.TechnicianName</strong></p>
+                                    <p class="pm-muted mb-0" style="font-size:.875rem">@payment.PropertyName - Unit @payment.UnitNumber</p>
+                                </div>
+                                <div class="col-md-3">
+                                    <label class="pm-label" for="amount">Gross amount (RM)</label>
+                                    <input id="amount" class="pm-input" type="number" step="0.01" min="0.01" name="Amount" value="@(payment.Amount ?? payment.DefaultAmount)" required />
+                                </div>
+                                <div class="col-md-3">
+                                    <div class="pm-label">Platform commission (@payment.PlatformFeePercent.ToString("0")%)</div>
+                                    <p class="mb-0"><strong id="platformCommissionAmount">@payment.PlatformFeeAmount.ToString("C")</strong></p>
+                                </div>
+                                <div class="col-md-3">
+                                    <div class="pm-label">Technician receives</div>
+                                    <p class="mb-0"><strong id="technicianNetAmount">@payment.TechnicianNetAmount.ToString("C")</strong></p>
+                                </div>
+                                <div class="col-md-3">
+                                    <label class="pm-label" for="paymentMethod">Payment method</label>
+                                    <select id="paymentMethod" class="pm-select" name="PaymentMethod">
+                                        <option value="FPX">FPX / Online Banking</option>
+                                    </select>
+                                </div>
+                                <div class="col-12">
+                                    <label class="pm-label" for="paymentNotes">Notes</label>
+                                    <textarea id="paymentNotes" class="pm-textarea" rows="3" name="Notes" placeholder="Optional internal payment note"></textarea>
+                                </div>
+                                <div class="col-12">
+                                    <button type="submit" class="pm-btn pm-btn--primary">
+                                        <span class="material-symbols-outlined" style="font-size:18px;vertical-align:middle">payments</span>
+                                        Pay with Xendit
+                                    </button>
+                                </div>
+                            </div>
+                            <p class="pm-muted mb-0 mt-2" style="font-size:.85rem">Payment is marked paid only after Xendit confirms it through the webhook.</p>
+                        </form>
+                    }
+                    else if (payment.PaymentStatus == "Pending" && !string.IsNullOrWhiteSpace(payment.CheckoutUrl))
+                    {
+                        <a class="pm-btn pm-btn--primary" href="@payment.CheckoutUrl">
+                            <span class="material-symbols-outlined" style="font-size:18px;vertical-align:middle">payments</span>
+                            Continue Xendit checkout
+                        </a>
+                    }
+                    else if (payment.PaymentStatus == "Paid" && payment.Amount.HasValue)
+                    {
+                        <div class="row g-2" style="font-size:.9rem">
+                            <div class="col-md-4"><span class="pm-muted">Gross amount:</span> <strong>@payment.Amount.Value.ToString("C")</strong></div>
+                            <div class="col-md-4"><span class="pm-muted">Platform commission:</span> <strong>@payment.PlatformFeeAmount.ToString("C")</strong></div>
+                            <div class="col-md-4"><span class="pm-muted">Technician receives:</span> <strong>@payment.TechnicianNetAmount.ToString("C")</strong></div>
+                        </div>
+                        <p class="pm-muted mb-0 mt-2" style="font-size:.85rem">Method: @payment.PaymentMethod@(string.IsNullOrWhiteSpace(payment.Notes) ? "" : $" - {payment.Notes}")</p>
+                    }
+                </div>
+            </div>
+        }
+
+        <div class="pm-card">
+            <div class="pm-card__header">
+                <h2 class="pm-card__title">Issue evidence</h2>
+            </div>
+            <div class="pm-card__body">
+                <div class="row g-3">
+                    @if (Model.SelectedRequestImages.Any())
+                    {
+                        @foreach (var image in Model.SelectedRequestImages)
+                        {
+                            <div class="col-md-6">
+                                <div class="p-3 rounded border" style="border-color:var(--pm-border)!important">
+                                    <button type="button" class="pm-photo-thumb mb-2"
+                                            data-photo-preview
+                                            data-photo-group="manager-request-@request?.RequestId"
+                                            data-photo-src="@image.ImageUrl"
+                                            data-photo-title="@($"{image.ImageType} - {request?.DisplayId}")"
+                                            data-photo-type="@image.ImageType"
+                                            data-photo-by="@image.UploadedByName"
+                                            data-photo-time="@image.UploadedAt.ToLocalTime().ToString("MMM d, yyyy h:mm tt")">
+                                        <img src="@image.ImageUrl" alt="@image.ImageType" class="img-fluid rounded" />
+                                    </button>
+                                    <div class="pm-label">@image.ImageType</div>
+                                    <p class="pm-muted mb-0" style="font-size:.85rem">Uploaded by @image.UploadedByName on @image.UploadedAt.ToLocalTime().ToString("MMM d, HH:mm")</p>
+                                </div>
+                            </div>
+                        }
+                    }
+                    else
+                    {
+                        <div class="col-12 d-flex align-items-center justify-content-center border border-2 border-dashed rounded text-center pm-muted p-3">
+                            No uploaded issue photos for @(request?.DisplayId ?? "this request").
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="d-flex flex-column gap-3">
+        <div class="pm-card">
+            <div class="pm-card__header">
+                <h2 class="pm-card__title">Assignment</h2>
+            </div>
+            <div class="pm-card__body">
+                <div class="d-flex gap-3 align-items-center mb-3">
+                    <div class="rounded-circle border d-flex align-items-center justify-content-center" style="width:48px;height:48px;background:#374151;color:#fff;font-weight:700">@(request?.TechnicianName == null ? "NA" : string.Concat(request.TechnicianName.Split(' ', StringSplitOptions.RemoveEmptyEntries).Take(2).Select(p => p[0])).ToUpperInvariant())</div>
+                    <div>
+                        <strong>@(request?.TechnicianName ?? "Unassigned")</strong>
+                        <div class="pm-muted" style="font-size:.875rem">@(technician?.Specialization ?? request?.Category ?? "General")</div>
+                    </div>
+                </div>
+                <p class="mb-1"><span class="material-symbols-outlined" style="font-size:18px;vertical-align:middle">phone</span> @(technician == null ? "No phone on file" : technician.Email)</p>
+                <p class="mb-3"><span class="material-symbols-outlined" style="font-size:18px;vertical-align:middle">event</span> Submitted @(request?.CreatedAt.ToLocalTime().ToString("MMM d, HH:mm") ?? "N/A")</p>
+                <div class="pm-label">Current progress</div>
+                <div class="pm-flex-between pm-mt-1"><span class="pm-muted">Workflow</span><span>@progress%</span></div>
+                <div class="pm-progress pm-mt-1"><div class="pm-progress__bar" style="width:@progress%"></div></div>
+                <p class="pm-muted pm-mt-1 mb-0" style="font-size:.85rem">Current status: @(request?.Status ?? "N/A").</p>
+            </div>
+        </div>
+
+        <partial name="~/Views/Shared/_RequestTimeline.cshtml" model="Model" />
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        (() => {
+            const amount = document.getElementById('amount');
+            const commission = document.getElementById('platformCommissionAmount');
+            const net = document.getElementById('technicianNetAmount');
+            if (!amount || !commission || !net) return;
+
+            const format = value => new Intl.NumberFormat(undefined, {
+                style: 'currency',
+                currency: 'MYR'
+            }).format(value);
+
+            const refresh = () => {
+                const gross = Number.parseFloat(amount.value) || 0;
+                const platformCommission = Math.round(gross * 0.10 * 100) / 100;
+                commission.textContent = format(platformCommission);
+                net.textContent = format(Math.max(gross - platformCommission, 0));
+            };
+
+            amount.addEventListener('input', refresh);
+            refresh();
+        })();
+    </script>
+}

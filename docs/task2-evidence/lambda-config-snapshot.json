@@ -1,0 +1,13 @@
+﻿{
+    "Name": "zammaintain-s3-status-lambda",
+    "Runtime": "python3.12",
+    "Handler": "lambda_function.lambda_handler",
+    "State": "Active",
+    "MemorySize": 256,
+    "Timeout": 15,
+    "Role": "arn:aws:iam::713054633555:role/zammaintain-s3-status-lambda-role",
+    "Env": {
+        "BUCKET_NAME": "zammaintain-s3"
+    },
+    "LogGroup": "/aws/lambda/zammaintain-s3-status-lambda"
+}

@@ -1,0 +1,81 @@
+@model CloudMVCApplication.ViewModels.SuperAdminEditTechnicianViewModel
+@{
+    ViewData["Title"] = "Edit Technician";
+    var statuses = new[] { "Available", "Busy", "Offline", "Pending Review", "Rejected" };
+}
+
+<div class="pm-page-header pm-flex-between">
+    <div>
+        <h1 class="pm-page-title">Edit Technician</h1>
+        <p class="pm-page-lead">Update technician profile and availability.</p>
+    </div>
+    <a class="pm-btn pm-btn--secondary" asp-action="TechnicianDetails" asp-route-userId="@Model.UserId">Back to detail</a>
+</div>
+
+<div class="pm-card">
+    <div class="pm-card__body">
+        <form asp-action="EditTechnician" method="post">
+            @Html.AntiForgeryToken()
+            <input type="hidden" asp-for="UserId" />
+            <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
+
+            <div class="row g-3 mb-4">
+                <div class="col-md-6">
+                    <label class="pm-label" asp-for="FullName"></label>
+                    <input class="pm-input" asp-for="FullName" />
+                    <span class="text-danger" asp-validation-for="FullName"></span>
+                </div>
+                <div class="col-md-6">
+                    <label class="pm-label" asp-for="Email"></label>
+                    <input class="pm-input" asp-for="Email" />
+                    <span class="text-danger" asp-validation-for="Email"></span>
+                </div>
+                <div class="col-md-6">
+                    <label class="pm-label" asp-for="PhoneNumber"></label>
+                    <input class="pm-input" asp-for="PhoneNumber" />
+                    <span class="text-danger" asp-validation-for="PhoneNumber"></span>
+                </div>
+                <div class="col-md-6">
+                    <label class="pm-label" asp-for="Specialization"></label>
+                    <input class="pm-input" asp-for="Specialization" />
+                    <span class="text-danger" asp-validation-for="Specialization"></span>
+                </div>
+                <div class="col-md-6">
+                    <label class="pm-label" asp-for="ExperienceYears"></label>
+                    <input class="pm-input" asp-for="ExperienceYears" />
+                    <span class="text-danger" asp-validation-for="ExperienceYears"></span>
+                </div>
+                <div class="col-md-6">
+                    <label class="pm-label" asp-for="ServiceArea"></label>
+                    <input class="pm-input" asp-for="ServiceArea" />
+                    <span class="text-danger" asp-validation-for="ServiceArea"></span>
+                </div>
+                <div class="col-md-6">
+                    <label class="pm-label" asp-for="AvailabilityStatus"></label>
+                    <select class="pm-select" asp-for="AvailabilityStatus">
+                        @foreach (var status in statuses)
+                        {
+                            <option value="@status">@status</option>
+                        }
+                    </select>
+                    <span class="text-danger" asp-validation-for="AvailabilityStatus"></span>
+                </div>
+                <div class="col-md-6 d-flex align-items-end">
+                    <label class="pm-label d-flex align-items-center gap-2 mb-0">
+                        <input asp-for="IsActive" type="checkbox" />
+                        Active account
+                    </label>
+                </div>
+            </div>
+
+            <div class="d-flex gap-2">
+                <button type="submit" class="pm-btn pm-btn--primary">Save changes</button>
+                <a class="pm-btn pm-btn--secondary" asp-action="TechnicianDetails" asp-route-userId="@Model.UserId">Cancel</a>
+            </div>
+        </form>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

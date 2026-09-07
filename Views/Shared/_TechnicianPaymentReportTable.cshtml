@@ -1,0 +1,64 @@
+@model CloudMVCApplication.ViewModels.TechnicianPaymentReportViewModel
+
+<div class="pm-card">
+    <div class="pm-card__header">
+        <h2 class="pm-card__title">Payment records</h2>
+        <span class="pm-badge pm-badge--low">@Model.PaymentCount payments</span>
+    </div>
+    @if (!Model.Payments.Any())
+    {
+        <div class="pm-card__body text-center py-5">
+            <span class="material-symbols-outlined" style="font-size:3rem;color:var(--pm-primary)">payments</span>
+            <h3 class="h5 mt-3">No payments found</h3>
+            <p class="pm-muted mb-0">Completed-job technician payments will appear here.</p>
+        </div>
+    }
+    else
+    {
+        <div class="pm-table-wrap">
+            <table class="pm-table">
+                <thead>
+                    <tr>
+                        <th>Request</th>
+                        <th>Manager</th>
+                        <th>Technician</th>
+                        <th>Company</th>
+                        <th>Paid date</th>
+                        <th>Status</th>
+                        <th>Reference</th>
+                        <th class="pm-text-end">Gross amount</th>
+                        <th class="pm-text-end">Commission</th>
+                        <th class="pm-text-end">Technician net</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var payment in Model.Payments)
+                    {
+                        var statusClass = payment.PaymentStatus switch
+                        {
+                            "Paid" => "pm-badge--completed",
+                            "Failed" => "pm-badge--high",
+                            "Cancelled" => "pm-badge--high",
+                            _ => "pm-badge--pending"
+                        };
+                        <tr>
+                            <td>
+                                <strong>@payment.RequestDisplayId</strong><br />
+                                <span class="pm-muted" style="font-size:.8rem">@payment.RequestTitle</span>
+                            </td>
+                            <td>@payment.ManagerName</td>
+                            <td>@payment.TechnicianName</td>
+                            <td>@payment.CompanyName</td>
+                            <td class="pm-muted">@(payment.PaidAt?.ToLocalTime().ToString("MMM d, yyyy") ?? "-")</td>
+                            <td><span class="pm-badge @statusClass">@payment.PaymentStatus</span></td>
+                            <td class="pm-muted">@payment.TransactionReference</td>
+                            <td class="pm-text-end">@payment.GrossAmount.ToString("C")</td>
+                            <td class="pm-text-end">@payment.PlatformCommissionAmount.ToString("C")</td>
+                            <td class="pm-text-end"><strong>@payment.TechnicianNetAmount.ToString("C")</strong></td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    }
+</div>

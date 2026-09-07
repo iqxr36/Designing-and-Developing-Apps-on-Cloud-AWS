@@ -1,0 +1,25 @@
+@using CloudMVCApplication.ViewModels
+@{
+    var usage = ViewBag.SubscriptionUsage as CompanyUsageViewModel;
+}
+@if (usage != null)
+{
+    <div class="pm-card mb-3">
+        <div class="pm-card__body py-2">
+            <p class="mb-0 small">
+                <span class="fw-semibold">Plan:</span> @usage.Plan
+                <span class="pm-muted mx-2">&middot;</span>
+                <span class="fw-semibold">Properties:</span> @usage.PropertyCount of @usage.MaxProperties
+                <span class="pm-muted mx-2">&middot;</span>
+                <span class="fw-semibold">Units:</span> @usage.UnitCount of @usage.MaxUnits
+                @if (!usage.HasUnlimitedManagers)
+                {
+                    <text>
+                        <span class="pm-muted mx-2">&middot;</span>
+                        <span class="fw-semibold">Managers:</span> @usage.ManagerCount of @usage.MaxManagers
+                    </text>
+                }
+            </p>
+        </div>
+    </div>
+}

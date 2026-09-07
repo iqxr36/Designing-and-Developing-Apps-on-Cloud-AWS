@@ -1,0 +1,245 @@
+@model CloudMVCApplication.ViewModels.AreaDashboardViewModel
+@{
+    var area = ViewData["AvatarArea"] as string ?? string.Empty;
+    var controller = ViewData["AvatarController"] as string ?? string.Empty;
+    var backAction = ViewData["AvatarBackAction"] as string ?? "Profile";
+    var backLabel = ViewData["AvatarBackLabel"] as string ?? "Back to Profile";
+    var cancelAction = ViewData["AvatarCancelAction"] as string ?? backAction;
+    var hasAvatar = !string.IsNullOrWhiteSpace(Model.CurrentUserAvatarUrl);
+}
+
+<div class="pm-flex-between pm-page-header">
+    <div>
+        <h1 class="pm-page-title">Change Avatar</h1>
+        <p class="pm-page-lead">Upload a new profile picture.</p>
+    </div>
+    <div class="d-flex gap-2 flex-wrap">
+        <a class="pm-btn pm-btn--secondary" asp-area="@area" asp-controller="@controller" asp-action="@backAction">
+            <span class="material-symbols-outlined">arrow_back</span> @backLabel
+        </a>
+    </div>
+</div>
+
+<div class="pm-card" style="max-width: 600px;">
+    <div class="pm-card__body" style="text-align: center;">
+        <img id="avatar-preview"
+             src="@(hasAvatar ? Model.CurrentUserAvatarUrl : null)"
+             alt="Current avatar"
+             data-original-src="@(hasAvatar ? Model.CurrentUserAvatarUrl : string.Empty)"
+             style="width: 120px; height: 120px; border-radius: 999px; object-fit: cover; margin: 0 auto 24px; @(hasAvatar ? "display: block;" : "display: none;")" />
+        <div id="avatar-initials"
+             style="width: 120px; height: 120px; border-radius: 999px; background: #333d4d; color: #9da8bb; align-items: center; justify-content: center; font-size: 40px; font-weight: 700; margin: 0 auto 24px; @(hasAvatar ? "display: none;" : "display: flex;")">
+            @Model.CurrentUserInitials
+        </div>
+
+        <form asp-area="@area" asp-controller="@controller" asp-action="UpdateAvatar" method="post" enctype="multipart/form-data" id="change-avatar-form">
+            @Html.AntiForgeryToken()
+            <div asp-validation-summary="All" class="small" style="color: #ba1a1a; margin-bottom: 16px;"></div>
+
+            <p class="pm-muted" style="margin-bottom: 24px;">Upload a new image or choose from the avatars below.</p>
+
+            <div style="border: 2px dashed var(--pm-outline-variant); border-radius: 12px; padding: 40px; margin-bottom: 24px;">
+                <span class="material-symbols-outlined" style="font-size: 48px; color: var(--pm-outline);">cloud_upload</span>
+                <p style="margin: 12px 0 0; font-weight: 500;">Choose an image to upload</p>
+                <p class="pm-muted small" style="margin: 4px 0 0;">PNG, JPG, GIF, or WebP up to 5MB</p>
+                <input type="file" name="avatarFile" accept="image/*" style="display: none;" id="avatar-upload" />
+                <label for="avatar-upload" class="pm-btn pm-btn--secondary" style="margin-top: 16px; cursor: pointer;">Choose File</label>
+                <p id="avatar-filename" class="pm-muted small" style="margin-top: 12px; display: none;"></p>
+                <p id="avatar-validation-error" class="small" style="margin-top: 8px; color: #ba1a1a;" hidden></p>
+            </div>
+
+            <div style="margin-bottom: 24px;">
+                <p style="font-weight: 600; margin-bottom: 12px;">Or choose a default avatar:</p>
+                <div class="d-flex align-items-center gap-2" style="justify-content: center;">
+                    @foreach (var avatar in CloudMVCApplication.Services.AvatarService.AllowedPresetAvatars.OrderBy(a => a))
+                    {
+                        <label style="cursor: pointer;">
+                            <input type="radio" name="avatarChoice" value="@avatar" class="avatar-choice-radio" style="display: none;" />
+                            <img src="@avatar" alt="Default avatar" class="avatar-choice-img" style="width: 56px; height: 56px; border-radius: 999px; object-fit: cover; border: 2px solid var(--pm-outline-variant);" />
+                        </label>
+                    }
+                </div>
+            </div>
+
+            <div class="d-flex align-items-center gap-2" style="justify-content: center;">
+                <a class="pm-btn pm-btn--secondary" asp-area="@area" asp-controller="@controller" asp-action="@cancelAction">Cancel</a>
+                <button type="submit" class="pm-btn pm-btn--primary">Save Avatar</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+    (function () {
+        var fileInput = document.getElementById('avatar-upload');
+        var preview = document.getElementById('avatar-preview');
+        var initials = document.getElementById('avatar-initials');
+        var filename = document.getElementById('avatar-filename');
+        var errorEl = document.getElementById('avatar-validation-error');
+        var form = document.getElementById('change-avatar-form');
+        var radios = document.querySelectorAll('.avatar-choice-radio');
+        var choiceImgs = document.querySelectorAll('.avatar-choice-img');
+        if (!fileInput || !preview) {
+            return;
+        }
+
+        var maxSize = 5 * 1024 * 1024;
+        var allowedExt = ['.jpg', '.jpeg', '.png', '.gif', '.webp'];
+        var allowedMime = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
+        var objectUrl = null;
+        var originalSrc = preview.getAttribute('data-original-src') || '';
+
+        function ext(name) {
+            var i = name.lastIndexOf('.');
+            return i < 0 ? '' : name.substring(i).toLowerCase();
+        }
+
+        function validate(file) {
+            if (!file) {
+                return null;
+            }
+            if (!file.size) {
+                return 'Avatar image cannot be empty.';
+            }
+            if (file.size > maxSize) {
+                return 'Avatar image must be 5MB or smaller.';
+            }
+            var e = ext(file.name || '');
+            if (!e || allowedExt.indexOf(e) === -1) {
+                return 'Please upload a JPG, PNG, GIF, or WebP image.';
+            }
+            if (file.type && allowedMime.indexOf(String(file.type).toLowerCase()) === -1) {
+                return 'Please upload a JPG, PNG, GIF, or WebP image.';
+            }
+            return null;
+        }
+
+        function showError(msg) {
+            if (!errorEl) {
+                return;
+            }
+            errorEl.textContent = msg || '';
+            errorEl.hidden = !msg;
+        }
+
+        function revokeObjectUrl() {
+            if (objectUrl) {
+                URL.revokeObjectURL(objectUrl);
+                objectUrl = null;
+            }
+        }
+
+        function showPreview(src) {
+            revokeObjectUrl();
+            if (src) {
+                preview.src = src;
+                preview.style.display = 'block';
+                if (initials) {
+                    initials.style.display = 'none';
+                }
+            } else if (originalSrc) {
+                preview.src = originalSrc;
+                preview.style.display = 'block';
+                if (initials) {
+                    initials.style.display = 'none';
+                }
+            } else {
+                preview.removeAttribute('src');
+                preview.style.display = 'none';
+                if (initials) {
+                    initials.style.display = 'flex';
+                }
+            }
+        }
+
+        function clearFilename() {
+            if (filename) {
+                filename.style.display = 'none';
+                filename.textContent = '';
+            }
+        }
+
+        function clearRadios() {
+            radios.forEach(function (radio) {
+                radio.checked = false;
+            });
+            choiceImgs.forEach(function (img) {
+                img.style.borderColor = 'var(--pm-outline-variant)';
+            });
+        }
+
+        function highlightRadio(radio) {
+            choiceImgs.forEach(function (img) {
+                img.style.borderColor = 'var(--pm-outline-variant)';
+            });
+            if (radio && radio.nextElementSibling) {
+                radio.nextElementSibling.style.borderColor = 'var(--pm-primary)';
+            }
+        }
+
+        function restoreOriginalPreview() {
+            clearFilename();
+            showPreview(originalSrc || null);
+        }
+
+        fileInput.addEventListener('change', function () {
+            var file = fileInput.files && fileInput.files[0];
+            if (!file) {
+                showError('');
+                restoreOriginalPreview();
+                return;
+            }
+
+            var err = validate(file);
+            if (err) {
+                showError(err);
+                fileInput.value = '';
+                restoreOriginalPreview();
+                return;
+            }
+
+            showError('');
+            clearRadios();
+            revokeObjectUrl();
+            objectUrl = URL.createObjectURL(file);
+            preview.src = objectUrl;
+            preview.style.display = 'block';
+            if (initials) {
+                initials.style.display = 'none';
+            }
+            if (filename) {
+                filename.textContent = 'Selected: ' + file.name;
+                filename.style.display = 'block';
+            }
+        });
+
+        radios.forEach(function (radio) {
+            radio.addEventListener('change', function () {
+                if (!radio.checked) {
+                    return;
+                }
+                fileInput.value = '';
+                clearFilename();
+                showError('');
+                highlightRadio(radio);
+                showPreview(radio.value);
+            });
+        });
+
+        if (form) {
+            form.addEventListener('submit', function (event) {
+                var file = fileInput.files && fileInput.files[0];
+                if (!file) {
+                    return;
+                }
+                var err = validate(file);
+                if (err) {
+                    event.preventDefault();
+                    showError(err);
+                    fileInput.value = '';
+                    restoreOriginalPreview();
+                }
+            });
+        }
+    })();
+</script>

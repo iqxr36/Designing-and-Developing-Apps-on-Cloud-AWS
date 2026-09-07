@@ -1,0 +1,91 @@
+@model CloudMVCApplication.ViewModels.AreaDashboardViewModel
+@{
+    var request = Model.SelectedRequest;
+    var histories = Model.SelectedRequestStatusHistories;
+}
+
+<div class="pm-card">
+    <div class="pm-card__header">
+        <div>
+            <h2 class="pm-card__title">Request timeline</h2>
+            <p class="pm-muted mb-0" style="font-size:.875rem">Created, assigned, updated, and completed events for this request.</p>
+        </div>
+    </div>
+    <div class="pm-card__body">
+        <div class="pm-timeline pm-timeline--events">
+            @if (histories.Any())
+            {
+                @foreach (var history in histories)
+                {
+                    var status = history.NewStatus ?? "Updated";
+                    var icon = status switch
+                    {
+                        "Pending" => "schedule",
+                        "Assigned" => "assignment_ind",
+                        "In Progress" => "construction",
+                        "Completed" => "task_alt",
+                        "Cancelled" => "cancel",
+                        "On Hold" => "pause_circle",
+                        _ => "history"
+                    };
+                    var badgeClass = status switch
+                    {
+                        "Completed" => "pm-badge--completed",
+                        "In Progress" => "pm-badge--inprogress",
+                        "Assigned" => "pm-badge--assigned",
+                        "Cancelled" => "pm-badge--high",
+                        _ => "pm-badge--pending"
+                    };
+                    var transitionLabel = history.OldStatus == null
+                        ? "Created"
+                        : history.OldStatus == history.NewStatus
+                            ? status switch
+                            {
+                                "Assigned" => "Technician reassigned",
+                                "Completed" when (history.Notes ?? string.Empty).Contains("payment", StringComparison.OrdinalIgnoreCase) => "Payment update",
+                                _ => "Timeline update"
+                            }
+                            : $"{history.OldStatus} to {history.NewStatus}";
+                    var isCurrent = status == request?.Status;
+                    <div class="pm-timeline__item @(isCurrent ? "pm-timeline__item--current" : null)">
+                        <div class="pm-timeline__marker">
+                            <span class="material-symbols-outlined">@icon</span>
+                        </div>
+                        <div class="pm-timeline__content">
+                            <div class="pm-flex-between gap-2">
+                                <div>
+                                    <strong>@status</strong>
+                                    <span class="pm-badge @badgeClass ms-1">@transitionLabel</span>
+                                </div>
+                                <span class="pm-timeline__time">@history.ChangedAt.ToLocalTime().ToString("MMM d, yyyy h:mm tt")</span>
+                            </div>
+                            <p class="pm-muted mb-0" style="font-size:.85rem">Updated by @history.ChangedByName</p>
+                            @if (!string.IsNullOrWhiteSpace(history.Notes))
+                            {
+                                <p class="pm-timeline__note">@history.Notes</p>
+                            }
+                        </div>
+                    </div>
+                }
+            }
+            else
+            {
+                <div class="pm-timeline__item pm-timeline__item--current">
+                    <div class="pm-timeline__marker">
+                        <span class="material-symbols-outlined">receipt_long</span>
+                    </div>
+                    <div class="pm-timeline__content">
+                        <div class="pm-flex-between gap-2">
+                            <div>
+                                <strong>Request submitted</strong>
+                                <span class="pm-badge pm-badge--pending ms-1">Pending</span>
+                            </div>
+                            <span class="pm-timeline__time">@(request?.CreatedAt.ToLocalTime().ToString("MMM d, yyyy h:mm tt") ?? "N/A")</span>
+                        </div>
+                        <p class="pm-muted mb-0" style="font-size:.85rem">Initial request record created.</p>
+                    </div>
+                </div>
+            }
+        </div>
+    </div>
+</div>

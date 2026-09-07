@@ -1,0 +1,101 @@
+@model CloudMVCApplication.ViewModels.AreaDashboardViewModel
+@{
+    Layout = "~/Areas/Administrator/Views/Shared/_AdministratorLayout.cshtml";
+    ViewData["Title"] = "Add Unit";
+    var usage = ViewBag.SubscriptionUsage as CloudMVCApplication.ViewModels.CompanyUsageViewModel;
+}
+
+<div class="pm-flex-between pm-page-header">
+    <div>
+        <h1 class="pm-page-title">Add New Unit</h1>
+        <p class="pm-page-lead">Register a new unit to a property.</p>
+    </div>
+    <div class="d-flex gap-2 flex-wrap">
+        <a class="pm-btn pm-btn--secondary" asp-controller="Administrator" asp-action="Units">
+            <span class="material-symbols-outlined">arrow_back</span> Back to Units
+        </a>
+    </div>
+</div>
+
+<partial name="_SubscriptionUsageBanner" />
+
+@if (usage != null && usage.RemainingUnits == 0)
+{
+    <div class="alert alert-warning" role="alert">
+        Unit limit reached (@usage.UnitCount / @usage.MaxUnits). Upgrade your subscription to add more units.
+    </div>
+}
+
+<div class="pm-card">
+    <div class="pm-card__header">
+        <h3 class="pm-card__title">Unit Information</h3>
+    </div>
+    <form asp-controller="Administrator" asp-action="AddUnit" method="post">
+        @Html.AntiForgeryToken()
+        <div class="pm-card__body">
+            <div asp-validation-summary="All" class="pm-validation-summary"></div>
+        <div class="row g-3">
+            <div class="col-md-6 mb-3">
+                <label class="pm-label pm-label--required" for="unitNumber">Unit Number</label>
+                <input id="unitNumber" type="text" name="UnitNumber" class="pm-input" placeholder="e.g., A-101" required />
+            </div>
+            <div class="col-md-6 mb-3">
+                <label class="pm-label pm-label--required" for="propertyId">Property</label>
+                <select id="propertyId" name="PropertyId" class="pm-select" required>
+                    <option value="">Select property</option>
+                    @foreach (var property in Model.Properties)
+                    {
+                        <option value="@property.PropertyId">@property.Name</option>
+                    }
+                </select>
+            </div>
+            <div class="col-md-6 mb-3">
+                <label class="pm-label pm-label--required" for="unitType">Unit Type</label>
+                <select id="unitType" name="UnitType" class="pm-select" required>
+                    <option value="">Select type</option>
+                    <option value="Studio">Studio</option>
+                    <option value="1 Bedroom">1 Bedroom</option>
+                    <option value="2 Bedroom">2 Bedroom</option>
+                    <option value="Penthouse">Penthouse</option>
+                </select>
+            </div>
+            <div class="col-md-6 mb-3">
+                <label class="pm-label" for="floorNumber">Floor Number</label>
+                <input id="floorNumber" type="number" name="FloorNumber" class="pm-input" placeholder="0" />
+            </div>
+            <div class="col-md-6 mb-3">
+                <label class="pm-label" for="tenantUserId">Assign Tenant</label>
+                <select id="tenantUserId" name="TenantUserId" class="pm-select">
+                    <option value="">Leave vacant</option>
+                    @foreach (var tenant in Model.Users.Where(u => u.Role == "Tenant"))
+                    {
+                        <option value="@tenant.Id">@tenant.FullName</option>
+                    }
+                </select>
+                <p class="pm-field-hint">Selecting a tenant automatically marks the unit as occupied.</p>
+            </div>
+            <div class="col-md-6 mb-3">
+                <label class="pm-label" for="status">Initial Status</label>
+                <select id="status" name="Status" class="pm-select">
+                    <option value="Vacant">Vacant</option>
+                    <option value="Occupied">Occupied</option>
+                    <option value="Maintenance">Maintenance</option>
+                </select>
+            </div>
+        </div>
+        </div>
+        <div class="pm-card__body border-top d-flex gap-2 justify-content-end pt-3">
+            <a class="pm-btn pm-btn--secondary" asp-controller="Administrator" asp-action="Units">Cancel</a>
+            <button type="submit" class="pm-btn pm-btn--primary" disabled="@(usage != null && usage.RemainingUnits == 0)">Add Unit</button>
+        </div>
+    </form>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+    <script>
+        document.querySelector('select[name="TenantUserId"]')?.addEventListener('change', event => {
+            if (event.target.value) document.querySelector('select[name="Status"]').value = 'Occupied';
+        });
+    </script>
+}

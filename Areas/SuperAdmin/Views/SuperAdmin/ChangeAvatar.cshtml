@@ -1,0 +1,12 @@
+@model CloudMVCApplication.ViewModels.AreaDashboardViewModel
+@{
+    Layout = "~/Areas/SuperAdmin/Views/Shared/_SuperAdminLayout.cshtml";
+    ViewData["Title"] = "Change Avatar";
+    ViewData["AvatarArea"] = "SuperAdmin";
+    ViewData["AvatarController"] = "SuperAdmin";
+    ViewData["AvatarBackAction"] = "Profile";
+    ViewData["AvatarBackLabel"] = "Back to Profile";
+    ViewData["AvatarCancelAction"] = "Profile";
+}
+
+@await Html.PartialAsync("~/Views/Shared/_ChangeAvatarForm.cshtml", Model)

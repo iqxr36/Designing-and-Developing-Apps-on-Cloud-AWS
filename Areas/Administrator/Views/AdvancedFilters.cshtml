@@ -1,0 +1,89 @@
+@model CloudMVCApplication.ViewModels.AreaDashboardViewModel
+@{
+    Layout = "~/Areas/Administrator/Views/Shared/_AdministratorLayout.cshtml";
+    ViewData["Title"] = "Advanced Maintenance Filters";
+}
+
+<div class="pm-flex-between pm-page-header">
+    <div>
+        <h1 class="pm-page-title">Advanced Maintenance Filters</h1>
+        <p class="pm-page-lead">Combine dates, status, priority, category, property, technician, and keywords.</p>
+    </div>
+    <a class="pm-btn pm-btn--secondary" asp-action="Maintenance">Back to requests</a>
+</div>
+
+<form class="pm-card" asp-action="Maintenance" method="get">
+    <div class="pm-card__header">
+        <h3 class="pm-card__title">Filter Criteria</h3>
+    </div>
+    <div class="pm-card__body">
+        <div class="row g-3">
+            <div class="col-md-6">
+                <label class="pm-label" for="from">From date</label>
+                <input id="from" name="from" type="date" class="pm-input" />
+            </div>
+            <div class="col-md-6">
+                <label class="pm-label" for="to">To date</label>
+                <input id="to" name="to" type="date" class="pm-input" />
+            </div>
+            <div class="col-md-6">
+                <label class="pm-label" for="status">Status</label>
+                <select id="status" name="status" class="pm-select">
+                    <option value="">All Statuses</option>
+                    @foreach (var status in new[] { "Pending", "Assigned", "In Progress", "On Hold", "Completed" })
+                    {
+                        <option value="@status">@status</option>
+                    }
+                </select>
+            </div>
+            <div class="col-md-6">
+                <label class="pm-label" for="priority">Priority</label>
+                <select id="priority" name="priority" class="pm-select">
+                    <option value="">All Priorities</option>
+                    @foreach (var priority in new[] { "Low", "Medium", "High", "Urgent" })
+                    {
+                        <option value="@priority">@priority</option>
+                    }
+                </select>
+            </div>
+            <div class="col-md-6">
+                <label class="pm-label" for="category">Category</label>
+                <select id="category" name="category" class="pm-select">
+                    <option value="">All Categories</option>
+                    @foreach (var category in new[] { "HVAC", "Plumbing", "Electrical", "Appliance", "Structural", "Security", "Other" })
+                    {
+                        <option value="@category">@category</option>
+                    }
+                </select>
+            </div>
+            <div class="col-md-6">
+                <label class="pm-label" for="propertyId">Property</label>
+                <select id="propertyId" name="propertyId" class="pm-select">
+                    <option value="">All Properties</option>
+                    @foreach (var property in Model.Properties)
+                    {
+                        <option value="@property.PropertyId">@property.Name</option>
+                    }
+                </select>
+            </div>
+            <div class="col-md-6">
+                <label class="pm-label" for="technicianId">Assigned Technician</label>
+                <select id="technicianId" name="technicianId" class="pm-select">
+                    <option value="">All Technicians</option>
+                    @foreach (var technician in Model.Technicians)
+                    {
+                        <option value="@technician.TechnicianId">@technician.FullName</option>
+                    }
+                </select>
+            </div>
+            <div class="col-md-6">
+                <label class="pm-label" for="search">Keywords or request ID</label>
+                <input id="search" name="search" type="search" class="pm-input" placeholder="Search title, description, or REQ-0001" />
+            </div>
+        </div>
+    </div>
+    <div class="pm-card__body border-top d-flex gap-2 justify-content-end pt-3">
+        <a class="pm-btn pm-btn--secondary" asp-action="Maintenance">Clear Filters</a>
+        <button type="submit" class="pm-btn pm-btn--primary">Apply Filters</button>
+    </div>
+</form>

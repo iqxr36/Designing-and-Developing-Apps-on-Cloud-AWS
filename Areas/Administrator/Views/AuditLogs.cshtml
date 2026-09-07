@@ -1,0 +1,107 @@
+@model CloudMVCApplication.ViewModels.AreaDashboardViewModel
+@{
+    Layout = "~/Areas/Administrator/Views/Shared/_AdministratorLayout.cshtml";
+    ViewData["Title"] = "Company Activity Log";
+}
+
+<div class="pm-flex-between pm-page-header">
+    <div>
+        <h1 class="pm-page-title">Company Activity Log</h1>
+        <p class="pm-page-lead">Activity within your organization.</p>
+    </div>
+    <div class="d-flex gap-2 flex-wrap">
+        <a class="pm-btn pm-btn--secondary"
+           asp-controller="Administrator"
+           asp-action="ExportAuditLogs"
+           asp-route-user="@ViewBag.User"
+           asp-route-actionFilter="@ViewBag.ActionFilter">
+            <span class="material-symbols-outlined">download</span> Export CSV
+        </a>
+    </div>
+</div>
+
+<form class="row g-3 align-items-end mb-3" asp-controller="Administrator" asp-action="AuditLogs" method="get">
+    <div class="col-md-4 col-lg-3">
+        <label>User</label>
+        <div style="position: relative;">
+            <span class="material-symbols-outlined" style="position: absolute; left: 12px; top: 50%; transform: translateY(-50%); color: var(--pm-on-surface-variant);">person</span>
+            <input type="text" name="user" class="pm-input" value="@ViewBag.User" placeholder="Search by user" style="padding-left: 40px;" />
+        </div>
+    </div>
+    <div class="col-md-4 col-lg-3">
+        <label>Action Contains</label>
+        <input type="text" name="actionFilter" class="pm-input" value="@ViewBag.ActionFilter" placeholder="Created, Updated..." />
+    </div>
+    <button class="pm-btn pm-btn--primary" type="submit" style="align-self: flex-end;">Apply Filters</button>
+    <a class="pm-btn pm-btn--secondary" asp-controller="Administrator" asp-action="AuditLogs" style="align-self: flex-end; padding: 0 12px;">
+        <span class="material-symbols-outlined">refresh</span>
+    </a>
+</form>
+
+<div class="pm-card">
+    <div class="pm-table-wrap">
+        @if (!Model.AuditLogs.Any())
+        {
+            <div class="pm-empty-state">
+                <div class="pm-empty-state__icon"><span class="material-symbols-outlined">manage_search</span></div>
+                <h2 class="pm-empty-state__title">No activity entries found</h2>
+                <p class="pm-empty-state__text">No company audit entries match the current user or action filters.</p>
+                <div class="pm-empty-state__actions">
+                    <a class="pm-btn pm-btn--secondary" asp-controller="Administrator" asp-action="AuditLogs">Clear filters</a>
+                </div>
+            </div>
+        }
+        else
+        {
+            <table class="pm-table">
+                <thead>
+                    <tr>
+                        <th>Timestamp</th>
+                        <th>User</th>
+                        <th>Action</th>
+                        <th>Entity</th>
+                        <th>Description</th>
+                        <th class="pm-text-end">Details</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var log in Model.AuditLogs)
+                    {
+                        var initials = string.Concat(log.UserName.Split(' ', StringSplitOptions.RemoveEmptyEntries).Take(2).Select(p => p[0])).ToUpperInvariant();
+                        <tr>
+                            <td class="pm-muted">@log.CreatedAt.ToLocalTime().ToString("MMM d, yyyy h:mm tt")</td>
+                            <td>
+                                <div class="d-flex align-items-center gap-3">
+                                    <div style="width: 32px; height: 32px; border-radius: 999px; background: #d9e3f7; color: #1d2736; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 700;">@initials</div>
+                                    <div>
+                                        <p style="font-weight: 600; margin: 0;">@log.UserName</p>
+                                        <p class="pm-muted small" style="margin: 0;">Company user</p>
+                                    </div>
+                                </div>
+                            </td>
+                            <td><span class="pm-badge pm-badge--completed">@log.Action</span></td>
+                            <td>
+                                <a asp-controller="Administrator" asp-action="AuditLogDetail" asp-route-id="@log.AuditLogId" style="color: var(--pm-primary); font-weight: 600;">@(log.EntityName ?? "System")</a>
+                                <p class="pm-muted small" style="margin: 0;">ID: @(log.EntityId ?? "N/A")</p>
+                            </td>
+                            <td class="pm-muted">@log.Description</td>
+                            <td class="pm-text-end">
+                                <a class="pm-btn pm-btn--link" asp-controller="Administrator" asp-action="AuditLogDetail" asp-route-id="@log.AuditLogId">
+                                    <span class="material-symbols-outlined">chevron_right</span>
+                                </a>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        }
+    </div>
+    @if (Model.AuditLogs.Any())
+    {
+        <div class="pm-card__pager">
+            <span class="pm-card__pager-summary">
+                Showing <strong>@Model.AuditLogs.Count</strong> entries
+            </span>
+        </div>
+    }
+</div>

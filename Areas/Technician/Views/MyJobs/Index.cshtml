@@ -1,0 +1,125 @@
+@model CloudMVCApplication.ViewModels.AreaDashboardViewModel
+@{
+    ViewData["Title"] = "My Assigned Jobs";
+    var jobs = Model.Requests.Where(r => r.Status != "Completed").ToList();
+}
+
+<div class="pm-page-header">
+    <h1 class="pm-page-title">My assigned jobs</h1>
+    <p class="pm-page-lead">Review all maintenance jobs currently assigned to you.</p>
+</div>
+
+<div class="pm-card pm-mb-2">
+    <div class="pm-card__body">
+        <div class="row g-3 align-items-end">
+            <div class="col-auto">
+                <span class="pm-label mb-0">Filter by</span>
+            </div>
+            <div class="col-md-3">
+                <select class="pm-select">
+                    <option>Status: All</option>
+                    @foreach (var status in jobs.Select(j => j.Status).Distinct())
+                    {
+                        <option>@status</option>
+                    }
+                </select>
+            </div>
+            <div class="col-md-3">
+                <select class="pm-select">
+                    <option>Property: All</option>
+                    @foreach (var property in jobs.Select(j => j.PropertyName).Distinct())
+                    {
+                        <option>@property</option>
+                    }
+                </select>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="pm-card pm-mb-2">
+    @if (!jobs.Any())
+    {
+        <div class="pm-empty-state">
+            <div class="pm-empty-state__icon"><span class="material-symbols-outlined">work_off</span></div>
+            <h2 class="pm-empty-state__title">No active jobs assigned</h2>
+            <p class="pm-empty-state__text">New assignments from property managers will appear here when they are ready for work.</p>
+        </div>
+    }
+    else
+    {
+        <div class="pm-table-wrap">
+            <table class="pm-table">
+                <thead>
+                    <tr>
+                        <th>Job ID</th>
+                        <th>Details</th>
+                        <th>Property &amp; unit</th>
+                        <th>Priority</th>
+                        <th>Status</th>
+                        <th>Assigned</th>
+                        <th class="pm-text-end">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var job in jobs)
+                    {
+                        var priorityClass = job.Priority == "High" ? "pm-badge--high" : job.Priority == "Medium" ? "pm-badge--medium" : "pm-badge--low";
+                        var statusClass = job.Status == "In Progress" ? "pm-badge--inprogress" : job.Status == "Assigned" ? "pm-badge--assigned" : "pm-badge--pending";
+                        <tr>
+                            <td><strong>#@job.DisplayId</strong></td>
+                            <td>
+                                <strong>@job.Title</strong><br />
+                                <span class="pm-muted" style="font-size:.8rem">Tenant: @job.TenantName</span>
+                            </td>
+                            <td>
+                                @job.PropertyName<br />
+                                <span class="pm-muted" style="font-size:.8rem">Unit @job.UnitNumber</span>
+                            </td>
+                            <td><span class="pm-badge @priorityClass">@job.Priority</span></td>
+                            <td><span class="pm-badge @statusClass">@job.Status</span></td>
+                            <td class="pm-muted">@job.CreatedAt.ToLocalTime().ToString("MMM d, yyyy")</td>
+                            <td class="pm-text-end">
+                                <div class="pm-actions justify-content-end">
+                                    <a class="pm-btn pm-btn--link" asp-area="Technician" asp-controller="MyJobs" asp-action="Details" asp-route-id="@job.RequestId" title="View details">
+                                        <span class="material-symbols-outlined" style="font-size:20px">visibility</span>
+                                    </a>
+                                    <a class="pm-btn pm-btn--link" asp-area="Technician" asp-controller="MyJobs" asp-action="UpdateStatus" asp-route-id="@job.RequestId" title="Update status">
+                                        <span class="material-symbols-outlined" style="font-size:20px">edit_note</span>
+                                    </a>
+                                </div>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+        <div class="pm-card__body border-top pt-3" style="border-color:var(--pm-border)">
+            <div class="pm-flex-between">
+                <span class="pm-muted">Showing @jobs.Count jobs</span>
+                <span>Page 1 of 1</span>
+            </div>
+        </div>
+    }
+</div>
+
+<div class="pm-grid pm-grid--stats">
+    <div class="pm-stat">
+        <span class="material-symbols-outlined pm-stat__icon">priority_high</span>
+        <div class="pm-stat__label">High priority</div>
+        <div class="pm-stat__value">@jobs.Count(j => j.Priority == "High")</div>
+        <div class="pm-muted" style="font-size:.75rem">Jobs</div>
+    </div>
+    <div class="pm-stat">
+        <span class="material-symbols-outlined pm-stat__icon">pending_actions</span>
+        <div class="pm-stat__label">In progress</div>
+        <div class="pm-stat__value">@jobs.Count(j => j.Status == "In Progress")</div>
+        <div class="pm-muted" style="font-size:.75rem">Jobs</div>
+    </div>
+    <div class="pm-stat">
+        <span class="material-symbols-outlined pm-stat__icon">schedule</span>
+        <div class="pm-stat__label">Assigned</div>
+        <div class="pm-stat__value">@jobs.Count(j => j.Status == "Assigned")</div>
+        <div class="pm-muted" style="font-size:.75rem">Jobs</div>
+    </div>
+</div>

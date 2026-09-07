@@ -1,0 +1,64 @@
+@model CloudMVCApplication.ViewModels.AreaDashboardViewModel
+@{
+    Layout = "~/Areas/Tenant/Views/Shared/_TenantLayout.cshtml";
+    ViewData["Title"] = "Track Requests";
+}
+
+@if (TempData["SuccessMessage"] is string successMessage)
+{
+    <div class="alert alert-success" role="alert">@successMessage</div>
+}
+
+<div class="pm-page-header">
+    <a class="pm-link-back" asp-area="Tenant" asp-controller="Tenant" asp-action="Dashboard"><span class="material-symbols-outlined" style="font-size:18px">arrow_back</span> Back to Dashboard</a>
+    <h1 class="pm-page-title">Track Requests</h1>
+    <p class="pm-page-lead">Your maintenance requests and repair progress.</p>
+</div>
+
+<div class="pm-card">
+    <div class="pm-card__header">
+        <h2 class="pm-card__title">My Maintenance Requests</h2>
+        <a class="pm-btn pm-btn--primary" asp-area="Tenant" asp-controller="Tenant" asp-action="SubmitMaintenanceRequest">New Request</a>
+    </div>
+    <div class="pm-table-wrap">
+        @if (!Model.Requests.Any())
+        {
+            <div class="pm-card__body">
+                <p class="pm-muted mb-0">No maintenance requests are available yet.</p>
+            </div>
+        }
+        else
+        {
+            <table class="pm-table">
+                <thead>
+                    <tr>
+                        <th>Request</th>
+                        <th>Issue</th>
+                        <th>Priority</th>
+                        <th>Status</th>
+                        <th>Technician</th>
+                        <th class="pm-text-end">Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var request in Model.Requests)
+                    {
+                        var priorityClass = request.Priority is "High" or "Urgent" ? "pm-badge--high" : request.Priority == "Low" ? "pm-badge--low" : "pm-badge--medium";
+                        var statusClass = request.Status == "Completed" ? "pm-badge--avail" : request.Status == "In Progress" ? "pm-badge--inprogress" : request.Status == "Assigned" ? "pm-badge--assigned" : "pm-badge--pending";
+                        <tr>
+                            <td><strong>@request.DisplayId</strong></td>
+                            <td>@request.Title</td>
+                            <td><span class="pm-badge @priorityClass">@request.Priority</span></td>
+                            <td><span class="pm-badge @statusClass">@request.Status</span></td>
+                            <td>@(request.TechnicianName ?? "Pending assignment")</td>
+                            <td class="pm-text-end">
+                                <a class="pm-btn pm-btn--link" asp-area="Tenant" asp-controller="Tenant" asp-action="RequestDetail" asp-route-id="@request.RequestId">View</a>
+                                <a class="pm-btn pm-btn--link" asp-area="Tenant" asp-controller="Messages" asp-action="ChatByRequest" asp-route-requestId="@request.RequestId">Chat</a>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        }
+    </div>
+</div>

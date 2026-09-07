@@ -1,0 +1,110 @@
+@model CloudMVCApplication.ViewModels.SuperAdminDashboardViewModel
+@{
+    ViewData["Title"] = "Platform Dashboard";
+}
+
+<div class="pm-page-header pm-flex-between">
+    <div>
+        <h1 class="pm-page-title">Platform Dashboard</h1>
+        <p class="pm-page-lead">Manage subscriptions, companies, and technician onboarding.</p>
+    </div>
+</div>
+
+<div class="pm-grid pm-grid--stats">
+    <div class="pm-stat">
+        <span class="pm-stat__label">Total Companies</span>
+        <h3 class="pm-stat__value">@Model.TotalCompanies</h3>
+    </div>
+    <div class="pm-stat">
+        <span class="pm-stat__label">Active Companies</span>
+        <h3 class="pm-stat__value">@Model.ActiveCompanies</h3>
+    </div>
+    <div class="pm-stat">
+        <span class="pm-stat__label">Suspended</span>
+        <h3 class="pm-stat__value">@Model.SuspendedCompanies</h3>
+    </div>
+    <div class="pm-stat">
+        <span class="pm-stat__label">Pending Technicians</span>
+        <h3 class="pm-stat__value">@Model.PendingTechnicians</h3>
+    </div>
+    <div class="pm-stat">
+        <span class="pm-stat__label">Pending Bank Transfers</span>
+        <h3 class="pm-stat__value">@Model.PendingBankTransfers</h3>
+    </div>
+    <div class="pm-stat">
+        <span class="pm-stat__label">Platform Fees Earned</span>
+        <h3 class="pm-stat__value">@Model.TotalPlatformFeesEarned.ToString("C")</h3>
+    </div>
+    <div class="pm-stat">
+        <span class="pm-stat__label">Pending Platform Fees</span>
+        <h3 class="pm-stat__value">@Model.PendingPlatformFees.ToString("C")</h3>
+    </div>
+    <div class="pm-stat">
+        <span class="pm-stat__label">Past Due Billing</span>
+        <h3 class="pm-stat__value">@Model.PastDueSubscriptions</h3>
+    </div>
+</div>
+
+<div class="row g-4 mt-2">
+    <div class="col-lg-5">
+        <div class="pm-card">
+            <div class="pm-card__header">
+                <h2 class="pm-card__title">Plans in Use</h2>
+            </div>
+            <div class="pm-card__body">
+                @foreach (var plan in Model.PlanBreakdown)
+                {
+                    <div class="d-flex justify-content-between py-2 border-bottom">
+                        <span>@plan.Plan</span>
+                        <strong>@plan.Count</strong>
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-7">
+        <div class="pm-card">
+            <div class="pm-card__header pm-flex-between">
+                <h2 class="pm-card__title">Recent Companies</h2>
+                <a class="pm-btn pm-btn--link" asp-action="Companies">View all</a>
+            </div>
+            <div class="pm-card__body pm-table-wrap">
+                <table class="pm-table">
+                    <thead>
+                        <tr>
+                            <th>Company</th>
+                            <th>Plan</th>
+                            <th>Status</th>
+                            <th></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var company in Model.RecentCompanies)
+                        {
+                            <tr>
+                                <td>
+                                    <strong>@company.CompanyName</strong>
+                                    <div class="small pm-muted">@company.CompanyEmail</div>
+                                </td>
+                                <td>@company.SubscriptionPlan</td>
+                                <td>@company.SubscriptionStatus</td>
+                                <td>
+                                    <a class="pm-btn pm-btn--ghost pm-btn--sm" asp-action="CompanyDetail" asp-route-id="@company.CompanyId">Open</a>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="pm-actions mt-4">
+    <a class="pm-btn pm-btn--primary" asp-action="Technicians" asp-route-pendingOnly="true">Review Pending Technicians (@Model.PendingTechnicians)</a>
+    @if (Model.PendingBankTransfers > 0)
+    {
+        <a class="pm-btn pm-btn--primary" asp-action="PendingPayouts">Process Bank Transfers (@Model.PendingBankTransfers)</a>
+    }
+    <a class="pm-btn pm-btn--secondary" asp-action="Companies">Manage Companies</a>
+</div>

@@ -1,0 +1,68 @@
+@page
+@{
+    ViewData["Title"] = "Access Denied";
+    Layout = "/Views/Shared/_AuthLayout.cshtml";
+}
+
+<header class="auth-topbar">
+    <nav class="auth-topbar-inner" aria-label="Primary navigation">
+        <a class="auth-topbar-brand" asp-area="" asp-controller="Home" asp-action="Index">ZamMaintain</a>
+        <div class="auth-topbar-nav">
+            <a class="auth-topbar-link" href="#">Platform</a>
+            <a class="auth-topbar-link" href="#">Pricing</a>
+            <a class="auth-topbar-link" href="#">Enterprise</a>
+            <a class="auth-topbar-link" href="#">Resources</a>
+        </div>
+        <div class="auth-topbar-actions">
+            <a class="auth-topbar-link" href="/Identity/Account/Login">Log In</a>
+            <a class="auth-topbar-button" href="/Identity/Account/RegisterCompany">Request Demo</a>
+        </div>
+    </nav>
+</header>
+
+<main class="auth-denied-main">
+    <section class="auth-denied-card" aria-labelledby="access-denied-title">
+        <span class="material-symbols-outlined auth-denied-icon" aria-hidden="true">lock_reset</span>
+
+        <h1 id="access-denied-title" class="auth-denied-title">Access Denied</h1>
+        <p class="auth-denied-text">
+            You do not have permission to access this page. Please return to your dashboard or contact your property administrator if you believe this is a mistake.
+        </p>
+
+        <div class="auth-action-row">
+            <a class="auth-inline-button" asp-area="" asp-controller="Home" asp-action="Index">
+                <span class="material-symbols-outlined" aria-hidden="true">dashboard</span>
+                Return to Dashboard
+            </a>
+
+            <form method="post" action="/Identity/Account/Logout">
+                @Html.AntiForgeryToken()
+                <button class="auth-secondary-button" type="submit">
+                    <span class="material-symbols-outlined" aria-hidden="true">logout</span>
+                    Logout
+                </button>
+            </form>
+        </div>
+
+        <div class="auth-logo-strip" aria-hidden="true">
+            <span class="auth-logo-mark"><span class="material-symbols-outlined">domain</span></span>
+            <span class="auth-logo-mark"><span class="material-symbols-outlined">apartment</span></span>
+            <span class="auth-logo-mark"><span class="material-symbols-outlined">verified_user</span></span>
+        </div>
+    </section>
+</main>
+
+<footer class="auth-footer">
+    <div class="auth-footer-inner">
+        <div class="auth-footer-brand">
+            <span class="auth-footer-logo">ZamMaintain</span>
+            <span>&copy; 2026 ZamMaintain Enterprise. All rights reserved.</span>
+        </div>
+        <nav class="auth-footer-nav" aria-label="Footer links">
+            <a class="auth-footer-link" href="#">Privacy Policy</a>
+            <a class="auth-footer-link" href="#">Terms of Service</a>
+            <a class="auth-footer-link" href="#">Security</a>
+            <a class="auth-footer-link" href="#">Contact Support</a>
+        </nav>
+    </div>
+</footer>

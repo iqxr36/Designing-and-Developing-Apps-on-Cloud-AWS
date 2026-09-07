@@ -1,0 +1,93 @@
+@{
+    ViewData["Title"] = "Terms of Service";
+    Layout = "~/Views/Shared/_LandingLayout.cshtml";
+}
+
+<header class="legal-nav">
+    <div class="legal-nav__inner">
+        <a class="landing-brand" asp-area="" asp-controller="Home" asp-action="Index" aria-label="ZamMaintain home">
+            <img src="~/images/brand/zammaintain-logo.png" alt="ZamMaintain Logo" style="height: 70px;" />
+            <span>ZamMaintain</span>
+        </a>
+
+        <div class="legal-nav__actions">
+            <a class="landing-btn landing-btn--outline" asp-area="" asp-controller="Home" asp-action="Index">Home</a>
+            <a class="landing-btn landing-btn--primary" asp-area="Identity" asp-page="/Account/Login">Login</a>
+        </div>
+    </div>
+</header>
+
+<main class="legal-main">
+    <section class="legal-hero">
+        <div class="landing-container">
+            <span class="landing-section__eyebrow">ZamMaintain Legal</span>
+            <h1>Terms of Service</h1>
+            <p>The rules for using ZamMaintain to manage property maintenance, communication, subscriptions, and service payments.</p>
+            <span class="legal-updated">Last updated: July 3, 2026</span>
+        </div>
+    </section>
+
+    <section class="legal-section">
+        <div class="legal-document">
+            <article class="legal-block">
+                <h2>1. Use of the Platform</h2>
+                <p>ZamMaintain provides tools for property companies, administrators, managers, tenants, technicians, and platform administrators to coordinate maintenance workflows. Users agree to use the platform only for lawful property operations and related communication.</p>
+            </article>
+
+            <article class="legal-block">
+                <h2>2. Accounts and Responsibilities</h2>
+                <p>Users are responsible for keeping login credentials secure and for the activity performed under their accounts. Company administrators are responsible for creating appropriate users, assigning roles, and keeping organization records accurate.</p>
+            </article>
+
+            <article class="legal-block">
+                <h2>3. Maintenance Requests and Evidence</h2>
+                <p>Requests, issue photos, completion proof, technician notes, and feedback should be accurate and relevant. ZamMaintain may preserve request history, assignment records, status updates, and audit logs for operational accountability.</p>
+            </article>
+
+            <article class="legal-block">
+                <h2>4. Payments and Subscriptions</h2>
+                <p>Subscription and service payment flows may rely on third-party payment providers. Payment availability, checkout behavior, invoice completion, and payout timing can depend on provider rules, bank processing, and verification requirements.</p>
+            </article>
+
+            <article class="legal-block">
+                <h2>5. Technician Participation</h2>
+                <p>Technicians may be required to provide accurate profile, specialization, service area, document, and payout information. Platform administrators may approve, reject, suspend, or review technician access based on operational requirements.</p>
+            </article>
+
+            <article class="legal-block">
+                <h2>6. Availability and Changes</h2>
+                <p>We aim to keep the service reliable, but features may be updated, interrupted, or changed for maintenance, security, compliance, or product improvement. Continued use of the service means accepting the current terms.</p>
+            </article>
+
+            <article class="legal-block">
+                <h2>7. Contact</h2>
+                <p>For service questions, contact <a href="mailto:support@zammaintain.com">support@zammaintain.com</a>.</p>
+            </article>
+        </div>
+    </section>
+</main>
+
+<footer class="landing-footer" id="contact">
+    <div class="landing-footer__inner">
+        <div class="landing-footer__brand">
+            <img class="landing-footer__logo" src="~/images/brand/zammaintain-logo.png" alt="ZamMaintain Logo" />
+            <span>&copy; 2026 ZamMaintain Enterprise. All rights reserved.</span>
+        </div>
+
+        <div class="landing-footer__nav" aria-label="Footer links">
+            <div class="landing-footer__contact">
+                <span class="landing-footer__link landing-footer__link--static">
+                    <span class="material-symbols-outlined" aria-hidden="true">mail</span> support@zammaintain.com
+                </span>
+                <span class="landing-footer__link landing-footer__link--static">
+                    <span class="material-symbols-outlined" aria-hidden="true">call</span> +601163749281
+                </span>
+            </div>
+
+            <div class="landing-footer__legal">
+                <a class="landing-footer__link" asp-area="" asp-controller="Home" asp-action="Privacy">Privacy Policy</a>
+                <a class="landing-footer__link" asp-area="" asp-controller="Home" asp-action="Terms">Terms of Service</a>
+            </div>
+        </div>
+    </div>
+</footer>

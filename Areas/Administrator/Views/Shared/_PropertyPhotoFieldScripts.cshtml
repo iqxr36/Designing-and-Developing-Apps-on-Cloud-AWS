@@ -1,0 +1,106 @@
+<script>
+    (function () {
+        var fileInput = document.getElementById('property-photo-upload');
+        var preview = document.getElementById('property-photo-preview');
+        var filename = document.getElementById('property-photo-filename');
+        var errorEl = document.getElementById('property-photo-validation-error');
+        var form = fileInput ? fileInput.closest('form') : null;
+        if (!fileInput) {
+            return;
+        }
+
+        var maxSize = 10 * 1024 * 1024;
+        var allowedExt = ['.jpg', '.jpeg', '.png', '.gif', '.webp'];
+        var allowedMime = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
+
+        function ext(name) {
+            var i = name.lastIndexOf('.');
+            return i < 0 ? '' : name.substring(i).toLowerCase();
+        }
+
+        function validate(file) {
+            if (!file) {
+                return null;
+            }
+            if (!file.size) {
+                return 'Property photo cannot be empty.';
+            }
+            if (file.size > maxSize) {
+                return 'Property photo must be 10MB or smaller.';
+            }
+            var e = ext(file.name || '');
+            if (!e || allowedExt.indexOf(e) === -1) {
+                return 'Please upload a JPG, PNG, GIF, or WebP image.';
+            }
+            if (file.type && allowedMime.indexOf(String(file.type).toLowerCase()) === -1) {
+                return 'Please upload a JPG, PNG, GIF, or WebP image.';
+            }
+            return null;
+        }
+
+        function showError(msg) {
+            if (!errorEl) {
+                if (msg) {
+                    window.alert(msg);
+                }
+                return;
+            }
+            errorEl.textContent = msg || '';
+            errorEl.hidden = !msg;
+        }
+
+        function clearPreview() {
+            if (preview) {
+                preview.removeAttribute('src');
+                preview.style.display = 'none';
+            }
+            if (filename) {
+                filename.style.display = 'none';
+                filename.textContent = '';
+            }
+        }
+
+        fileInput.addEventListener('change', function () {
+            var file = fileInput.files && fileInput.files[0];
+            if (!file) {
+                showError('');
+                clearPreview();
+                return;
+            }
+
+            var err = validate(file);
+            if (err) {
+                showError(err);
+                fileInput.value = '';
+                clearPreview();
+                return;
+            }
+
+            showError('');
+            if (preview) {
+                preview.src = URL.createObjectURL(file);
+                preview.style.display = 'block';
+            }
+            if (filename) {
+                filename.textContent = 'Selected: ' + file.name;
+                filename.style.display = 'block';
+            }
+        });
+
+        if (form) {
+            form.addEventListener('submit', function (event) {
+                var file = fileInput.files && fileInput.files[0];
+                if (!file) {
+                    return;
+                }
+                var err = validate(file);
+                if (err) {
+                    event.preventDefault();
+                    showError(err);
+                    fileInput.value = '';
+                    clearPreview();
+                }
+            });
+        }
+    })();
+</script>

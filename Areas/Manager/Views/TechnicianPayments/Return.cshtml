@@ -1,0 +1,51 @@
+@model CloudMVCApplication.Models.TechnicianPayment
+@{
+    Layout = "~/Areas/Manager/Views/Shared/_ManagerLayout.cshtml";
+    ViewData["Title"] = "Technician Payment Status";
+    var statusMessage = Model.PaymentStatus switch
+    {
+        CloudMVCApplication.Models.TechnicianPaymentStatuses.Paid => "Technician payment completed.",
+        CloudMVCApplication.Models.TechnicianPaymentStatuses.Failed or CloudMVCApplication.Models.TechnicianPaymentStatuses.Expired => "Payment failed or expired.",
+        _ => "Payment is being verified."
+    };
+}
+
+<div class="pm-page-header">
+    <h1 class="pm-page-title">Technician Payment Status</h1>
+    <p class="pm-page-lead">@statusMessage</p>
+</div>
+
+<div class="pm-card">
+    <div class="pm-card__body">
+        <div class="row g-3">
+            <div class="col-md-6">
+                <div class="pm-label">Request</div>
+                <p class="mb-0"><strong>@Model.MaintenanceRequest.Title</strong></p>
+                <p class="pm-muted mb-0">REQ-@Model.MaintenanceRequestId.ToString("0000")</p>
+            </div>
+            <div class="col-md-6">
+                <div class="pm-label">Technician</div>
+                <p class="mb-0"><strong>@Model.Technician.User.FullName</strong></p>
+            </div>
+            <div class="col-md-3">
+                <div class="pm-label">Status</div>
+                <span class="pm-badge @(Model.PaymentStatus == "Paid" ? "pm-badge--avail" : Model.PaymentStatus == "Failed" ? "pm-badge--high" : "pm-badge--pending")">@Model.PaymentStatus</span>
+            </div>
+            <div class="col-md-3">
+                <div class="pm-label">Gross amount</div>
+                <p class="mb-0"><strong>@Model.GrossAmount.ToString("C")</strong></p>
+            </div>
+            <div class="col-md-3">
+                <div class="pm-label">Commission</div>
+                <p class="mb-0"><strong>@Model.PlatformCommissionAmount.ToString("C")</strong></p>
+            </div>
+            <div class="col-md-3">
+                <div class="pm-label">Technician net</div>
+                <p class="mb-0"><strong>@Model.TechnicianNetAmount.ToString("C")</strong></p>
+            </div>
+        </div>
+        <div class="pm-actions border-top pt-3 mt-3" style="border-color:var(--pm-border)">
+            <a class="pm-btn pm-btn--primary" asp-area="Manager" asp-controller="Manager" asp-action="RequestDetails" asp-route-id="@Model.MaintenanceRequestId">Back to request</a>
+        </div>
+    </div>
+</div>

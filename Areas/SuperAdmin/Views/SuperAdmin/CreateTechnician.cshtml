@@ -1,0 +1,79 @@
+@model CloudMVCApplication.ViewModels.SuperAdminCreateTechnicianViewModel
+@{
+    ViewData["Title"] = "Add Technician";
+}
+
+<div class="pm-page-header pm-flex-between">
+    <div>
+        <h1 class="pm-page-title">Add Technician</h1>
+        <p class="pm-page-lead">Create an active technician account ready for work assignment.</p>
+    </div>
+    <a class="pm-btn pm-btn--secondary" asp-action="Technicians">Back to technicians</a>
+</div>
+
+<div class="pm-card">
+    <div class="pm-card__body">
+        <form asp-action="CreateTechnician" method="post" enctype="multipart/form-data">
+            @Html.AntiForgeryToken()
+            <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
+
+            <div class="row g-3 mb-4">
+                <div class="col-md-6">
+                    <label class="pm-label" asp-for="FullName"></label>
+                    <input class="pm-input" asp-for="FullName" />
+                    <span class="text-danger" asp-validation-for="FullName"></span>
+                </div>
+                <div class="col-md-6">
+                    <label class="pm-label" asp-for="Email"></label>
+                    <input class="pm-input" asp-for="Email" />
+                    <span class="text-danger" asp-validation-for="Email"></span>
+                </div>
+                <div class="col-md-6">
+                    <label class="pm-label" asp-for="PhoneNumber"></label>
+                    <input class="pm-input" asp-for="PhoneNumber" />
+                    <span class="text-danger" asp-validation-for="PhoneNumber"></span>
+                </div>
+                <div class="col-md-6">
+                    <label class="pm-label" asp-for="Specialization"></label>
+                    <input class="pm-input" asp-for="Specialization" />
+                    <span class="text-danger" asp-validation-for="Specialization"></span>
+                </div>
+                <div class="col-md-6">
+                    <label class="pm-label" asp-for="ExperienceYears"></label>
+                    <input class="pm-input" asp-for="ExperienceYears" />
+                    <span class="text-danger" asp-validation-for="ExperienceYears"></span>
+                </div>
+                <div class="col-md-6">
+                    <label class="pm-label" asp-for="ServiceArea"></label>
+                    <input class="pm-input" asp-for="ServiceArea" />
+                    <span class="text-danger" asp-validation-for="ServiceArea"></span>
+                </div>
+                <div class="col-md-6">
+                    <label class="pm-label" asp-for="Password"></label>
+                    <input class="pm-input" asp-for="Password" />
+                    <span class="text-danger" asp-validation-for="Password"></span>
+                </div>
+                <div class="col-md-6">
+                    <label class="pm-label" asp-for="ConfirmPassword"></label>
+                    <input class="pm-input" asp-for="ConfirmPassword" />
+                    <span class="text-danger" asp-validation-for="ConfirmPassword"></span>
+                </div>
+                <div class="col-12">
+                    <label class="pm-label" asp-for="Certificates"></label>
+                    <input class="pm-input" asp-for="Certificates" type="file" multiple accept=".pdf,.doc,.docx,.jpg,.jpeg,.png" />
+                    <div class="pm-muted small mt-1">Optional. PDF, DOC, DOCX, JPG, or PNG up to 10MB each.</div>
+                    <span class="text-danger" asp-validation-for="Certificates"></span>
+                </div>
+            </div>
+
+            <div class="d-flex gap-2">
+                <button type="submit" class="pm-btn pm-btn--primary">Create technician</button>
+                <a class="pm-btn pm-btn--secondary" asp-action="Technicians">Cancel</a>
+            </div>
+        </form>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

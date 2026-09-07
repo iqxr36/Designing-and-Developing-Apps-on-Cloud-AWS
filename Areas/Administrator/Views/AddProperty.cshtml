@@ -1,0 +1,86 @@
+@model CloudMVCApplication.ViewModels.AreaDashboardViewModel
+@{
+    Layout = "~/Areas/Administrator/Views/Shared/_AdministratorLayout.cshtml";
+    ViewData["Title"] = "Add Property";
+    var remainingUnits = ViewBag.RemainingUnits as int? ?? 0;
+}
+
+<div class="pm-flex-between pm-page-header">
+    <div>
+        <h1 class="pm-page-title">Add New Property</h1>
+        <p class="pm-page-lead">Register a new property in your portfolio.</p>
+    </div>
+    <div class="d-flex gap-2 flex-wrap">
+        <a class="pm-btn pm-btn--secondary" asp-controller="Administrator" asp-action="Properties">
+            <span class="material-symbols-outlined">arrow_back</span> Back to Properties
+        </a>
+    </div>
+</div>
+
+<partial name="_SubscriptionUsageBanner" />
+
+<div class="pm-card">
+    <div class="pm-card__header">
+        <h3 class="pm-card__title">Property Information</h3>
+    </div>
+    <form asp-controller="Administrator" asp-action="AddProperty" method="post" enctype="multipart/form-data">
+        @Html.AntiForgeryToken()
+        <div class="pm-card__body">
+            <div asp-validation-summary="All" class="pm-validation-summary"></div>
+        <div class="row g-3">
+            <div class="col-md-6 mb-3">
+                <label class="pm-label pm-label--required" for="propertyName">Property Name</label>
+                <input id="propertyName" type="text" name="PropertyName" class="pm-input" placeholder="Enter property name" required />
+            </div>
+            <div class="col-md-6 mb-3">
+                <label class="pm-label pm-label--required" for="propertyType">Property Type</label>
+                <select id="propertyType" name="PropertyType" class="pm-select" required>
+                    <option value="">Select type</option>
+                    <option value="Commercial Office">Commercial Office</option>
+                    <option value="Residential Building">Residential Building</option>
+                    <option value="Townhouse Community">Townhouse Community</option>
+                    <option value="Industrial">Industrial</option>
+                </select>
+            </div>
+            <div class="col-12 mb-3">
+                <label class="pm-label pm-label--required" for="address">Street Address</label>
+                <input id="address" type="text" name="Address" class="pm-input" placeholder="123 Main Street" autocomplete="street-address" required />
+            </div>
+            @{ ViewData["FullWidth"] = true; }
+            <partial name="_PropertyPhotoField" model="@((string?)null)" />
+            <div class="col-md-6 mb-3">
+                <label class="pm-label pm-label--required" for="city">City</label>
+                <input id="city" type="text" name="City" class="pm-input" placeholder="City" autocomplete="address-level2" required />
+            </div>
+            <div class="col-md-6 mb-3">
+                <label class="pm-label" for="status">Status</label>
+                <select id="status" name="Status" class="pm-select">
+                    <option value="Active">Active</option>
+                    <option value="Inactive">Inactive</option>
+                </select>
+            </div>
+            <div class="col-md-6 mb-3">
+                <label class="pm-label" for="initialUnitCount">Total Units</label>
+                <input type="number"
+                       id="initialUnitCount"
+                       name="InitialUnitCount"
+                       class="pm-input"
+                       value="0"
+                       min="0"
+                       max="@remainingUnits"
+                       placeholder="0" />
+                <p class="pm-field-hint">Creates vacant units on this property. You can add up to @remainingUnits more units on your plan.</p>
+            </div>
+        </div>
+        </div>
+        <div class="pm-card__body border-top d-flex gap-2 justify-content-end pt-3">
+            <a class="pm-btn pm-btn--secondary" asp-controller="Administrator" asp-action="Properties">Cancel</a>
+            <button type="submit" class="pm-btn pm-btn--primary">Add Property</button>
+        </div>
+    </form>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+    <partial name="_PropertyPhotoFieldScripts" />
+}

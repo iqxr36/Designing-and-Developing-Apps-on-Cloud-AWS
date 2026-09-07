@@ -1,0 +1,186 @@
+@model CloudMVCApplication.ViewModels.AreaDashboardViewModel
+@{
+    Layout = "~/Areas/Administrator/Views/Shared/_AdministratorLayout.cshtml";
+    ViewData["Title"] = "Maintenance Requests";
+
+    var openRequests = Model.Requests.Where(r => r.Status != "Completed").ToList();
+    var urgentRequests = Model.Requests.Where(r => r.Priority is "Urgent" or "High" or "Critical").ToList();
+    var completedRequests = Model.Requests.Where(r => r.Status == "Completed").ToList();
+}
+
+<div class="pm-flex-between pm-page-header">
+    <div>
+        <h1 class="pm-page-title">Request Tracking</h1>
+        <p class="pm-page-lead">Monitor and manage all maintenance requests across your portfolio.</p>
+    </div>
+    <div class="d-flex gap-2 flex-wrap">
+        <a class="pm-btn pm-btn--primary" asp-controller="Administrator" asp-action="CreateRequest">
+            <span class="material-symbols-outlined">add</span> Create Request
+        </a>
+        <a class="pm-btn pm-btn--secondary" asp-controller="Administrator" asp-action="MaintenanceBoard">
+            <span class="material-symbols-outlined">view_kanban</span> Board View
+        </a>
+    </div>
+</div>
+
+@if (TempData["SuccessMessage"] is string successMessage)
+{
+    <div class="pm-card mb-3" style="border-left: 4px solid #0a5c2e;">
+        <div class="pm-card__body" style="color: #0a5c2e; font-weight: 600;">@successMessage</div>
+    </div>
+}
+
+<div class="pm-grid pm-grid--stats">
+    <div class="pm-stat">
+        <div style="display: flex; justify-content: space-between; align-items: center; width: 100%;">
+            <div>
+                <span class="pm-stat__label">Open Requests</span>
+                <h3 class="pm-stat__value">@openRequests.Count</h3>
+            </div>
+            <div class="pm-stat__icon" style="background: #e1e1c9; color: #474836;">
+                <span class="material-symbols-outlined">assignment</span>
+            </div>
+        </div>
+    </div>
+    <div class="pm-stat">
+        <div style="display: flex; justify-content: space-between; align-items: center; width: 100%;">
+            <div>
+                <span class="pm-stat__label">Critical / Urgent</span>
+                <h3 class="pm-stat__value" style="color: var(--pm-primary);">@urgentRequests.Count</h3>
+            </div>
+            <div class="pm-stat__icon" style="background: #ffdad6; color: #ba1a1a;">
+                <span class="material-symbols-outlined">warning</span>
+            </div>
+        </div>
+    </div>
+    <div class="pm-stat">
+        <div style="display: flex; justify-content: space-between; align-items: center; width: 100%;">
+            <div>
+                <span class="pm-stat__label">Completed Requests</span>
+                <h3 class="pm-stat__value">@completedRequests.Count</h3>
+            </div>
+            <div class="pm-stat__icon" style="background: #e1e3e4; color: #191c1d;">
+                <span class="material-symbols-outlined">task_alt</span>
+            </div>
+        </div>
+    </div>
+</div>
+
+<form class="row g-3 align-items-end mb-3" asp-controller="Administrator" asp-action="Maintenance" method="get">
+    <span class="pm-muted d-flex align-items-center gap-2">
+        <span class="material-symbols-outlined">filter_list</span> Filters:
+    </span>
+    <select name="priority" class="pm-select">
+        <option value="">All Priorities</option>
+        <option value="Urgent" selected="@(ViewBag.Priority == "Urgent")">Urgent</option>
+        <option value="High" selected="@(ViewBag.Priority == "High")">High</option>
+        <option value="Medium" selected="@(ViewBag.Priority == "Medium")">Medium</option>
+        <option value="Low" selected="@(ViewBag.Priority == "Low")">Low</option>
+    </select>
+    <select name="status" class="pm-select">
+        <option value="">All Statuses</option>
+        <option value="Pending" selected="@(ViewBag.Status == "Pending")">Pending</option>
+        <option value="Assigned" selected="@(ViewBag.Status == "Assigned")">Assigned</option>
+        <option value="In Progress" selected="@(ViewBag.Status == "In Progress")">In Progress</option>
+        <option value="Completed" selected="@(ViewBag.Status == "Completed")">Completed</option>
+    </select>
+    <select name="technicianId" class="pm-select">
+        <option value="">All Technicians</option>
+        @foreach (var technician in Model.Technicians)
+        {
+            <option value="@technician.TechnicianId" selected="@(ViewBag.TechnicianId == technician.TechnicianId)">@technician.FullName</option>
+        }
+    </select>
+    <select name="propertyId" class="pm-select">
+        <option value="">All Properties</option>
+        @foreach (var property in Model.Properties)
+        {
+            <option value="@property.PropertyId" selected="@(ViewBag.PropertyId == property.PropertyId)">@property.Name</option>
+        }
+    </select>
+    <button type="submit" class="pm-btn pm-btn--secondary">Apply</button>
+    <a asp-action="AdvancedFilters" class="pm-btn pm-btn--link">Advanced filters</a>
+</form>
+
+<div class="row g-3">
+    <div>
+        <div class="pm-flex-between d-flex align-items-center pm-mb-2" style="padding: 0 4px;">
+            <h3 style="font-size: 18px; font-weight: 600; margin: 0;">Open</h3>
+            <span class="pm-badge pm-badge--pending">@Model.Requests.Count(r => r.Status == "Pending")</span>
+        </div>
+        @foreach (var request in Model.Requests.Where(r => r.Status == "Pending"))
+        {
+            <a class="pm-card" asp-controller="Administrator" asp-action="RequestDetail" asp-route-id="@request.RequestId" style="border-left: 4px solid var(--pm-primary); text-decoration: none; color: inherit; display: block;">
+                <div class="pm-card__body">
+                    <div class="pm-flex-between d-flex pm-mb-2">
+                        <span class="pm-badge pm-badge--urgent">@request.Priority</span>
+                        <span class="pm-muted small">@request.DisplayId</span>
+                    </div>
+                    <h4 style="font-size: 16px; font-weight: 600; margin: 0 0 8px;">@request.Title</h4>
+                    <p class="pm-muted small d-flex align-items-center gap-2" style="margin: 0 0 4px;">
+                        <span class="material-symbols-outlined" style="font-size: 16px;">domain</span>
+                        @request.PropertyName - Unit @request.UnitNumber
+                    </p>
+                    <p class="pm-muted small d-flex align-items-center gap-2" style="margin: 0;">
+                        <span class="material-symbols-outlined" style="font-size: 16px;">calendar_today</span>
+                        @request.CreatedAt.ToLocalTime().ToString("MMM d, h:mm tt")
+                    </p>
+                </div>
+            </a>
+        }
+    </div>
+    <div>
+        <div class="pm-flex-between d-flex align-items-center pm-mb-2" style="padding: 0 4px;">
+            <h3 style="font-size: 18px; font-weight: 600; margin: 0;">In Progress</h3>
+            <span class="pm-badge pm-badge--pending">@Model.Requests.Count(r => r.Status == "Assigned" || r.Status == "In Progress")</span>
+        </div>
+        @foreach (var request in Model.Requests.Where(r => r.Status == "Assigned" || r.Status == "In Progress"))
+        {
+            <a class="pm-card" asp-controller="Administrator" asp-action="RequestDetail" asp-route-id="@request.RequestId" style="border-left: 4px solid #5e604d; text-decoration: none; color: inherit; display: block;">
+                <div class="pm-card__body">
+                    <div class="pm-flex-between d-flex pm-mb-2">
+                        <span class="pm-badge pm-badge--inprogress">@request.Priority</span>
+                        <span class="pm-muted small">@request.DisplayId</span>
+                    </div>
+                    <h4 style="font-size: 16px; font-weight: 600; margin: 0 0 8px;">@request.Title</h4>
+                    <p class="pm-muted small d-flex align-items-center gap-2" style="margin: 0 0 4px;">
+                        <span class="material-symbols-outlined" style="font-size: 16px;">domain</span>
+                        @request.PropertyName - Unit @request.UnitNumber
+                    </p>
+                    <div style="border-top: 1px solid var(--pm-outline-variant); margin-top: 16px; padding-top: 12px;">
+                        <div class="d-flex align-items-center gap-2">
+                            <div style="width: 28px; height: 28px; border-radius: 999px; background: #e1e3e4; display: flex; align-items: center; justify-content: center; font-size: 10px; font-weight: 700;">@((request.TechnicianName ?? "NA").Split(' ', StringSplitOptions.RemoveEmptyEntries).Select(p => p[0]).Take(2).Aggregate("", (a, c) => a + c).ToUpperInvariant())</div>
+                            <span class="small">@(request.TechnicianName ?? "Unassigned")</span>
+                        </div>
+                    </div>
+                </div>
+            </a>
+        }
+    </div>
+    <div>
+        <div class="pm-flex-between d-flex align-items-center pm-mb-2" style="padding: 0 4px;">
+            <h3 style="font-size: 18px; font-weight: 600; margin: 0;">Completed</h3>
+            <span class="pm-badge pm-badge--pending">@completedRequests.Count</span>
+        </div>
+        @foreach (var request in completedRequests)
+        {
+            <a class="pm-card" asp-controller="Administrator" asp-action="RequestDetail" asp-route-id="@request.RequestId" style="border-left: 4px solid #1d2736; opacity: 0.8; text-decoration: none; color: inherit; display: block;">
+                <div class="pm-card__body">
+                    <div class="pm-flex-between d-flex pm-mb-2">
+                        <span class="pm-badge pm-badge--completed">@request.Priority</span>
+                        <span class="pm-muted small">@request.DisplayId</span>
+                    </div>
+                    <h4 style="font-size: 16px; font-weight: 600; margin: 0 0 8px; text-decoration: line-through; color: var(--pm-on-surface-variant);">@request.Title</h4>
+                    <p class="pm-muted small d-flex align-items-center gap-2" style="margin: 0 0 4px;">
+                        <span class="material-symbols-outlined" style="font-size: 16px;">domain</span>
+                        @request.PropertyName - Unit @request.UnitNumber
+                    </p>
+                    <p class="pm-muted small d-flex align-items-center gap-2" style="margin: 0;">
+                        <span class="material-symbols-outlined" style="font-size: 16px;">check_circle</span>
+                        Resolved @request.CreatedAt.ToLocalTime().ToString("MMM d")
+                    </p>
+                </div>
+            </a>
+        }
+    </div>
+</div>

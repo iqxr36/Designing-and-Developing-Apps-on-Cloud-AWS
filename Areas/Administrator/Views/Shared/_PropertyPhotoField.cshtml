@@ -1,0 +1,30 @@
+@model string?
+
+<div class="mb-3" style="@(ViewData["FullWidth"] as bool? == true ? "grid-column: span 2;" : null)">
+    <label class="pm-label">Property Photo</label>
+    <div class="d-flex gap-2" style="align-items: stretch;">
+        <input type="text"
+               name="ImageUrl"
+               id="propertyImageUrl"
+               class="pm-input"
+               style="flex: 1;"
+               value="@(Model ?? string.Empty)"
+               placeholder="https://example.com/property-photo.jpg" />
+        <input type="file"
+               name="PropertyPhoto"
+               accept="image/*"
+               style="display: none;"
+               id="property-photo-upload" />
+        <label for="property-photo-upload" class="pm-btn pm-btn--secondary" style="cursor: pointer;">
+            <span class="material-symbols-outlined">cloud_upload</span> Upload Photo
+        </label>
+    </div>
+    <p id="property-photo-filename" class="pm-muted small" style="margin-top: 4px; display: none;"></p>
+    <p id="property-photo-validation-error" class="small" style="margin-top: 4px; color: #ba1a1a;" hidden></p>
+    <p class="pm-muted small" style="margin-top: 4px;">Paste an image URL or upload a photo (JPG, PNG, GIF, or WebP up to 10MB).</p>
+    <img id="property-photo-preview"
+         alt="Property photo preview"
+         class="pm-photo-preview mt-3"
+         src="@(string.IsNullOrWhiteSpace(Model) ? null : Model)"
+         style="max-width: 320px; max-height: 180px; @(string.IsNullOrWhiteSpace(Model) ? "display: none;" : null)" />
+</div>

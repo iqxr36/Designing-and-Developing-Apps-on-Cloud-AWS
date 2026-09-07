@@ -1,0 +1,15 @@
+@model CloudMVCApplication.ViewModels.ChatViewModel
+@{
+    Layout = "~/Areas/Manager/Views/Shared/_ManagerLayout.cshtml";
+    ViewData["Title"] = "Chat";
+    ViewData["SendUrl"] = Url.Action("Send", "Manager", new { area = "Manager", id = Model.ConversationId })!;
+}
+
+<div class="mb-3">
+    <a class="pm-link-back" asp-area="Manager" asp-controller="Manager" asp-action="Messages">
+        <span class="material-symbols-outlined" style="font-size:18px">arrow_back</span> Back to Messages
+    </a>
+</div>
+
+<link rel="stylesheet" href="~/css/chat.css" asp-append-version="true" />
+@await Html.PartialAsync("~/Views/Shared/Messaging/_ChatRoom.cshtml", Model)

@@ -1,0 +1,118 @@
+@model CloudMVCApplication.ViewModels.AreaDashboardViewModel
+@{
+    Layout = "~/Areas/Administrator/Views/Shared/_AdministratorLayout.cshtml";
+    ViewData["Title"] = "Create Request";
+}
+
+<div class="pm-flex-between pm-page-header">
+    <div>
+        <h1 class="pm-page-title">Create Maintenance Request</h1>
+        <p class="pm-page-lead">Submit a new maintenance request for processing.</p>
+    </div>
+    <div class="d-flex gap-2 flex-wrap">
+        <a class="pm-btn pm-btn--secondary" asp-controller="Administrator" asp-action="Maintenance">
+            <span class="material-symbols-outlined">arrow_back</span> Back to Requests
+        </a>
+    </div>
+</div>
+
+<div class="pm-card">
+    <div class="pm-card__header">
+        <h3 class="pm-card__title">Request Details</h3>
+    </div>
+    <form asp-controller="Administrator" asp-action="CreateRequest" method="post">
+        @Html.AntiForgeryToken()
+        <div class="pm-card__body">
+        <div asp-validation-summary="All" class="pm-validation-summary"></div>
+        <div class="row g-3">
+            <div class="mb-3">
+                <label class="pm-label pm-label--required" for="propertyFilter">Property</label>
+                <select id="propertyFilter" class="pm-select" required>
+                    <option value="">Select property</option>
+                    @foreach (var property in Model.Properties)
+                    {
+                        <option value="@property.PropertyId">@property.Name</option>
+                    }
+                </select>
+                <p class="pm-field-hint">Choose the property first to filter the unit list.</p>
+            </div>
+            <div class="mb-3">
+                <label class="pm-label pm-label--required" for="unitId">Unit</label>
+                <select id="unitId" name="UnitId" class="pm-select" required>
+                    <option value="">Select unit</option>
+                    @foreach (var unit in Model.Units)
+                    {
+                        var propertyId = Model.Properties.FirstOrDefault(p => p.Name == unit.PropertyName)?.PropertyId;
+                        <option value="@unit.UnitId" data-property-id="@propertyId">@unit.PropertyName - Unit @unit.UnitNumber (@(unit.TenantName ?? "No tenant"))</option>
+                    }
+                </select>
+            </div>
+            <div class="mb-3">
+                <label class="pm-label pm-label--required" for="category">Category</label>
+                <select id="category" name="Category" class="pm-select" required>
+                    <option value="">Select category</option>
+                    <option value="HVAC">HVAC</option>
+                    <option value="Plumbing">Plumbing</option>
+                    <option value="Electrical">Electrical</option>
+                    <option value="Appliance">Appliance</option>
+                    <option value="Structural">Structural</option>
+                    <option value="Other">Other</option>
+                </select>
+            </div>
+            <div class="mb-3">
+                <label class="pm-label pm-label--required" for="priority">Priority</label>
+                <select id="priority" name="Priority" class="pm-select" required>
+                    <option value="">Select priority</option>
+                    <option value="Urgent">Urgent</option>
+                    <option value="High">High</option>
+                    <option value="Medium">Medium</option>
+                    <option value="Low">Low</option>
+                </select>
+            </div>
+        </div>
+        <div class="mb-3">
+            <label class="pm-label pm-label--required" for="title">Issue title</label>
+            <input id="title" type="text" name="Title" class="pm-input" placeholder="Brief description of the issue" maxlength="120" required />
+            <p class="pm-field-hint">Use a short title managers and technicians can scan quickly.</p>
+        </div>
+        <div class="mb-3">
+            <label class="pm-label pm-label--required" for="description">Detailed description</label>
+            <textarea id="description" name="Description" class="pm-textarea" rows="5" placeholder="Provide as much detail as possible about the issue..." required style="resize: vertical;"></textarea>
+            <p class="pm-field-hint">Add location details, symptoms, access notes, and when the issue started.</p>
+        </div>
+        <div class="mb-3">
+            <label class="pm-label" for="technicianId">Assign to</label>
+            <select id="technicianId" name="TechnicianId" class="pm-select">
+                <option value="">Leave unassigned</option>
+                @foreach (var technician in Model.Technicians)
+                {
+                    <option value="@technician.TechnicianId">@technician.FullName (@technician.Specialization)</option>
+                }
+            </select>
+            <p class="pm-field-hint">Leave this empty if a manager should assign the technician later.</p>
+        </div>
+        </div>
+        <div class="pm-card__body border-top d-flex gap-2 justify-content-end pt-3">
+            <a class="pm-btn pm-btn--secondary" asp-controller="Administrator" asp-action="Maintenance">Cancel</a>
+            <button type="submit" class="pm-btn pm-btn--primary">Submit Request</button>
+        </div>
+    </form>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+    <script>
+        (() => {
+            const property = document.getElementById('propertyFilter');
+            const units = document.querySelector('select[name="UnitId"]');
+            if (!property || !units) return;
+            property.addEventListener('change', () => {
+                const propertyId = property.value;
+                units.value = '';
+                for (const option of units.options) {
+                    option.hidden = option.value !== '' && option.dataset.propertyId !== propertyId;
+                }
+            });
+        })();
+    </script>
+}

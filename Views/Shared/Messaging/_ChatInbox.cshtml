@@ -1,0 +1,62 @@
+@model CloudMVCApplication.ViewModels.MessagingInboxViewModel
+
+<div class="chat-inbox">
+    @if (!Model.Conversations.Any())
+    {
+        <div class="chat-empty">No conversations yet. Chats are created when maintenance requests are submitted or technicians are assigned.</div>
+    }
+    else
+    {
+        <div class="table-responsive">
+            <table class="chat-inbox-table">
+                <thead>
+                    <tr>
+                        <th>Request</th>
+                        <th>Type</th>
+                        <th>With</th>
+                        <th>Last message</th>
+                        <th></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var item in Model.Conversations)
+                    {
+                        <tr data-conversation-id="@item.ConversationId">
+                            <td>
+                                <strong>@item.RequestDisplayId</strong>
+                                <div class="small text-muted">@item.RequestTitle</div>
+                            </td>
+                            <td>@item.TypeLabel</td>
+                            <td>@item.OtherPartyName</td>
+                            <td class="chat-inbox-preview" data-conversation-id="@item.ConversationId">
+                                @if (item.LastMessagePreview != null)
+                                {
+                                    <span>@(item.LastMessagePreview.Length > 60 ? item.LastMessagePreview[..60] + "..." : item.LastMessagePreview)</span>
+                                    @if (item.LastMessageAt.HasValue)
+                                    {
+                                        <div class="small text-muted">@item.LastMessageAt.Value.ToLocalTime().ToString("g")</div>
+                                    }
+                                }
+                                else
+                                {
+                                    <span class="text-muted">No messages yet</span>
+                                }
+                            </td>
+                            <td>
+                                @if (item.UnreadCount > 0)
+                                {
+                                    <span class="chat-unread-badge" data-conversation-id="@item.ConversationId">@item.UnreadCount</span>
+                                }
+                                <a class="btn btn-sm btn-primary ms-2"
+                                   asp-area="@ViewData["ChatArea"]"
+                                   asp-controller="@ViewData["ChatController"]"
+                                   asp-action="@ViewData["ChatAction"]"
+                                   asp-route-id="@item.ConversationId">Open</a>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    }
+</div>

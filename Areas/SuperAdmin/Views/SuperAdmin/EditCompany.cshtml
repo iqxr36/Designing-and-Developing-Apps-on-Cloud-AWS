@@ -1,0 +1,54 @@
+@model CloudMVCApplication.ViewModels.SuperAdminEditCompanyViewModel
+@{
+    ViewData["Title"] = "Edit Company";
+}
+
+<div class="pm-page-header pm-flex-between">
+    <div>
+        <h1 class="pm-page-title">Edit Company</h1>
+        <p class="pm-page-lead">Update company profile details.</p>
+    </div>
+    <a class="pm-btn pm-btn--secondary" asp-action="CompanyDetail" asp-route-id="@Model.CompanyId">Back to detail</a>
+</div>
+
+<div class="pm-card">
+    <div class="pm-card__body">
+        <form asp-action="EditCompany" method="post">
+            @Html.AntiForgeryToken()
+            <input type="hidden" asp-for="CompanyId" />
+            <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
+
+            <div class="row g-3 mb-4">
+                <div class="col-md-6">
+                    <label class="pm-label" asp-for="CompanyName"></label>
+                    <input class="pm-input" asp-for="CompanyName" />
+                    <span class="text-danger" asp-validation-for="CompanyName"></span>
+                </div>
+                <div class="col-md-6">
+                    <label class="pm-label" asp-for="CompanyEmail"></label>
+                    <input class="pm-input" asp-for="CompanyEmail" />
+                    <span class="text-danger" asp-validation-for="CompanyEmail"></span>
+                </div>
+                <div class="col-md-6">
+                    <label class="pm-label" asp-for="CompanyPhone"></label>
+                    <input class="pm-input" asp-for="CompanyPhone" />
+                    <span class="text-danger" asp-validation-for="CompanyPhone"></span>
+                </div>
+                <div class="col-12">
+                    <label class="pm-label" asp-for="CompanyAddress"></label>
+                    <textarea class="pm-input" asp-for="CompanyAddress" rows="2"></textarea>
+                    <span class="text-danger" asp-validation-for="CompanyAddress"></span>
+                </div>
+            </div>
+
+            <div class="d-flex gap-2">
+                <button type="submit" class="pm-btn pm-btn--primary">Save changes</button>
+                <a class="pm-btn pm-btn--secondary" asp-action="CompanyDetail" asp-route-id="@Model.CompanyId">Cancel</a>
+            </div>
+        </form>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

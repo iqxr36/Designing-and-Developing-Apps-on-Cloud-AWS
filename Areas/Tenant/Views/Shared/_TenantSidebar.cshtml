@@ -1,0 +1,54 @@
+@{
+    var currentController = ViewContext.RouteData.Values["controller"]?.ToString() ?? "";
+    var current = ViewContext.RouteData.Values["action"]?.ToString() ?? "";
+}
+<aside class="tenant-sidebar manager-sidebar pm-sidebar" aria-label="Tenant navigation">
+    <div class="pm-sidebar__brand">
+        <img class="pm-sidebar__brand-image" src="~/images/brand/zammaintain-logo.png" alt="ZamMaintain" asp-append-version="true" />
+    </div>
+    <nav class="pm-sidebar__nav">
+        <a class="pm-sidebar__link @(current == "Dashboard" ? "pm-sidebar__link--active" : null)" asp-area="Tenant" asp-controller="Tenant" asp-action="Dashboard">
+            <span class="material-symbols-outlined" aria-hidden="true">dashboard</span>
+            Dashboard
+        </a>
+        <a class="pm-sidebar__link @(current == "SubmitMaintenanceRequest" ? "pm-sidebar__link--active" : null)" asp-area="Tenant" asp-controller="Tenant" asp-action="SubmitMaintenanceRequest">
+            <span class="material-symbols-outlined" aria-hidden="true">add_circle</span>
+            Submit Request
+        </a>
+        <a class="pm-sidebar__link @(current == "TrackRequestStatus" || current == "RequestDetail" ? "pm-sidebar__link--active" : null)" asp-area="Tenant" asp-controller="Tenant" asp-action="TrackRequestStatus">
+            <span class="material-symbols-outlined" aria-hidden="true">track_changes</span>
+            Track Requests
+        </a>
+        <a class="pm-sidebar__link @(currentController == "Messages" ? "pm-sidebar__link--active" : null)" asp-area="Tenant" asp-controller="Messages" asp-action="Index">
+            <span class="material-symbols-outlined" aria-hidden="true">chat</span>
+            Messages
+        </a>
+        <a class="pm-sidebar__link @(current == "ViewUnitDetails" ? "pm-sidebar__link--active" : null)" asp-area="Tenant" asp-controller="Tenant" asp-action="ViewUnitDetails">
+            <span class="material-symbols-outlined" aria-hidden="true">home</span>
+            Unit Details
+        </a>
+        <a class="pm-sidebar__link @(current == "SubmitFeedback" ? "pm-sidebar__link--active" : null)" asp-area="Tenant" asp-controller="Tenant" asp-action="SubmitFeedback">
+            <span class="material-symbols-outlined" aria-hidden="true">rate_review</span>
+            Submit Feedback
+        </a>
+        <a class="pm-sidebar__link @(current == "Notifications" ? "pm-sidebar__link--active" : null)" asp-area="Tenant" asp-controller="Tenant" asp-action="Notifications">
+            <span class="material-symbols-outlined" aria-hidden="true">notifications</span>
+            Notifications
+        </a>
+        <a class="pm-sidebar__link @(current == "Profile" ? "pm-sidebar__link--active" : null)" asp-area="Tenant" asp-controller="Tenant" asp-action="Profile">
+            <span class="material-symbols-outlined" aria-hidden="true">account_circle</span>
+            Profile / Account Settings
+        </a>
+    </nav>
+    <div class="pm-sidebar__footer">
+        <form asp-area="Identity" asp-page="/Account/Logout" asp-route-returnUrl="@Url.Action("Index", "Home", new { area = "" })" method="post"
+              data-confirm-title="Log out?"
+              data-confirm-message="You will leave this tenant session and return to the home page."
+              data-confirm-action="Log out">
+            <button type="submit" class="pm-sidebar__link pm-sidebar__link--logout w-100 border-0 bg-transparent text-start">
+                <span class="material-symbols-outlined" aria-hidden="true">logout</span>
+                Logout
+            </button>
+        </form>
+    </div>
+</aside>

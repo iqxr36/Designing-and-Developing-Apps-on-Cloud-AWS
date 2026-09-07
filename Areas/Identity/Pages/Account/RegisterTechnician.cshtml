@@ -1,0 +1,490 @@
+@page
+@model CloudMVCApplication.Areas.Identity.Pages.Account.RegisterTechnicianModel
+@{
+    ViewData["Title"] = "Register as Technician";
+    Layout = "/Views/Shared/_AuthLayout.cshtml";
+}
+
+<header class="auth-topbar">
+    <nav class="auth-topbar-inner" aria-label="Primary navigation">
+        <a class="auth-topbar-brand" asp-area="" asp-controller="Home" asp-action="Index">
+            <img src="~/images/brand/zammaintain-logo.png" alt="ZamMaintain Logo" class="auth-logo-icon" style="height: 70px; width: auto;" />
+            <span>ZamMaintain</span>
+        </a>
+        <div class="auth-topbar-nav">
+            <a class="auth-topbar-link" href="/#about">About</a>
+            <a class="auth-topbar-link" href="/#services">Services</a>
+            <a class="auth-topbar-link" href="/#platform">Platform</a>
+            <a class="auth-topbar-link" href="/#contact">Contact</a>
+        </div>
+        <div class="auth-topbar-actions">
+            <a class="auth-topbar-link" href="/Identity/Account/Login">Log In</a>
+            <a class="auth-topbar-button" href="/Identity/Account/RegisterCompany">Request Demo</a>
+        </div>
+    </nav>
+</header>
+
+<main class="auth-public-main">
+    @if (Model.RegistrationSubmitted)
+    {
+        <section class="auth-success-card" aria-live="polite">
+            <span class="material-symbols-outlined auth-success-icon" aria-hidden="true">check_circle</span>
+            <h1 class="auth-success-title">Registration submitted successfully.</h1>
+            <p class="auth-success-text">
+                Your profile will be reviewed by our operational team. We'll notify you via email once your account is verified.
+            </p>
+            <a class="auth-topbar-button" asp-area="" asp-controller="Home" asp-action="Index">Back to Home</a>
+        </section>
+    }
+    else
+    {
+        <section class="auth-wide-card" aria-label="Technician registration form">
+            <div class="auth-centered-header">
+                <h1 class="auth-card-title">Register as Technician</h1>
+                <p class="auth-card-subtitle">Submit your profile to join the platform pool.</p>
+            </div>
+
+            <form class="auth-form" method="post" enctype="multipart/form-data">
+                <div asp-validation-summary="ModelOnly" class="auth-validation-summary" role="alert"></div>
+
+                <div class="auth-form-grid">
+                    <div class="auth-field">
+                        <label class="auth-label" asp-for="Input.FullName"></label>
+                        <input class="auth-input" asp-for="Input.FullName" autocomplete="name" placeholder="John Doe" />
+                        <span class="auth-validation-message" asp-validation-for="Input.FullName"></span>
+                    </div>
+
+                    <div class="auth-field">
+                        <label class="auth-label" asp-for="Input.Email"></label>
+                        <input class="auth-input" asp-for="Input.Email" type="email" autocomplete="email" placeholder="john@example.com" />
+                        <span class="auth-validation-message" asp-validation-for="Input.Email"></span>
+                    </div>
+
+                    <div class="auth-field">
+                        <label class="auth-label" asp-for="Input.PhoneNumber"></label>
+                        <input class="auth-input" asp-for="Input.PhoneNumber" autocomplete="tel" placeholder="+60 123 456 789" />
+                        <span class="auth-validation-message" asp-validation-for="Input.PhoneNumber"></span>
+                    </div>
+
+                    <div class="auth-field">
+                        <label class="auth-label" asp-for="Input.Specialization"></label>
+                        <select class="auth-input auth-select" asp-for="Input.Specialization">
+                            <option value="">Select specialization</option>
+                            <option value="Plumbing">Plumbing</option>
+                            <option value="Electrical">Electrical</option>
+                            <option value="HVAC">HVAC</option>
+                            <option value="General Maintenance">General Maintenance</option>
+                            <option value="Landscaping">Landscaping</option>
+                            <option value="Roofing">Roofing</option>
+                        </select>
+                        <span class="auth-validation-message" asp-validation-for="Input.Specialization"></span>
+                    </div>
+
+                    <div class="auth-field">
+                        <label class="auth-label" asp-for="Input.Password"></label>
+                        <div class="auth-input-wrapper auth-input-wrapper--password">
+                            <input class="auth-input"
+                                   id="TechnicianPassword"
+                                   asp-for="Input.Password"
+                                   autocomplete="new-password"
+                                   placeholder="Password" />
+                            <button class="auth-password-toggle" type="button" data-password-toggle="TechnicianPassword">
+                                <span class="material-symbols-outlined" aria-hidden="true" data-password-toggle-icon>visibility</span>
+                            </button>
+                        </div>
+                        <span class="auth-validation-message" asp-validation-for="Input.Password"></span>
+                    </div>
+
+                    <div class="auth-field">
+                        <label class="auth-label" asp-for="Input.ConfirmPassword"></label>
+                        <div class="auth-input-wrapper auth-input-wrapper--password">
+                            <input class="auth-input"
+                                   id="TechnicianConfirmPassword"
+                                   asp-for="Input.ConfirmPassword"
+                                   autocomplete="new-password"
+                                   placeholder="Confirm password" />
+                            <button class="auth-password-toggle" type="button" data-password-toggle="TechnicianConfirmPassword">
+                                <span class="material-symbols-outlined" aria-hidden="true" data-password-toggle-icon>visibility</span>
+                            </button>
+                        </div>
+                        <span class="auth-validation-message" asp-validation-for="Input.ConfirmPassword"></span>
+                    </div>
+
+                    <div class="auth-field">
+                        <label class="auth-label" asp-for="Input.ExperienceYears"></label>
+                        <input class="auth-input" asp-for="Input.ExperienceYears" min="0" placeholder="5" />
+                        <span class="auth-validation-message" asp-validation-for="Input.ExperienceYears"></span>
+                    </div>
+
+                    <div class="auth-field">
+                        <label class="auth-label" asp-for="Input.ServiceArea"></label>
+                        <input class="auth-input" asp-for="Input.ServiceArea" placeholder="Metropolitan Area / Zip Code" />
+                        <span class="auth-validation-message" asp-validation-for="Input.ServiceArea"></span>
+                    </div>
+                </div>
+
+                <div class="auth-field">
+                    <label class="auth-label" asp-for="Input.Certificates"></label>
+                    <label class="auth-upload" id="certificate-upload-zone">
+                        <span class="material-symbols-outlined auth-upload-icon" id="certificate-upload-icon" aria-hidden="true">cloud_upload</span>
+                        <span class="auth-upload-title" id="certificate-upload-title">Click to upload or drag and drop</span>
+                        <span class="auth-upload-note">PDF, DOC, DOCX, JPG, PNG (Max 10MB) — required</span>
+                        <input asp-for="Input.Certificates" id="certificate-upload-input" type="file" multiple accept=".pdf,.jpg,.jpeg,.png,.doc,.docx" />
+                    </label>
+                    <ul class="auth-upload-files" id="certificate-upload-files" hidden aria-live="polite"></ul>
+                    <span class="auth-validation-message" asp-validation-for="Input.Certificates"></span>
+                </div>
+
+                <button class="auth-primary-button" type="submit">Submit Registration</button>
+            </form>
+        </section>
+    }
+</main>
+
+<div id="document-error-modal" class="auth-doc-modal" hidden aria-hidden="true">
+    <div class="auth-doc-modal__backdrop" data-doc-modal-close></div>
+    <div class="auth-doc-modal__dialog" role="dialog" aria-modal="true" aria-labelledby="document-error-modal-title">
+        <h2 id="document-error-modal-title" class="auth-doc-modal__title">Check your submission</h2>
+        <p id="document-error-modal-message" class="auth-doc-modal__message"></p>
+        <button type="button" class="auth-primary-button" data-doc-modal-close>OK</button>
+    </div>
+</div>
+
+<style>
+    .auth-doc-modal {
+        position: fixed;
+        inset: 0;
+        z-index: 2000;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 16px;
+    }
+    .auth-doc-modal[hidden] { display: none !important; }
+    .auth-doc-modal__backdrop {
+        position: absolute;
+        inset: 0;
+        background: rgba(17, 24, 39, 0.55);
+    }
+    .auth-doc-modal__dialog {
+        position: relative;
+        width: 100%;
+        max-width: 420px;
+        background: #fff;
+        border-radius: 12px;
+        border: 1px solid #d9dee7;
+        padding: 28px 24px 22px;
+        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.18);
+        text-align: center;
+    }
+    .auth-doc-modal__title {
+        margin: 0 0 10px;
+        font-size: 1.25rem;
+        color: #111827;
+    }
+    .auth-doc-modal__message {
+        margin: 0 0 20px;
+        font-size: 0.95rem;
+        line-height: 1.5;
+        color: #4b5563;
+    }
+</style>
+
+<footer class="auth-footer">
+    <div class="auth-footer-inner">
+        <div class="auth-footer-brand" style="display: flex; align-items: center; gap: 16px;">
+            <img src="~/images/brand/zammaintain-logo.png" alt="ZamMaintain Logo" class="auth-footer-logo-img" style="height: 40px; filter: brightness(0) invert(1); opacity: 0.9;" />
+            <span>&copy; 2026 ZamMaintain Enterprise. All rights reserved.</span>
+        </div>
+        <div class="auth-footer-nav" aria-label="Footer links" style="align-items: center; gap: 24px;">
+            <div style="display: flex; gap: 24px; border-right: 1px solid rgba(255,255,255,0.2); padding-right: 24px;">
+                <span class="auth-footer-link" style="cursor: default; display: flex; align-items: center; gap: 6px;">
+                    <span class="material-symbols-outlined" style="font-size: 16px;">mail</span> support@zammaintain.com
+                </span>
+                <span class="auth-footer-link" style="cursor: default; display: flex; align-items: center; gap: 6px;">
+                    <span class="material-symbols-outlined" style="font-size: 16px;">call</span> +601163749281
+                </span>
+            </div>
+            <div style="display: flex; gap: 24px;">
+                <a class="auth-footer-link" href="/Home/Privacy">Privacy Policy</a>
+                <a class="auth-footer-link" href="/Home/Terms">Terms of Service</a>
+            </div>
+        </div>
+    </div>
+</footer>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+    <script>
+        (function () {
+            var fileInput = document.getElementById('certificate-upload-input');
+            var uploadZone = document.getElementById('certificate-upload-zone');
+            var uploadIcon = document.getElementById('certificate-upload-icon');
+            var uploadTitle = document.getElementById('certificate-upload-title');
+            var fileList = document.getElementById('certificate-upload-files');
+            var form = document.querySelector('form.auth-form');
+            var modal = document.getElementById('document-error-modal');
+            var modalMessage = document.getElementById('document-error-modal-message');
+            var maxFileSize = 10 * 1024 * 1024;
+            var allowedExtensions = ['.pdf', '.jpg', '.jpeg', '.png', '.doc', '.docx'];
+            var allowedMimeTypes = [
+                'application/pdf',
+                'image/jpeg',
+                'image/png',
+                'application/msword',
+                'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
+            ];
+            var serverDocError = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.DocumentErrorPopupMessage ?? string.Empty));
+
+            if (!fileInput || !uploadZone || !fileList) {
+                return;
+            }
+
+            function showDocumentError(message) {
+                if (!modal || !modalMessage) {
+                    window.alert(message);
+                    return;
+                }
+                modalMessage.textContent = message;
+                modal.hidden = false;
+                modal.setAttribute('aria-hidden', 'false');
+            }
+
+            function hideDocumentError() {
+                if (!modal) {
+                    return;
+                }
+                modal.hidden = true;
+                modal.setAttribute('aria-hidden', 'true');
+            }
+
+            if (modal) {
+                modal.querySelectorAll('[data-doc-modal-close]').forEach(function (el) {
+                    el.addEventListener('click', hideDocumentError);
+                });
+            }
+
+            if (serverDocError) {
+                showDocumentError(serverDocError);
+            }
+
+            function getExtension(fileName) {
+                var idx = fileName.lastIndexOf('.');
+                if (idx < 0) {
+                    return '';
+                }
+                return fileName.substring(idx).toLowerCase();
+            }
+
+            function isAllowedMime(type) {
+                if (!type) {
+                    return true;
+                }
+                return allowedMimeTypes.indexOf(String(type).toLowerCase()) !== -1;
+            }
+
+            function validateRequiredFields() {
+                var fullName = form.querySelector('[name="Input.FullName"]');
+                var email = form.querySelector('[name="Input.Email"]');
+                var phone = form.querySelector('[name="Input.PhoneNumber"]');
+                var specialization = form.querySelector('[name="Input.Specialization"]');
+                var password = form.querySelector('[name="Input.Password"]');
+                var confirmPassword = form.querySelector('[name="Input.ConfirmPassword"]');
+                var experience = form.querySelector('[name="Input.ExperienceYears"]');
+                var serviceArea = form.querySelector('[name="Input.ServiceArea"]');
+
+                if (!fullName || !fullName.value.trim()) {
+                    return 'Please enter your full name.';
+                }
+                if (!email || !email.value.trim()) {
+                    return 'Please enter your email address.';
+                }
+                if (!phone || !phone.value.trim()) {
+                    return 'Please enter your phone number.';
+                }
+                if (!specialization || !specialization.value.trim()) {
+                    return 'Please select a specialization.';
+                }
+                if (!password || password.value.length < 6) {
+                    return 'Password must be at least 6 characters.';
+                }
+                if (!confirmPassword || confirmPassword.value !== password.value) {
+                    return 'The password and confirmation password do not match.';
+                }
+                if (!experience || experience.value === '' || Number(experience.value) < 0) {
+                    return 'Please enter your years of experience.';
+                }
+                if (!serviceArea || !serviceArea.value.trim()) {
+                    return 'Please enter your service area.';
+                }
+                return null;
+            }
+
+            function validateFiles(files) {
+                if (!files || files.length === 0) {
+                    return 'Please upload at least one certificate or document (PDF, DOC, DOCX, JPG, JPEG, or PNG).';
+                }
+
+                for (var i = 0; i < files.length; i++) {
+                    var file = files[i];
+                    if (!file.size) {
+                        return 'Uploaded documents cannot be empty.';
+                    }
+                    if (file.size > maxFileSize) {
+                        return 'Each certificate or document must be 10MB or smaller.';
+                    }
+                    var ext = getExtension(file.name || '');
+                    if (!ext || allowedExtensions.indexOf(ext) === -1) {
+                        return 'Upload PDF, DOC, DOCX, JPG, JPEG, or PNG files only.';
+                    }
+                    if (!isAllowedMime(file.type)) {
+                        return 'Upload PDF, DOC, DOCX, JPG, JPEG, or PNG files only.';
+                    }
+                }
+
+                return null;
+            }
+
+            function formatFileSize(bytes) {
+                if (bytes < 1024) {
+                    return bytes + ' B';
+                }
+                if (bytes < 1024 * 1024) {
+                    return (bytes / 1024).toFixed(1) + ' KB';
+                }
+                return (bytes / (1024 * 1024)).toFixed(1) + ' MB';
+            }
+
+            function renderSelectedFiles() {
+                var files = fileInput.files;
+                fileList.innerHTML = '';
+
+                if (!files || files.length === 0) {
+                    fileList.hidden = true;
+                    uploadZone.classList.remove('auth-upload--has-files');
+                    if (uploadIcon) {
+                        uploadIcon.textContent = 'cloud_upload';
+                    }
+                    if (uploadTitle) {
+                        uploadTitle.textContent = 'Click to upload or drag and drop';
+                    }
+                    return;
+                }
+
+                fileList.hidden = false;
+                uploadZone.classList.add('auth-upload--has-files');
+                if (uploadIcon) {
+                    uploadIcon.textContent = 'check_circle';
+                }
+                if (uploadTitle) {
+                    uploadTitle.textContent = files.length === 1
+                        ? '1 file selected'
+                        : files.length + ' files selected';
+                }
+
+                Array.prototype.forEach.call(files, function (file) {
+                    var item = document.createElement('li');
+                    item.className = 'auth-upload-file';
+
+                    var icon = document.createElement('span');
+                    icon.className = 'material-symbols-outlined auth-upload-file-icon';
+                    icon.setAttribute('aria-hidden', 'true');
+                    icon.textContent = 'description';
+
+                    var details = document.createElement('span');
+                    details.className = 'auth-upload-file-details';
+
+                    var name = document.createElement('span');
+                    name.className = 'auth-upload-file-name';
+                    name.textContent = file.name;
+
+                    var size = document.createElement('span');
+                    size.className = 'auth-upload-file-size';
+                    size.textContent = formatFileSize(file.size);
+
+                    details.appendChild(name);
+                    details.appendChild(size);
+                    item.appendChild(icon);
+                    item.appendChild(details);
+                    fileList.appendChild(item);
+                });
+            }
+
+            function applyValidatedFiles(rawFiles) {
+                var dataTransfer = new DataTransfer();
+                var rejected = null;
+
+                Array.prototype.forEach.call(rawFiles, function (file) {
+                    var ext = getExtension(file.name || '');
+                    if (!file.size) {
+                        rejected = 'Uploaded documents cannot be empty.';
+                        return;
+                    }
+                    if (file.size > maxFileSize) {
+                        rejected = 'Each certificate or document must be 10MB or smaller.';
+                        return;
+                    }
+                    if (!ext || allowedExtensions.indexOf(ext) === -1 || !isAllowedMime(file.type)) {
+                        rejected = 'Upload PDF, DOC, DOCX, JPG, JPEG, or PNG files only.';
+                        return;
+                    }
+                    dataTransfer.items.add(file);
+                });
+
+                if (rejected) {
+                    showDocumentError(rejected);
+                    fileInput.value = '';
+                    renderSelectedFiles();
+                    return;
+                }
+
+                fileInput.files = dataTransfer.files;
+                renderSelectedFiles();
+            }
+
+            fileInput.addEventListener('change', function () {
+                applyValidatedFiles(fileInput.files);
+            });
+
+            uploadZone.addEventListener('dragover', function (event) {
+                event.preventDefault();
+                uploadZone.classList.add('auth-upload--dragover');
+            });
+
+            uploadZone.addEventListener('dragleave', function (event) {
+                if (!uploadZone.contains(event.relatedTarget)) {
+                    uploadZone.classList.remove('auth-upload--dragover');
+                }
+            });
+
+            uploadZone.addEventListener('drop', function (event) {
+                event.preventDefault();
+                uploadZone.classList.remove('auth-upload--dragover');
+
+                var droppedFiles = event.dataTransfer && event.dataTransfer.files;
+                if (!droppedFiles || droppedFiles.length === 0) {
+                    return;
+                }
+
+                applyValidatedFiles(droppedFiles);
+            });
+
+            if (form) {
+                form.addEventListener('submit', function (event) {
+                    var fieldError = validateRequiredFields();
+                    if (fieldError) {
+                        event.preventDefault();
+                        showDocumentError(fieldError);
+                        return;
+                    }
+
+                    var fileError = validateFiles(fileInput.files);
+                    if (fileError) {
+                        event.preventDefault();
+                        showDocumentError(fileError);
+                    }
+                });
+            }
+        })();
+    </script>
+}

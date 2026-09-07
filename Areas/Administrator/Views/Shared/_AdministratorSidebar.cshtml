@@ -1,0 +1,71 @@
+@using Microsoft.AspNetCore.Identity
+@using CloudMVCApplication.Models
+@inject UserManager<ApplicationUser> UserManager
+@{
+    var current = ViewContext.RouteData.Values["action"]?.ToString() ?? "";
+    var currentUser = await UserManager.GetUserAsync(User);
+    var displayName = currentUser?.FullName ?? "Admin User";
+    var displayEmail = currentUser?.Email ?? "admin@zammaintain.com";
+    var initials = string.Concat(displayName.Split(' ', StringSplitOptions.RemoveEmptyEntries).Take(2).Select(p => p[0])).ToUpperInvariant();
+}
+<aside class="administrator-sidebar manager-sidebar pm-sidebar" aria-label="Administrator navigation">
+    <div class="pm-sidebar__brand">
+        <img class="pm-sidebar__brand-image" src="~/images/brand/zammaintain-logo.png" alt="ZamMaintain" asp-append-version="true" />
+    </div>
+    <nav class="pm-sidebar__nav">
+        <a class="pm-sidebar__link @(current == "Dashboard" ? "pm-sidebar__link--active" : null)" asp-area="Administrator" asp-controller="Administrator" asp-action="Dashboard">
+            <span class="material-symbols-outlined" aria-hidden="true">dashboard</span>
+            Dashboard
+        </a>
+        <a class="pm-sidebar__link @(current == "Users" || current == "UserDetail" || current == "AddUser" ? "pm-sidebar__link--active" : null)" asp-area="Administrator" asp-controller="Administrator" asp-action="Users">
+            <span class="material-symbols-outlined" aria-hidden="true">group</span>
+            Users
+        </a>
+        <a class="pm-sidebar__link @(current == "Properties" || current == "PropertyDetail" || current == "AddProperty" ? "pm-sidebar__link--active" : null)" asp-area="Administrator" asp-controller="Administrator" asp-action="Properties">
+            <span class="material-symbols-outlined" aria-hidden="true">domain</span>
+            Properties
+        </a>
+        <a class="pm-sidebar__link @(current == "Units" || current == "UnitDetail" || current == "AddUnit" ? "pm-sidebar__link--active" : null)" asp-area="Administrator" asp-controller="Administrator" asp-action="Units">
+            <span class="material-symbols-outlined" aria-hidden="true">meeting_room</span>
+            Units
+        </a>
+        <a class="pm-sidebar__link @(current == "Reports" || current == "ReportDetail" || current == "GenerateReport" || current == "ExportReady" ? "pm-sidebar__link--active" : null)" asp-area="Administrator" asp-controller="Administrator" asp-action="Reports">
+            <span class="material-symbols-outlined" aria-hidden="true">assessment</span>
+            Reports
+        </a>
+        <a class="pm-sidebar__link @(current == "TechnicianPayments" ? "pm-sidebar__link--active" : null)" asp-area="Administrator" asp-controller="Administrator" asp-action="TechnicianPayments">
+            <span class="material-symbols-outlined" aria-hidden="true">payments</span>
+            Technician Payments
+        </a>
+        <a class="pm-sidebar__link @(current == "AuditLogs" || current == "AuditLogDetail" ? "pm-sidebar__link--active" : null)" asp-area="Administrator" asp-controller="Administrator" asp-action="AuditLogs">
+            <span class="material-symbols-outlined" aria-hidden="true">history</span>
+            Audit Logs
+        </a>
+        <a class="pm-sidebar__link @(current == "Settings" ? "pm-sidebar__link--active" : null)" asp-area="Administrator" asp-controller="Administrator" asp-action="Settings">
+            <span class="material-symbols-outlined" aria-hidden="true">settings</span>
+            Settings
+        </a>
+        <a class="pm-sidebar__link @(current == "Profile" || current == "ChangeAvatar" ? "pm-sidebar__link--active" : null)" asp-area="Administrator" asp-controller="Administrator" asp-action="Profile">
+            <span class="material-symbols-outlined" aria-hidden="true">account_circle</span>
+            Profile
+        </a>
+    </nav>
+    <div class="pm-sidebar__userbox">
+        <div class="pm-topbar__avatar">@initials</div>
+        <div>
+            <div class="pm-sidebar__username">@displayName</div>
+            <div class="pm-sidebar__email">@displayEmail</div>
+        </div>
+    </div>
+    <div class="pm-sidebar__footer">
+        <form asp-area="Identity" asp-page="/Account/Logout" asp-route-returnUrl="@Url.Action("Index", "Home", new { area = "" })" method="post"
+              data-confirm-title="Log out?"
+              data-confirm-message="You will leave this administrator session and return to the home page."
+              data-confirm-action="Log out">
+            <button type="submit" class="pm-sidebar__link pm-sidebar__link--logout w-100 border-0 bg-transparent text-start">
+                <span class="material-symbols-outlined" aria-hidden="true">logout</span>
+                Logout
+            </button>
+        </form>
+    </div>
+</aside>

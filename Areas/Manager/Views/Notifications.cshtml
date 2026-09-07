@@ -1,0 +1,108 @@
+@model CloudMVCApplication.ViewModels.AreaDashboardViewModel
+@{
+    Layout = "~/Areas/Manager/Views/Shared/_ManagerLayout.cshtml";
+    ViewData["Title"] = "Notifications";
+    var unreadCount = Model.Notifications.Count(n => !n.IsRead);
+    var totalCount = Model.Notifications.Count;
+    var latestNotification = Model.Notifications.FirstOrDefault();
+}
+
+@if (TempData["SuccessMessage"] is string successMessage)
+{
+    <div class="alert alert-success" role="alert">@successMessage</div>
+}
+
+<div class="pm-flex-between pm-page-header">
+    <div>
+        <h1 class="pm-page-title">Notifications</h1>
+        <p class="pm-page-lead">Recent maintenance events and alerts.</p>
+    </div>
+    <form method="post" asp-area="Manager" asp-controller="Manager" asp-action="MarkAllNotificationsRead"
+          data-confirm-title="Mark all notifications read?"
+          data-confirm-message="All unread manager notifications will be marked as read."
+          data-confirm-action="Mark all read">
+        @Html.AntiForgeryToken()
+        <button type="submit" class="pm-btn pm-btn--secondary" disabled="@(unreadCount == 0)">
+            <span class="material-symbols-outlined" style="font-size:20px">done_all</span>
+            Mark all as read
+        </button>
+    </form>
+</div>
+
+<div class="pm-grid pm-grid--stats pm-mb-2 pm-notification-summary">
+    <div class="pm-stat">
+        <div class="pm-stat__label">Unread</div>
+        <div class="pm-stat__value">@unreadCount</div>
+    </div>
+    <div class="pm-stat">
+        <div class="pm-stat__label">Total</div>
+        <div class="pm-stat__value">@totalCount</div>
+    </div>
+    <div class="pm-stat">
+        <div class="pm-stat__label">Latest</div>
+        <div class="pm-stat__value" style="font-size:1.25rem">@(latestNotification?.CreatedAt.ToLocalTime().ToString("MMM d, h:mm tt") ?? "No notifications")</div>
+    </div>
+</div>
+
+<div class="pm-stack" style="max-width:880px">
+    @if (!Model.Notifications.Any())
+    {
+        <div class="pm-card">
+            <div class="pm-empty-state">
+                <div class="pm-empty-state__icon"><span class="material-symbols-outlined">notifications_off</span></div>
+                <h2 class="pm-empty-state__title">No notifications yet</h2>
+                <p class="pm-empty-state__text">Maintenance events, assignments, and alerts will appear here.</p>
+            </div>
+        </div>
+    }
+    else
+    {
+        @foreach (var notification in Model.Notifications)
+        {
+            var notificationClass = notification.IsRead ? "pm-notify--read" : "pm-notify--unread";
+            <article class="pm-notify @notificationClass">
+                <div class="d-flex gap-3">
+                    <div class="pm-notify__icon"><span class="material-symbols-outlined">notifications</span></div>
+                    <div class="flex-grow-1">
+                        <div class="pm-flex-between gap-3">
+                            <div class="d-flex align-items-center gap-2">
+                                @if (!notification.IsRead)
+                                {
+                                    <span class="pm-unread-dot" aria-label="Unread"></span>
+                                }
+                                <h2 class="h6 mb-0">@notification.Title</h2>
+                            </div>
+                            <div class="pm-notify__meta">
+                                <span class="pm-badge @(notification.IsRead ? "pm-badge--low" : "pm-badge--urgent")">@(notification.IsRead ? "Read" : "Unread")</span>
+                                <span class="pm-notify__time">@notification.CreatedAt.ToLocalTime().ToString("MMM d, h:mm tt")</span>
+                            </div>
+                        </div>
+                        <p class="pm-muted mb-3 mt-2">@(notification.Message ?? "No message provided.")</p>
+                        <div class="pm-actions">
+                            @if (notification.RequestId.HasValue)
+                            {
+                                <form method="post" asp-area="Manager" asp-controller="Manager" asp-action="MarkNotificationRead">
+                                    @Html.AntiForgeryToken()
+                                    <input type="hidden" name="id" value="@notification.NotificationId" />
+                                    <input type="hidden" name="requestId" value="@notification.RequestId" />
+                                    <button type="submit" class="pm-btn pm-btn--ghost">
+                                        <span class="material-symbols-outlined" style="font-size:18px">open_in_new</span>
+                                        View request
+                                    </button>
+                                </form>
+                            }
+                            @if (!notification.IsRead)
+                            {
+                                <form method="post" asp-area="Manager" asp-controller="Manager" asp-action="MarkNotificationRead">
+                                    @Html.AntiForgeryToken()
+                                    <input type="hidden" name="id" value="@notification.NotificationId" />
+                                    <button type="submit" class="pm-btn pm-btn--outline">Mark read</button>
+                                </form>
+                            }
+                        </div>
+                    </div>
+                </div>
+            </article>
+        }
+    }
+</div>

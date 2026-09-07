@@ -1,0 +1,66 @@
+@model CloudMVCApplication.ViewModels.SuperAdminLoginViewModel
+@{
+    Layout = "/Views/Shared/_AuthLayout.cshtml";
+    ViewData["Title"] = "Platform Login";
+}
+
+<main class="auth-main">
+    <section class="auth-brand-panel" aria-label="ZamMaintain platform">
+        <div class="auth-brand-content">
+            <img src="~/images/brand/zammaintain-logo.png" alt="ZamMaintain Logo" class="auth-logo-icon superadmin-login-brand" style="height: 48px; width: auto;" />
+            <h1 class="auth-title">ZamMaintain</h1>
+            <p class="auth-subtitle">Platform Console — internal use only</p>
+        </div>
+    </section>
+
+    <section class="auth-form-panel" aria-label="Platform login form">
+        <div class="auth-card">
+            <div class="auth-card-header">
+                <h2 class="auth-card-title">Platform Admin Login</h2>
+                <p class="auth-card-subtitle">Sign in to manage companies, subscriptions, and technicians.</p>
+            </div>
+
+            @if (!string.IsNullOrWhiteSpace(Model.ErrorMessage))
+            {
+                <div class="auth-validation-summary" role="alert">@Model.ErrorMessage</div>
+            }
+
+            <form class="auth-form" asp-area="SuperAdmin" asp-controller="Account" asp-action="Login" method="post">
+                @Html.AntiForgeryToken()
+
+                <div class="auth-field">
+                    <label class="auth-label" for="Email">Email Address</label>
+                    <div class="auth-input-wrapper">
+                        <span class="material-symbols-outlined auth-input-icon" aria-hidden="true">mail</span>
+                        <input class="auth-input" id="Email" name="Email" value="@Model.Email" autocomplete="username" placeholder="platform@zammaintain.test" required />
+                    </div>
+                </div>
+
+                <div class="auth-field">
+                    <label class="auth-label" for="Password">Password</label>
+                    <div class="auth-input-wrapper auth-input-wrapper--password">
+                        <input class="auth-input" id="PlatformAdminPassword" name="Password" type="password" autocomplete="current-password" placeholder="Password" required />
+                        <button class="auth-password-toggle" type="button" data-password-toggle="PlatformAdminPassword">
+                            <span class="material-symbols-outlined" aria-hidden="true" data-password-toggle-icon>visibility</span>
+                        </button>
+                    </div>
+                </div>
+
+                <div class="auth-options">
+                    <label class="auth-checkbox">
+                        <input type="checkbox" name="RememberMe" value="true" @(Model.RememberMe ? "checked" : null) />
+                        <span>Remember me</span>
+                    </label>
+                </div>
+
+                <button class="auth-primary-button" type="submit">Sign in to Platform Console</button>
+            </form>
+
+            <div class="auth-helper-box">
+                This login is restricted to ZamMaintain platform administrators. Company users should use the <a class="auth-link" href="/Identity/Account/Login">standard login</a>.
+            </div>
+        </div>
+    </section>
+</main>
+
+<link rel="stylesheet" href="~/css/superadmin.css" asp-append-version="true" />

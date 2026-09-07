@@ -1,0 +1,55 @@
+@{
+    var current = ViewContext.RouteData.Values["action"]?.ToString() ?? "";
+    var pendingTechnicians = string.Equals(Context.Request.Query["pendingOnly"], "true", StringComparison.OrdinalIgnoreCase);
+}
+<aside class="superadmin-sidebar manager-sidebar pm-sidebar" aria-label="Platform navigation">
+    <div class="pm-sidebar__brand">
+        <img class="pm-sidebar__brand-image" src="~/images/brand/zammaintain-logo.png" alt="ZamMaintain" asp-append-version="true" />
+    </div>
+    <nav class="pm-sidebar__nav">
+        <a class="pm-sidebar__link @(current == "Dashboard" ? "pm-sidebar__link--active" : null)" asp-area="SuperAdmin" asp-controller="SuperAdmin" asp-action="Dashboard">
+            <span class="material-symbols-outlined" aria-hidden="true">dashboard</span>
+            Dashboard
+        </a>
+        <a class="pm-sidebar__link @(current == "Companies" || current == "CompanyDetail" ? "pm-sidebar__link--active" : null)" asp-area="SuperAdmin" asp-controller="SuperAdmin" asp-action="Companies">
+            <span class="material-symbols-outlined" aria-hidden="true">apartment</span>
+            Companies
+        </a>
+        <a class="pm-sidebar__link @(current == "Technicians" && !pendingTechnicians ? "pm-sidebar__link--active" : null)" asp-area="SuperAdmin" asp-controller="SuperAdmin" asp-action="Technicians">
+            <span class="material-symbols-outlined" aria-hidden="true">engineering</span>
+            Technicians
+        </a>
+        <a class="pm-sidebar__link @(current == "PendingPayouts" ? "pm-sidebar__link--active" : null)" asp-area="SuperAdmin" asp-controller="SuperAdmin" asp-action="PendingPayouts">
+            <span class="material-symbols-outlined" aria-hidden="true">account_balance</span>
+            Pending Payouts
+        </a>
+        <a class="pm-sidebar__link @(current == "CommissionReport" ? "pm-sidebar__link--active" : null)" asp-area="SuperAdmin" asp-controller="SuperAdmin" asp-action="CommissionReport">
+            <span class="material-symbols-outlined" aria-hidden="true">percent</span>
+            Commission Report
+        </a>
+        <a class="pm-sidebar__link @(current == "Technicians" && pendingTechnicians ? "pm-sidebar__link--active" : null)" asp-area="SuperAdmin" asp-controller="SuperAdmin" asp-action="Technicians" asp-route-pendingOnly="true">
+            <span class="material-symbols-outlined" aria-hidden="true">pending_actions</span>
+            Pending Approvals
+        </a>
+        <a class="pm-sidebar__link @(current == "AuditLogs" ? "pm-sidebar__link--active" : null)" asp-area="SuperAdmin" asp-controller="SuperAdmin" asp-action="AuditLogs">
+            <span class="material-symbols-outlined" aria-hidden="true">history</span>
+            Platform Audit Log
+        </a>
+        <a class="pm-sidebar__link @(current == "Profile" || current == "ChangeAvatar" ? "pm-sidebar__link--active" : null)" asp-area="SuperAdmin" asp-controller="SuperAdmin" asp-action="Profile">
+            <span class="material-symbols-outlined" aria-hidden="true">account_circle</span>
+            Profile
+        </a>
+    </nav>
+    <div class="pm-sidebar__footer">
+        <form asp-area="SuperAdmin" asp-controller="Account" asp-action="Logout" method="post"
+              data-confirm-title="Log out?"
+              data-confirm-message="You will leave the platform console and return to the Super Admin sign-in page."
+              data-confirm-action="Log out">
+            @Html.AntiForgeryToken()
+            <button type="submit" class="pm-sidebar__link pm-sidebar__link--logout w-100 border-0 bg-transparent text-start">
+                <span class="material-symbols-outlined" aria-hidden="true">logout</span>
+                Logout
+            </button>
+        </form>
+    </div>
+</aside>

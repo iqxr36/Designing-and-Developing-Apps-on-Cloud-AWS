@@ -1,0 +1,99 @@
+@using Microsoft.AspNetCore.Identity
+@using Microsoft.EntityFrameworkCore
+@using CloudMVCApplication.Data
+@using CloudMVCApplication.Models
+@inject UserManager<ApplicationUser> UserManager
+@inject ApplicationDbContext DbContext
+@{
+    Layout = null;
+    var title = ViewData["Title"]?.ToString() ?? "Administrator";
+    var currentUser = await UserManager.GetUserAsync(User);
+    var displayName = currentUser?.FullName ?? "Administrator";
+    var initials = string.Concat(displayName.Split(' ', StringSplitOptions.RemoveEmptyEntries).Take(2).Select(p => p[0])).ToUpperInvariant();
+    var unreadNotifications = currentUser == null
+        ? 0
+        : await DbContext.Notifications.CountAsync(n => n.UserId == currentUser.Id && !n.IsRead);
+    var companySettings = currentUser?.CompanyId == null
+        ? null
+        : await DbContext.PropertyManagementCompanies
+            .AsNoTracking()
+            .FirstOrDefaultAsync(c => c.CompanyId == currentUser.CompanyId.Value);
+    var primaryColor = companySettings?.PrimaryColor;
+    if (string.IsNullOrWhiteSpace(primaryColor) || !System.Text.RegularExpressions.Regex.IsMatch(primaryColor, "^#[0-9A-Fa-f]{6}$"))
+    {
+        primaryColor = "#570000";
+    }
+    var lightSidebar = companySettings?.SidebarTheme == "Classic Light";
+}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@title - ZamMaintain</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="~/css/manager.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/administrator-portal.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/toast.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/confirm.css" asp-append-version="true" />
+    <style>
+        .pm-body--light .pm-sidebar { background: #ffffff; color: #191c1d; border-right: 1px solid #dfe2e5; }
+        .pm-body--light .pm-sidebar__link { color: #3f464c; }
+        .pm-body--light .pm-sidebar__link:hover { background: #f1f3f4; color: #191c1d; }
+        .pm-body--light .pm-sidebar__link--active { background: var(--pm-primary); color: #ffffff; }
+        .pm-body--light .pm-sidebar__brand { border-bottom-color: #dfe2e5; }
+        .pm-body--light .pm-sidebar__email, .pm-body--light .pm-sidebar__subtitle { color: #687078; }
+    </style>
+</head>
+<body class="pm-body @(lightSidebar ? "pm-body--light" : null)" style="--pm-primary: @primaryColor;">
+    <partial name="~/Views/Shared/_ToastNotifications.cshtml" />
+    <partial name="~/Views/Shared/_ConfirmDialog.cshtml" />
+    <div class="administrator-shell manager-shell">
+        @await Html.PartialAsync("~/Areas/Administrator/Views/Shared/_AdministratorSidebar.cshtml")
+
+        <div class="administrator-main manager-main">
+            <header class="manager-topbar pm-topbar">
+                <div class="pm-topbar__left">
+                    <span class="pm-topbar__section">@title</span>
+                </div>
+                <div class="pm-topbar__right">
+                    <a class="pm-topbar__icon pm-topbar__icon--notify" asp-area="Administrator" asp-controller="Administrator" asp-action="Notifications" title="Notifications">
+                        <span class="material-symbols-outlined">notifications</span>
+                        @if (unreadNotifications > 0)
+                        {
+                            <span class="pm-topbar__badge">@unreadNotifications</span>
+                        }
+                    </a>
+                    <a class="pm-btn pm-btn--secondary pm-btn--sm d-none d-md-inline-flex" asp-area="Administrator" asp-controller="Administrator" asp-action="QuickActions">Quick Actions</a>
+                    <a class="pm-btn pm-btn--primary pm-btn--sm d-none d-md-inline-flex" asp-area="Administrator" asp-controller="Administrator" asp-action="AddProperty">Add Property</a>
+                    <a class="pm-topbar__icon d-md-none" asp-area="Administrator" asp-controller="Administrator" asp-action="QuickActions" title="Quick Actions"><span class="material-symbols-outlined">bolt</span></a>
+                    <a class="pm-topbar__avatar" asp-area="Administrator" asp-controller="Administrator" asp-action="Profile" title="Profile">
+                        @if (!string.IsNullOrWhiteSpace(currentUser?.AvatarUrl))
+                        {
+                            <img src="@currentUser.AvatarUrl" alt="Profile" />
+                        }
+                        else
+                        {
+                            @initials
+                        }
+                    </a>
+                </div>
+            </header>
+
+            <main class="administrator-content pm-main" role="main">
+                @RenderBody()
+            </main>
+        </div>
+    </div>
+    <script src="~/lib/jquery/dist/jquery.min.js"></script>
+    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="~/js/confirm-dialog.js" asp-append-version="true"></script>
+    <script src="~/js/form-state.js" asp-append-version="true"></script>
+    <script src="~/js/photo-preview.js" asp-append-version="true"></script>
+    @await RenderSectionAsync("Scripts", required: false)
+</body>
+</html>

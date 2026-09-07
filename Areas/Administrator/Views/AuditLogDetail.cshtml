@@ -1,0 +1,91 @@
+@model CloudMVCApplication.ViewModels.AreaDashboardViewModel
+@{
+    Layout = "~/Areas/Administrator/Views/Shared/_AdministratorLayout.cshtml";
+    ViewData["Title"] = "Audit Log Details";
+    var log = Model.SelectedAuditLog;
+    var user = Model.Users.FirstOrDefault(u => u.FullName == log?.UserName);
+}
+
+<div class="pm-flex-between pm-page-header">
+    <div>
+        <h1 class="pm-page-title">Audit Log Entry</h1>
+        <p class="pm-page-lead">@(log?.CreatedAt.ToLocalTime().ToString("MMM d, yyyy h:mm:ss tt") ?? "No audit log")</p>
+    </div>
+    <div class="d-flex gap-2 flex-wrap">
+        <a class="pm-btn pm-btn--secondary" asp-controller="Administrator" asp-action="AuditLogs">
+            <span class="material-symbols-outlined">arrow_back</span> Back to Company Activity Log
+        </a>
+    </div>
+</div>
+
+<div class="row g-3" style="grid-template-columns: 1fr 1fr; gap: 24px;">
+    <div class="pm-card">
+        <div class="pm-card__header">
+            <h3 class="pm-card__title">Event Information</h3>
+        </div>
+        <div class="pm-card__body">
+            <div class="mb-3">
+                <label class="pm-label">Action Type</label>
+                <p><span class="pm-badge pm-badge--completed">@(log?.Action ?? "No action")</span></p>
+            </div>
+            <div class="mb-3">
+                <label class="pm-label">Entity</label>
+                <p style="font-weight: 600;">@(log?.EntityName ?? "System") (@(log?.EntityId ?? "N/A"))</p>
+            </div>
+            <div class="mb-3">
+                <label class="pm-label">Timestamp</label>
+                <p>@(log?.CreatedAt.ToLocalTime().ToString("MMM d, yyyy h:mm:ss tt") ?? "N/A")</p>
+            </div>
+            <div class="mb-3">
+                <label class="pm-label">Description</label>
+                <p>@(log?.Description ?? "No description")</p>
+            </div>
+        </div>
+    </div>
+    <div class="pm-card">
+        <div class="pm-card__header">
+            <h3 class="pm-card__title">User Information</h3>
+        </div>
+        <div class="pm-card__body">
+            <div class="d-flex align-items-center gap-3 mb-3">
+                <div style="width: 48px; height: 48px; border-radius: 999px; background: #d9e3f7; color: #1d2736; display: flex; align-items: center; justify-content: center; font-weight: 700;">@(user?.Initials ?? "NA")</div>
+                <div>
+                    <p style="font-weight: 600; margin: 0;">@(log?.UserName ?? "Unknown user")</p>
+                    <p class="pm-muted small" style="margin: 0;">@(user?.Role ?? "System user")</p>
+                </div>
+            </div>
+            <div class="mb-3">
+                <label class="pm-label">Email</label>
+                <p>@(user?.Email ?? "N/A")</p>
+            </div>
+            <div class="mb-3">
+                <label class="pm-label">Source</label>
+                <p class="small">Application audit log</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="pm-card">
+    <div class="pm-card__header">
+        <h3 class="pm-card__title">Changes Made</h3>
+    </div>
+    <div class="pm-table-wrap">
+        <table class="pm-table">
+            <thead>
+                <tr>
+                    <th>Field</th>
+                    <th>Previous Value</th>
+                    <th>New Value</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td><strong>@(log?.EntityName ?? "Entity")</strong></td>
+                    <td class="pm-muted">@(log?.EntityId ?? "N/A")</td>
+                    <td>@(log?.Action ?? "No action recorded")</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</div>

@@ -1,0 +1,44 @@
+@{
+    var toastMessages = new[]
+    {
+        new { Type = "success", Icon = "check_circle", Title = "Success", Message = TempData["SuccessMessage"] as string },
+        new { Type = "error", Icon = "error", Title = "Error", Message = TempData["ErrorMessage"] as string },
+        new { Type = "warning", Icon = "warning", Title = "Warning", Message = TempData["WarningMessage"] as string },
+        new { Type = "info", Icon = "info", Title = "Notice", Message = TempData["InfoMessage"] as string }
+    }.Where(t => !string.IsNullOrWhiteSpace(t.Message)).ToList();
+}
+
+@if (toastMessages.Any())
+{
+    <div class="app-toast-region" aria-live="polite" aria-atomic="true">
+        @foreach (var toast in toastMessages)
+        {
+            <div class="app-toast app-toast--@toast.Type" role="status">
+                <span class="material-symbols-outlined app-toast__icon" aria-hidden="true">@toast.Icon</span>
+                <div class="app-toast__content">
+                    <strong>@toast.Title</strong>
+                    <span>@toast.Message</span>
+                </div>
+                <button class="app-toast__close" type="button" aria-label="Dismiss notification">
+                    <span class="material-symbols-outlined" aria-hidden="true">close</span>
+                </button>
+            </div>
+        }
+    </div>
+
+    <script>
+        (() => {
+            const toasts = document.querySelectorAll('.app-toast');
+            for (const toast of toasts) {
+                const close = toast.querySelector('.app-toast__close');
+                const dismiss = () => {
+                    toast.classList.add('app-toast--leaving');
+                    window.setTimeout(() => toast.remove(), 180);
+                };
+
+                close?.addEventListener('click', dismiss);
+                window.setTimeout(dismiss, 5200);
+            }
+        })();
+    </script>
+}

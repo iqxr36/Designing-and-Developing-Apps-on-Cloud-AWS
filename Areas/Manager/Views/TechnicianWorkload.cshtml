@@ -1,0 +1,232 @@
+@model CloudMVCApplication.ViewModels.AreaDashboardViewModel
+
+@{
+
+    Layout = "~/Areas/Manager/Views/Shared/_ManagerLayout.cshtml";
+
+    ViewData["Title"] = "Technician Workload";
+
+
+
+    var available = Model.Technicians.Count(t => t.WorkloadPercentage < 100);
+
+    var busy = Model.Technicians.Count(t => t.WorkloadPercentage >= 51 && t.WorkloadPercentage < 100);
+
+    var urgentRequests = Model.Requests
+
+        .Where(r => (r.Priority == "High" || r.Priority == "Urgent") && r.Status != "Completed" && r.Status != "Cancelled")
+
+        .OrderByDescending(r => string.IsNullOrWhiteSpace(r.TechnicianName))
+
+        .ThenByDescending(r => r.CreatedAt)
+
+        .ToList();
+
+}
+
+<div class="pm-flex-between pm-page-header">
+
+    <div>
+
+        <h1 class="pm-page-title">Technician Workload</h1>
+
+        <p class="pm-page-lead">Monitor assignments and balance team capacity.</p>
+
+    </div>
+
+    <div class="pm-actions">
+
+        <button type="button" class="pm-btn pm-btn--secondary" disabled title="UI only">Export</button>
+
+        <a class="pm-btn pm-btn--primary" asp-area="Manager" asp-controller="Manager" asp-action="MaintenanceRequests">Assign Technician</a>
+
+    </div>
+
+</div>
+
+
+
+<div class="pm-grid pm-grid--stats pm-mb-2">
+
+    <div class="pm-stat"><div class="pm-stat__label">Total technicians</div><div class="pm-stat__value">@Model.Technicians.Count</div></div>
+
+    <div class="pm-stat"><div class="pm-stat__label">Assignable</div><div class="pm-stat__value">@available</div></div>
+
+    <div class="pm-stat"><div class="pm-stat__label">Busy</div><div class="pm-stat__value">@busy</div></div>
+
+    <div class="pm-stat"><div class="pm-stat__label">Completed jobs</div><div class="pm-stat__value">@Model.Technicians.Sum(t => t.CompletedJobs)</div></div>
+
+</div>
+
+
+
+<div class="pm-card">
+    <div class="pm-card__header">
+        <h2 class="pm-card__title">Active roster &amp; workload</h2>
+    </div>
+    <div class="pm-table-wrap">
+        <table class="pm-table">
+            <thead>
+                <tr>
+                    <th>Technician</th>
+                    <th>Specialization</th>
+                    <th>Active jobs</th>
+                    <th>Workload</th>
+                    <th>Availability</th>
+                    <th>Status</th>
+                    <th class="pm-text-end">Action</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var technician in Model.Technicians)
+                {
+                    var capacityClass = technician.WorkloadPercentage >= 80 ? "pm-progress__bar--danger" : technician.WorkloadPercentage >= 50 ? "pm-progress__bar--warn" : "pm-progress__bar--ok";
+                    var availabilityClass = technician.WorkloadPercentage >= 100 ? "pm-badge--high" : technician.WorkloadPercentage >= 51 ? "pm-badge--busy" : "pm-badge--avail";
+                    <tr>
+                        <td><strong>@technician.FullName</strong><div class="pm-muted" style="font-size:.8rem">@technician.Email</div></td>
+                        <td>@technician.Specialization</td>
+                        <td>@technician.ActiveJobs / @technician.MaxActiveJobs</td>
+                        <td style="min-width:160px">
+                            <div class="pm-progress pm-progress--capacity">
+                                <div class="pm-progress__bar @capacityClass" style="width:@technician.WorkloadPercentage%"></div>
+                            </div>
+                            <span class="pm-capacity-label @capacityClass" style="font-size:.75rem">@technician.WorkloadPercentage%</span>
+                        </td>
+                        <td>@technician.AvailabilityPercentage%</td>
+                        <td><span class="pm-badge @availabilityClass">@technician.AvailabilityStatus</span></td>
+                        <td class="pm-text-end">
+                            @if (technician.WorkloadPercentage >= 100)
+                            {
+                                <span class="pm-muted" style="font-size:.85rem">Full capacity</span>
+                            }
+                            else
+                            {
+                                <a class="pm-btn pm-btn--link" asp-area="Manager" asp-controller="Manager" asp-action="MaintenanceRequests">Assign</a>
+                            }
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>
+
+
+
+@if (urgentRequests.Count > 0)
+
+{
+
+    <div class="modal fade" id="urgentRequestsModal" tabindex="-1" aria-labelledby="urgentRequestsModalLabel" aria-hidden="true">
+
+        <div class="modal-dialog modal-dialog-centered modal-lg">
+
+            <div class="modal-content pm-urgent-modal">
+
+                <div class="modal-header pm-urgent-modal__header">
+
+                    <div>
+
+                        <h2 class="modal-title h5 mb-1" id="urgentRequestsModalLabel">Urgent requests need attention</h2>
+
+                        <p class="mb-0 pm-muted" style="font-size:.9rem">@urgentRequests.Count urgent request@(urgentRequests.Count == 1 ? "" : "s") require review.</p>
+
+                    </div>
+
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+
+                </div>
+
+                <div class="modal-body pm-urgent-modal__body">
+
+                    @foreach (var request in urgentRequests)
+
+                    {
+
+                        var needsAssignment = string.IsNullOrWhiteSpace(request.TechnicianName);
+
+                        <div class="pm-urgent-modal__item">
+
+                            <div class="d-flex justify-content-between align-items-start gap-3">
+
+                                <div>
+
+                                    <div class="fw-semibold">@request.DisplayId</div>
+
+                                    <div class="pm-muted" style="font-size:.85rem">@request.Title</div>
+
+                                    <div class="pm-muted" style="font-size:.8rem">@request.Category · @request.PropertyName · Unit @request.UnitNumber</div>
+
+                                </div>
+
+                                <span class="pm-badge pm-badge--urgent">@request.Priority</span>
+
+                            </div>
+
+                            <div class="d-flex justify-content-between align-items-center mt-2 gap-2 flex-wrap">
+
+                                <span class="pm-muted" style="font-size:.8rem">
+
+                                    @(needsAssignment ? "Unassigned — needs technician" : $"Assigned to {request.TechnicianName}")
+
+                                </span>
+
+                                <a class="pm-btn pm-btn--primary" asp-area="Manager" asp-controller="Manager" asp-action="AssignTechnician" asp-route-id="@request.RequestId">
+
+                                    @(needsAssignment ? "Assign now" : "Review")
+
+                                </a>
+
+                            </div>
+
+                        </div>
+
+                    }
+
+                </div>
+
+                <div class="modal-footer pm-urgent-modal__footer">
+
+                    <button type="button" class="pm-btn pm-btn--secondary" data-bs-dismiss="modal">Dismiss</button>
+
+                    <a class="pm-btn pm-btn--primary" asp-area="Manager" asp-controller="Manager" asp-action="MaintenanceRequests">View all requests</a>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+}
+
+
+
+@section Scripts {
+
+    @if (urgentRequests.Count > 0)
+
+    {
+
+        <script>
+
+            document.addEventListener('DOMContentLoaded', function () {
+
+                var modalEl = document.getElementById('urgentRequestsModal');
+
+                if (modalEl) {
+
+                    bootstrap.Modal.getOrCreateInstance(modalEl).show();
+
+                }
+
+            });
+
+        </script>
+
+    }
+
+}
+
+

@@ -1,0 +1,125 @@
+@model CloudMVCApplication.ViewModels.AreaDashboardViewModel
+@{
+    Layout = "~/Areas/Administrator/Views/Shared/_AdministratorLayout.cshtml";
+    ViewData["Title"] = "Property Portfolio";
+
+    var totalUnits = Model.Properties.Sum(p => p.UnitCount);
+    var occupiedUnits = Model.Properties.Sum(p => p.OccupiedUnits);
+    var occupancyPercent = totalUnits == 0 ? 0 : occupiedUnits * 100 / totalUnits;
+}
+
+<div class="pm-page-header">
+    <h1 class="pm-page-title">Property Portfolio</h1>
+    <p class="pm-page-lead">Manage and monitor your enterprise real estate assets.</p>
+</div>
+
+@if (TempData["SuccessMessage"] is string successMessage)
+{
+    <div class="alert alert-success" role="alert">@successMessage</div>
+}
+
+<div class="pm-grid pm-grid--stats pm-mb-2">
+    <div class="pm-stat">
+        <span class="material-symbols-outlined pm-stat__icon pm-stat__icon--primary">domain</span>
+        <div class="pm-stat__label">Total Properties</div>
+        <div class="pm-stat__value">@Model.Properties.Count</div>
+    </div>
+    <div class="pm-stat">
+        <span class="material-symbols-outlined pm-stat__icon pm-stat__icon--primary">meeting_room</span>
+        <div class="pm-stat__label">Total Units</div>
+        <div class="pm-stat__value">@totalUnits</div>
+    </div>
+    <div class="pm-stat">
+        <span class="material-symbols-outlined pm-stat__icon pm-stat__icon--info">group</span>
+        <div class="pm-stat__label">Avg Occupancy</div>
+        <div class="pm-stat__value">@occupancyPercent%</div>
+        <div class="pm-progress pm-mt-1">
+            <div class="pm-progress__bar pm-progress__bar--ok" style="width: @occupancyPercent%;"></div>
+        </div>
+    </div>
+</div>
+
+<form class="row g-3 align-items-end mb-3" asp-controller="Administrator" asp-action="Properties" method="get">
+    <div class="col-md-4 col-lg-3">
+        <label class="pm-label">Search</label>
+        <input name="search" class="pm-input" value="@ViewBag.Search" placeholder="Name, address, or city" />
+    </div>
+    <div class="col-md-4 col-lg-3">
+        <label class="pm-label">Type</label>
+        <select name="type" class="pm-select">
+            <option value="">All Property Types</option>
+            <option value="Commercial Office" selected="@(ViewBag.Type == "Commercial Office")">Commercial Office</option>
+            <option value="Residential Building" selected="@(ViewBag.Type == "Residential Building")">Residential Building</option>
+            <option value="Townhouse Community" selected="@(ViewBag.Type == "Townhouse Community")">Townhouse Community</option>
+            <option value="Industrial" selected="@(ViewBag.Type == "Industrial")">Industrial</option>
+        </select>
+    </div>
+    <div class="col-md-4 col-lg-3">
+        <label class="pm-label">Status</label>
+        <select name="status" class="pm-select">
+            <option value="">All Statuses</option>
+            <option value="Active" selected="@(ViewBag.Status == "Active")">Active</option>
+            <option value="Inactive" selected="@(ViewBag.Status == "Inactive")">Inactive</option>
+        </select>
+    </div>
+    <div class="col-auto">
+        <button class="pm-btn pm-btn--secondary" type="submit">
+            <span class="material-symbols-outlined">filter_list</span> Apply
+        </button>
+    </div>
+</form>
+
+<div class="row g-3">
+    @if (!Model.Properties.Any())
+    {
+        <div class="col-12">
+            <div class="pm-card">
+                <div class="pm-card__body">
+                    <p class="pm-muted mb-0">No properties match your search. Use <a asp-controller="Administrator" asp-action="Dashboard">Dashboard</a> or the top bar to add a property.</p>
+                </div>
+            </div>
+        </div>
+    }
+    @foreach (var property in Model.Properties)
+    {
+        var propertyOccupancy = property.UnitCount == 0 ? 0 : property.OccupiedUnits * 100 / property.UnitCount;
+        <div class="col-md-6 col-xl-4">
+            <a asp-controller="Administrator"
+               asp-action="PropertyDetail"
+               asp-route-id="@property.PropertyId"
+               class="pm-property-tile">
+                <div class="pm-property-tile__media @(string.IsNullOrWhiteSpace(property.ImageUrl) ? "pm-property-tile__media--empty" : null)">
+                    @if (string.IsNullOrWhiteSpace(property.ImageUrl))
+                    {
+                        <span class="material-symbols-outlined pm-property-tile__placeholder-icon">domain</span>
+                    }
+                    else
+                    {
+                        <img src="@property.ImageUrl"
+                             alt="@property.Name"
+                             class="pm-property-tile__img"
+                             draggable="false" />
+                    }
+                    <span class="pm-badge pm-badge--completed pm-property-tile__badge">@property.Type</span>
+                </div>
+                <div class="pm-property-tile__body">
+                    <h3 class="pm-property-tile__title">@property.Name</h3>
+                    <p class="pm-property-tile__location pm-muted">
+                        <span class="material-symbols-outlined">location_on</span>
+                        <span>@property.Address, @property.City</span>
+                    </p>
+                    <div class="pm-property-tile__meta">
+                        <div class="pm-property-tile__meta-item">
+                            <p class="pm-property-tile__meta-label">Total Units</p>
+                            <p class="pm-property-tile__meta-value">@property.UnitCount</p>
+                        </div>
+                        <div class="pm-property-tile__meta-item">
+                            <p class="pm-property-tile__meta-label">Occupancy</p>
+                            <p class="pm-property-tile__meta-value">@propertyOccupancy%</p>
+                        </div>
+                    </div>
+                </div>
+            </a>
+        </div>
+    }
+</div>

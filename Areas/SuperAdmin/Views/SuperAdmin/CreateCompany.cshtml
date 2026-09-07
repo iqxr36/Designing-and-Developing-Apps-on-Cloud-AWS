@@ -1,0 +1,89 @@
+@model CloudMVCApplication.ViewModels.SuperAdminCreateCompanyViewModel
+@using CloudMVCApplication.Models
+@{
+    ViewData["Title"] = "Add Company";
+}
+
+<div class="pm-page-header pm-flex-between">
+    <div>
+        <h1 class="pm-page-title">Add Company</h1>
+        <p class="pm-page-lead">Create a company and its initial administrator account.</p>
+    </div>
+    <a class="pm-btn pm-btn--secondary" asp-action="Companies">Back to companies</a>
+</div>
+
+<div class="pm-card">
+    <div class="pm-card__body">
+        <form asp-action="CreateCompany" method="post">
+            @Html.AntiForgeryToken()
+            <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
+
+            <h2 class="h5 mb-3">Company profile</h2>
+            <div class="row g-3 mb-4">
+                <div class="col-md-6">
+                    <label class="pm-label" asp-for="CompanyName"></label>
+                    <input class="pm-input" asp-for="CompanyName" />
+                    <span class="text-danger" asp-validation-for="CompanyName"></span>
+                </div>
+                <div class="col-md-6">
+                    <label class="pm-label" asp-for="CompanyEmail"></label>
+                    <input class="pm-input" asp-for="CompanyEmail" />
+                    <span class="text-danger" asp-validation-for="CompanyEmail"></span>
+                </div>
+                <div class="col-md-6">
+                    <label class="pm-label" asp-for="CompanyPhone"></label>
+                    <input class="pm-input" asp-for="CompanyPhone" />
+                    <span class="text-danger" asp-validation-for="CompanyPhone"></span>
+                </div>
+                <div class="col-md-6">
+                    <label class="pm-label" asp-for="Plan"></label>
+                    <select class="pm-select" asp-for="Plan">
+                        @foreach (var plan in SubscriptionPlans.All)
+                        {
+                            <option value="@plan">@plan — @SubscriptionPlans.GetDisplayPrice(plan)/mo</option>
+                        }
+                    </select>
+                    <span class="text-danger" asp-validation-for="Plan"></span>
+                </div>
+                <div class="col-12">
+                    <label class="pm-label" asp-for="CompanyAddress"></label>
+                    <textarea class="pm-input" asp-for="CompanyAddress" rows="2"></textarea>
+                    <span class="text-danger" asp-validation-for="CompanyAddress"></span>
+                </div>
+            </div>
+
+            <h2 class="h5 mb-3">Initial administrator</h2>
+            <div class="row g-3 mb-4">
+                <div class="col-md-6">
+                    <label class="pm-label" asp-for="AdminName"></label>
+                    <input class="pm-input" asp-for="AdminName" />
+                    <span class="text-danger" asp-validation-for="AdminName"></span>
+                </div>
+                <div class="col-md-6">
+                    <label class="pm-label" asp-for="AdminPhone"></label>
+                    <input class="pm-input" asp-for="AdminPhone" />
+                    <span class="text-danger" asp-validation-for="AdminPhone"></span>
+                </div>
+                <div class="col-md-6">
+                    <label class="pm-label" asp-for="Password"></label>
+                    <input class="pm-input" asp-for="Password" />
+                    <span class="text-danger" asp-validation-for="Password"></span>
+                </div>
+                <div class="col-md-6">
+                    <label class="pm-label" asp-for="ConfirmPassword"></label>
+                    <input class="pm-input" asp-for="ConfirmPassword" />
+                    <span class="text-danger" asp-validation-for="ConfirmPassword"></span>
+                </div>
+            </div>
+
+            <div class="d-flex gap-2">
+                <button type="submit" class="pm-btn pm-btn--primary">Create company</button>
+                <a class="pm-btn pm-btn--secondary" asp-action="Companies">Cancel</a>
+            </div>
+        </form>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

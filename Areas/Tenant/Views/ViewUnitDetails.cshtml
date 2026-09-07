@@ -1,0 +1,57 @@
+@model CloudMVCApplication.ViewModels.AreaDashboardViewModel
+@{
+    Layout = "~/Areas/Tenant/Views/Shared/_TenantLayout.cshtml";
+    ViewData["Title"] = "Unit Details";
+
+    var unit = Model.Units.FirstOrDefault();
+}
+
+<div class="pm-page-header">
+    <a class="pm-link-back" asp-area="Tenant" asp-controller="Tenant" asp-action="Dashboard"><span class="material-symbols-outlined" style="font-size:18px">arrow_back</span> Back to Dashboard</a>
+    <h1 class="pm-page-title">Unit Details</h1>
+    <p class="pm-page-lead">Review your assigned unit information.</p>
+</div>
+
+<div class="pm-card" style="max-width:720px">
+    <div class="pm-card__header">
+        <h2 class="pm-card__title">Your Unit</h2>
+    </div>
+    <div class="pm-card__body">
+        @if (unit == null)
+        {
+            <div class="alert alert-info mb-0">No unit is assigned to this tenant profile.</div>
+        }
+        else
+        {
+            <div class="row g-4">
+                <div class="col-md-6">
+                    <div class="pm-label">Unit number</div>
+                    <p class="mb-0"><strong>@unit.UnitNumber</strong></p>
+                </div>
+                <div class="col-md-6">
+                    <div class="pm-label">Property</div>
+                    <p class="mb-0"><strong>@unit.PropertyName</strong></p>
+                </div>
+                @if (!string.IsNullOrWhiteSpace(unit.PropertyAddress) || !string.IsNullOrWhiteSpace(unit.PropertyCity))
+                {
+                    <div class="col-12">
+                        <div class="pm-label">Address</div>
+                        <p class="mb-0">@unit.PropertyAddress@(string.IsNullOrWhiteSpace(unit.PropertyCity) ? "" : $", {unit.PropertyCity}")</p>
+                    </div>
+                }
+                <div class="col-md-6">
+                    <div class="pm-label">Unit type</div>
+                    <p class="mb-0">@unit.UnitType</p>
+                </div>
+                <div class="col-md-6">
+                    <div class="pm-label">Resident</div>
+                    <p class="mb-0">@unit.TenantName</p>
+                </div>
+                <div class="col-md-6">
+                    <div class="pm-label">Status</div>
+                    <p class="mb-0"><span class="pm-badge pm-badge--avail">@unit.Status</span></p>
+                </div>
+            </div>
+        }
+    </div>
+</div>

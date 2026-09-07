@@ -1,0 +1,169 @@
+@model CloudMVCApplication.ViewModels.AreaDashboardViewModel
+@{
+    Layout = "~/Areas/Administrator/Views/Shared/_AdministratorLayout.cshtml";
+    ViewData["Title"] = "Unit Inventory";
+
+    var vacancyRate = (int)(ViewBag.PortfolioVacancyRate ?? 0);
+    var portfolioUnitCount = (int)(ViewBag.PortfolioUnitCount ?? Model.Units.Count);
+    var maintenanceCount = (int)(ViewBag.PortfolioMaintenanceCount ?? Model.Units.Count(u => u.Status == "Maintenance"));
+}
+
+<div class="pm-flex-between pm-page-header">
+    <div>
+        <h1 class="pm-page-title">Unit Inventory</h1>
+        <p class="pm-page-lead">Manage and track all physical units across properties.</p>
+    </div>
+    <div class="d-flex gap-2 flex-wrap">
+        <a class="pm-btn pm-btn--primary" asp-controller="Administrator" asp-action="AddUnit">
+            <span class="material-symbols-outlined">add</span> Add Unit
+        </a>
+    </div>
+</div>
+
+@if (TempData["SuccessMessage"] is string successMessage)
+{
+    <div class="pm-card mb-3" style="border-left: 4px solid #0a5c2e;">
+        <div class="pm-card__body" style="color: #0a5c2e; font-weight: 600;">@successMessage</div>
+    </div>
+}
+
+<div class="pm-grid pm-grid--stats">
+    <div class="pm-stat">
+        <div class="d-flex justify-content-between align-items-start">
+            <span class="pm-stat__label">Total Units</span>
+        </div>
+        <h3 class="pm-stat__value" style="color: var(--pm-primary);">@portfolioUnitCount</h3>
+        <p class="small pm-muted" style="color: var(--pm-on-surface-variant);">Loaded from seeded portfolio</p>
+    </div>
+    <div class="pm-stat">
+        <div class="d-flex justify-content-between align-items-start">
+            <span class="pm-stat__label">Vacancy Rate</span>
+        </div>
+        <h3 class="pm-stat__value">@vacancyRate%</h3>
+        <div class="pm-progress" style="margin-top: 12px;">
+            <div class="pm-progress__bar pm-progress__bar--ok" style="width: @vacancyRate%;"></div>
+        </div>
+        <p class="pm-muted small pm-text-end" style="margin-top: 4px;">Target: &lt; 5%</p>
+    </div>
+    <div class="pm-stat">
+        <div style="display: flex; justify-content: space-between; align-items: center; width: 100%;">
+            <div>
+                <span class="pm-stat__label">Maintenance Hold</span>
+                <h3 class="pm-stat__value">@maintenanceCount</h3>
+            </div>
+            <div class="pm-stat__icon" style="background: #e1e1c9; color: #474836;">
+                <span class="material-symbols-outlined">build</span>
+            </div>
+        </div>
+    </div>
+</div>
+
+<form class="row g-3 align-items-end mb-3" asp-controller="Administrator" asp-action="Units" method="get">
+    <div class="col-md-4 col-lg-3" style="flex: 2;">
+        <label>Search</label>
+        <div style="position: relative;">
+            <span class="material-symbols-outlined" style="position: absolute; left: 12px; top: 50%; transform: translateY(-50%); color: var(--pm-on-surface-variant);">search</span>
+            <input type="text" name="search" class="pm-input" value="@ViewBag.Search" placeholder="Search by Unit # or Resident..." style="padding-left: 40px;" />
+        </div>
+    </div>
+    <div class="col-md-4 col-lg-3">
+        <label>Property</label>
+        <select name="propertyId" class="pm-select">
+            <option value="">All Properties</option>
+            @foreach (var property in Model.Properties)
+            {
+                <option value="@property.PropertyId" selected="@(ViewBag.PropertyId == property.PropertyId)">@property.Name</option>
+            }
+        </select>
+    </div>
+    <div class="col-md-4 col-lg-3">
+        <label>Type</label>
+        <select name="unitType" class="pm-select">
+            <option value="">All Types</option>
+            <option value="Studio" selected="@(ViewBag.UnitType == "Studio")">Studio</option>
+            <option value="1 Bedroom" selected="@(ViewBag.UnitType == "1 Bedroom")">1 Bedroom</option>
+            <option value="2 Bedroom" selected="@(ViewBag.UnitType == "2 Bedroom")">2 Bedroom</option>
+            <option value="Penthouse" selected="@(ViewBag.UnitType == "Penthouse")">Penthouse</option>
+        </select>
+    </div>
+    <div class="col-md-4 col-lg-3">
+        <label>Status</label>
+        <select name="status" class="pm-select">
+            <option value="">All Statuses</option>
+            <option value="Occupied" selected="@(ViewBag.Status == "Occupied")">Occupied</option>
+            <option value="Vacant" selected="@(ViewBag.Status == "Vacant")">Vacant</option>
+            <option value="Maintenance" selected="@(ViewBag.Status == "Maintenance")">Maintenance</option>
+        </select>
+    </div>
+    <button type="submit" class="pm-btn pm-btn--secondary" style="align-self: flex-end;">Apply</button>
+</form>
+
+<div class="pm-card">
+    @{
+        var page = (int)(ViewBag.Page ?? 1);
+        var totalPages = (int)(ViewBag.TotalPages ?? 1);
+        var totalItems = (int)(ViewBag.TotalItems ?? Model.Units.Count);
+    }
+    @if (!Model.Units.Any())
+    {
+        <div class="pm-empty-state">
+            <div class="pm-empty-state__icon"><span class="material-symbols-outlined">door_front</span></div>
+            <h2 class="pm-empty-state__title">No units found</h2>
+            <p class="pm-empty-state__text">No units match the selected property, type, status, or search text.</p>
+            <div class="pm-empty-state__actions">
+                <a class="pm-btn pm-btn--secondary" asp-controller="Administrator" asp-action="Units">Clear filters</a>
+                <a class="pm-btn pm-btn--primary" asp-controller="Administrator" asp-action="AddUnit">Add unit</a>
+            </div>
+        </div>
+    }
+    else
+    {
+        <div class="pm-table-wrap">
+            <table class="pm-table">
+                <thead>
+                    <tr>
+                        <th>Unit #</th>
+                        <th>Property Name</th>
+                        <th>Type</th>
+                        <th>Status</th>
+                        <th>Tenant</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+
+                <!-- View form button-->
+                <tbody>
+                    @foreach (var unit in Model.Units)
+                    {
+                        var badgeClass = unit.Status == "Occupied" ? "pm-badge--completed" : unit.Status == "Maintenance" ? "pm-badge--inprogress" : "pm-badge--pending";
+                        <tr>
+                            <td><strong style="color: var(--pm-primary);">@unit.UnitNumber</strong></td>
+                            <td>@unit.PropertyName</td>
+                            <td>@unit.UnitType</td>
+                            <td><span class="pm-badge @badgeClass">@unit.Status</span></td>
+                            <td>@(unit.TenantName ?? "Unassigned")</td>
+                            <td><a asp-controller="Administrator" asp-action="UnitDetail" asp-route-id="@unit.UnitId" style="color: var(--pm-primary); font-weight: 700; text-decoration: none;">View</a></td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+        <nav class="pm-card__pager" aria-label="Unit pages">
+            <span class="pm-card__pager-summary">Showing @Model.Units.Count of @totalItems units</span>
+            <div class="pm-card__pager-pages">
+            @if (page > 1)
+            {
+                <a class="page-link" asp-controller="Administrator" asp-action="Units" asp-route-pageNumber="@(page - 1)" asp-route-search="@ViewBag.Search" asp-route-propertyId="@ViewBag.PropertyId" asp-route-unitType="@ViewBag.UnitType" asp-route-status="@ViewBag.Status">Previous</a>
+            }
+            @for (var pageNumber = 1; pageNumber <= totalPages; pageNumber++)
+            {
+                <a class="page-link @(pageNumber == page ? "active" : null)" asp-controller="Administrator" asp-action="Units" asp-route-pageNumber="@pageNumber" asp-route-search="@ViewBag.Search" asp-route-propertyId="@ViewBag.PropertyId" asp-route-unitType="@ViewBag.UnitType" asp-route-status="@ViewBag.Status" aria-current="@(pageNumber == page ? "page" : null)">@pageNumber</a>
+            }
+            @if (page < totalPages)
+            {
+                <a class="page-link" asp-controller="Administrator" asp-action="Units" asp-route-pageNumber="@(page + 1)" asp-route-search="@ViewBag.Search" asp-route-propertyId="@ViewBag.PropertyId" asp-route-unitType="@ViewBag.UnitType" asp-route-status="@ViewBag.Status">Next</a>
+            }
+            </div>
+        </nav>
+    }
+</div>

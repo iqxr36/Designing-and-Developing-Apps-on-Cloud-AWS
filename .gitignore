@@ -1,0 +1,44 @@
+## Build results
+bin/
+obj/
+out/
+
+## Publish / deploy artifacts
+*.zip
+publish/
+
+## User-specific files
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+
+## IDE
+.vs/
+.idea/
+*.swp
+*~
+
+## OS
+.DS_Store
+Thumbs.db
+
+## Logs and temp
+*.log
+*.tmp
+
+## Secrets (keep appsettings.Development.json local only if used)
+appsettings.Development.json
+secrets.json
+
+## Local tools and runtime uploads
+.agents/
+.cursor/
+.vscode/
+wwwroot/uploads/
+Properties/serviceDependencies.local.json
+.env
+.env.*
+*.pem
+*.pfx
+*.key

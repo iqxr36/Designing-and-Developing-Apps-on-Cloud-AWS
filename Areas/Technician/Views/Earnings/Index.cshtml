@@ -1,0 +1,112 @@
+@model CloudMVCApplication.ViewModels.TechnicianEarningsViewModel
+@{
+    ViewData["Title"] = "My Payments";
+}
+
+<div class="pm-page-header">
+    <h1 class="pm-page-title">My Payments</h1>
+    <p class="pm-page-lead">Your completed-job payment history after the 10% platform commission is deducted.</p>
+</div>
+
+<div class="pm-grid pm-grid--stats pm-mb-2">
+    <div class="pm-stat">
+        <span class="material-symbols-outlined pm-stat__icon">payments</span>
+        <div class="pm-stat__label">Received</div>
+        <div class="pm-stat__value">@Model.TotalPaidToBank.ToString("C")</div>
+        <div class="pm-muted" style="font-size:.75rem">Net amount paid</div>
+    </div>
+    <div class="pm-stat">
+        <span class="material-symbols-outlined pm-stat__icon">percent</span>
+        <div class="pm-stat__label">Commission deducted</div>
+        <div class="pm-stat__value">@Model.AwaitingTransferAmount.ToString("C")</div>
+        <div class="pm-muted" style="font-size:.75rem">Platform commission</div>
+    </div>
+    <div class="pm-stat">
+        <span class="material-symbols-outlined pm-stat__icon">pending</span>
+        <div class="pm-stat__label">Pending</div>
+        <div class="pm-stat__value">@Model.PendingReleaseAmount.ToString("C")</div>
+        <div class="pm-muted" style="font-size:.75rem">Awaiting manager payment</div>
+    </div>
+    <div class="pm-stat">
+        <span class="material-symbols-outlined pm-stat__icon">calendar_today</span>
+        <div class="pm-stat__label">Latest payment</div>
+        <div class="pm-stat__value" style="font-size:1.25rem">@(Model.LatestBankPayoutAt?.ToLocalTime().ToString("MMM d, yyyy") ?? "No payments")</div>
+        <div class="pm-muted" style="font-size:.75rem">Most recent paid date</div>
+    </div>
+</div>
+
+<div class="pm-card">
+    <div class="pm-card__header">
+        <div>
+            <h2 class="pm-card__title">Payment history</h2>
+            <p class="pm-muted mb-0" style="font-size:.875rem">Gross job payment, platform commission, and your net amount per completed job.</p>
+        </div>
+        <span class="pm-badge pm-badge--low">Total: @Model.Payments.Count payments - @Model.PaidToBankJobs paid</span>
+    </div>
+
+    @if (!Model.Payments.Any())
+    {
+        <div class="pm-card__body text-center py-5">
+            <span class="material-symbols-outlined" style="font-size:3rem;color:var(--pm-primary)">payments</span>
+            <h3 class="h5 mt-3">No payment records yet</h3>
+            <p class="pm-muted">Payments will appear here after managers record them for your completed jobs.</p>
+        </div>
+    }
+    else
+    {
+        <div class="pm-table-wrap">
+            <table class="pm-table">
+                <thead>
+                    <tr>
+                        <th>Request title</th>
+                        <th>Property &amp; unit</th>
+                        <th>Paid date</th>
+                        <th>Transaction reference</th>
+                        <th>Status</th>
+                        <th>Payout status</th>
+                        <th class="pm-text-end">Gross amount</th>
+                        <th class="pm-text-end">Commission deducted</th>
+                        <th class="pm-text-end">Net received</th>
+                        <th class="pm-text-end">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var payment in Model.Payments)
+                    {
+                        var statusClass = payment.DisplayStatus switch
+                        {
+                            "Paid" => "pm-badge--completed",
+                            "Failed" => "pm-badge--high",
+                            "Cancelled" => "pm-badge--high",
+                            _ => "pm-badge--pending"
+                        };
+                        <tr>
+                            <td>
+                                <strong>@payment.RequestTitle</strong><br />
+                                <span class="pm-muted" style="font-size:.8rem">@payment.DisplayId</span>
+                            </td>
+                            <td>
+                                @payment.PropertyName<br />
+                                <span class="pm-badge pm-badge--low">Unit: @payment.UnitNumber</span>
+                            </td>
+                            <td class="pm-muted">@(payment.PaidAt?.ToLocalTime().ToString("MMM d, yyyy") ?? "-")</td>
+                            <td class="pm-muted">@(payment.TransactionReference ?? "-")</td>
+                            <td><span class="pm-badge @statusClass">@payment.DisplayStatus</span></td>
+                            <td class="pm-muted">@(payment.TechnicianPayoutStatus ?? "-")</td>
+                            <td class="pm-text-end pm-muted">@payment.GrossAmount.ToString("C")</td>
+                            <td class="pm-text-end pm-muted">@payment.PlatformFeeAmount.ToString("C")</td>
+                            <td class="pm-text-end"><strong>@payment.TechnicianNetAmount.ToString("C")</strong></td>
+                            <td class="pm-text-end">
+                                <a class="pm-btn pm-btn--link"
+                                   asp-area="Technician"
+                                   asp-controller="JobHistory"
+                                   asp-action="Details"
+                                   asp-route-id="@payment.RequestId">View job</a>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    }
+</div>

@@ -1,0 +1,65 @@
+@model CloudMVCApplication.ViewModels.AreaDashboardViewModel
+@{
+    Layout = "~/Areas/Administrator/Views/Shared/_AdministratorLayout.cshtml";
+    ViewData["Title"] = "Report Details";
+    var completed = Model.Requests.Count(r => r.Status == "Completed");
+    var pending = Model.Requests.Count(r => r.Status != "Completed");
+}
+
+<div class="pm-flex-between pm-page-header">
+    <div>
+        <h1 class="pm-page-title">Maintenance Summary</h1>
+        <p class="pm-page-lead">Generated: @DateTime.Now.ToString("MMM d, yyyy h:mm tt")</p>
+    </div>
+    <div class="d-flex gap-2 flex-wrap">
+        <a class="pm-btn pm-btn--secondary" asp-controller="Administrator" asp-action="Reports">
+            <span class="material-symbols-outlined">arrow_back</span> Back to Reports
+        </a>
+        <a class="pm-btn pm-btn--primary" asp-controller="Administrator" asp-action="ExportReady">
+            <span class="material-symbols-outlined">download</span> Export
+        </a>
+    </div>
+</div>
+
+<div class="pm-grid pm-grid--stats">
+    <div class="pm-stat">
+        <div class="d-flex justify-content-between align-items-start">
+            <span class="pm-stat__label">Total Requests</span>
+        </div>
+        <h3 class="pm-stat__value">@Model.Requests.Count</h3>
+    </div>
+    <div class="pm-stat">
+        <div class="d-flex justify-content-between align-items-start">
+            <span class="pm-stat__label">Resolved</span>
+        </div>
+        <h3 class="pm-stat__value" style="color: #0a5c2e;">@completed</h3>
+    </div>
+    <div class="pm-stat">
+        <div class="d-flex justify-content-between align-items-start">
+            <span class="pm-stat__label">Pending</span>
+        </div>
+        <h3 class="pm-stat__value">@pending</h3>
+    </div>
+    <div class="pm-stat">
+        <div class="d-flex justify-content-between align-items-start">
+            <span class="pm-stat__label">Avg Resolution</span>
+        </div>
+        <h3 class="pm-stat__value">@Model.Technicians.Count</h3>
+    </div>
+</div>
+
+<div class="pm-card">
+    <div class="pm-card__header">
+        <h3 class="pm-card__title">Report Summary</h3>
+    </div>
+    <div class="pm-card__body">
+        <p>This report covers seeded maintenance activity across <strong>@Model.Properties.Count</strong> properties in the portfolio.</p>
+        <h4 style="margin-top: 24px;">Key Findings:</h4>
+        <ul style="padding-left: 20px; margin-top: 12px;">
+            <li>@Model.Requests.Count maintenance requests are available for reporting.</li>
+            <li>@completed requests are completed and @pending remain open.</li>
+            <li>@Model.Technicians.Count platform technicians are available for assignment.</li>
+            <li>@Model.Units.Count units are included in the portfolio dataset.</li>
+        </ul>
+    </div>
+</div>

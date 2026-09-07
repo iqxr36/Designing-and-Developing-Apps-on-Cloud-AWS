@@ -1,0 +1,60 @@
+@using Microsoft.AspNetCore.Identity
+@using CloudMVCApplication.Models
+@inject UserManager<ApplicationUser> UserManager
+@inject CloudMVCApplication.Services.MessagingService MessagingService
+@{
+    var currentController = ViewContext.RouteData.Values["controller"]?.ToString() ?? "";
+    var currentUser = await UserManager.GetUserAsync(User);
+    var unreadMessages = currentUser == null ? 0 : await MessagingService.GetUnreadCountAsync(currentUser.Id);
+}
+<aside class="technician-sidebar manager-sidebar pm-sidebar" aria-label="Technician navigation">
+    <div class="pm-sidebar__brand">
+        <img class="pm-sidebar__brand-image" src="~/images/brand/zammaintain-logo.png" alt="ZamMaintain" asp-append-version="true" />
+    </div>
+    <nav class="pm-sidebar__nav">
+        <a class="pm-sidebar__link @(currentController == "Dashboard" ? "pm-sidebar__link--active" : null)" asp-area="Technician" asp-controller="Dashboard" asp-action="Index">
+            <span class="material-symbols-outlined" aria-hidden="true">dashboard</span>
+            Dashboard
+        </a>
+        <a class="pm-sidebar__link @(currentController == "MyJobs" ? "pm-sidebar__link--active" : null)" asp-area="Technician" asp-controller="MyJobs" asp-action="Index">
+            <span class="material-symbols-outlined" aria-hidden="true">work</span>
+            My Jobs
+        </a>
+        <a class="pm-sidebar__link @(currentController == "Messages" ? "pm-sidebar__link--active" : null)" asp-area="Technician" asp-controller="Messages" asp-action="Index">
+            <span class="material-symbols-outlined" aria-hidden="true">chat</span>
+            Messages
+            <span class="chat-unread-badge ms-auto" data-sidebar-unread-badge @(unreadMessages == 0 ? "hidden" : null)>@unreadMessages</span>
+        </a>
+        <a class="pm-sidebar__link @(currentController == "JobHistory" ? "pm-sidebar__link--active" : null)" asp-area="Technician" asp-controller="JobHistory" asp-action="Index">
+            <span class="material-symbols-outlined" aria-hidden="true">history</span>
+            Job History
+        </a>
+        <a class="pm-sidebar__link @(currentController == "UploadProof" ? "pm-sidebar__link--active" : null)" asp-area="Technician" asp-controller="UploadProof" asp-action="Index">
+            <span class="material-symbols-outlined" aria-hidden="true">cloud_upload</span>
+            Upload Proof
+        </a>
+        <a class="pm-sidebar__link @(currentController == "Earnings" ? "pm-sidebar__link--active" : null)" asp-area="Technician" asp-controller="Earnings" asp-action="Index">
+            <span class="material-symbols-outlined" aria-hidden="true">payments</span>
+            Earnings
+        </a>
+        <a class="pm-sidebar__link @(currentController == "Notifications" ? "pm-sidebar__link--active" : null)" asp-area="Technician" asp-controller="Notifications" asp-action="Index">
+            <span class="material-symbols-outlined" aria-hidden="true">notifications</span>
+            Notifications
+        </a>
+        <a class="pm-sidebar__link @(currentController == "Settings" ? "pm-sidebar__link--active" : null)" asp-area="Technician" asp-controller="Settings" asp-action="Index">
+            <span class="material-symbols-outlined" aria-hidden="true">account_circle</span>
+            Settings
+        </a>
+    </nav>
+    <div class="pm-sidebar__footer">
+        <form asp-area="Identity" asp-page="/Account/Logout" asp-route-returnUrl="@Url.Action("Index", "Home", new { area = "" })" method="post"
+              data-confirm-title="Log out?"
+              data-confirm-message="You will leave this technician session and return to the home page."
+              data-confirm-action="Log out">
+            <button type="submit" class="pm-sidebar__link pm-sidebar__link--logout w-100 border-0 bg-transparent text-start">
+                <span class="material-symbols-outlined" aria-hidden="true">logout</span>
+                Logout
+            </button>
+        </form>
+    </div>
+</aside>

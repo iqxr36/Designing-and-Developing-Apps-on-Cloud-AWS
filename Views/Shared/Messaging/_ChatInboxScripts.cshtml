@@ -1,0 +1,7 @@
+@model CloudMVCApplication.ViewModels.MessagingInboxViewModel
+
+<script>
+    window.inboxConfig = { currentUserId: '@Model.CurrentUserId' };
+</script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/microsoft-signalr/8.0.7/signalr.min.js" crossorigin="anonymous"></script>
+<script src="~/js/inbox.js" asp-append-version="true"></script>

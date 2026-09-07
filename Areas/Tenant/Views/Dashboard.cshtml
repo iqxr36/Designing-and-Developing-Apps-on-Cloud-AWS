@@ -1,0 +1,131 @@
+@model CloudMVCApplication.ViewModels.AreaDashboardViewModel
+@{
+    Layout = "~/Areas/Tenant/Views/Shared/_TenantLayout.cshtml";
+    ViewData["Title"] = "Tenant Dashboard";
+
+    var unit = Model.Units.FirstOrDefault();
+    var openCount = Model.Requests.Count(r => r.Status != "Completed" && r.Status != "Cancelled");
+    var completedCount = Model.Requests.Count(r => r.Status == "Completed");
+}
+
+@if (TempData["SuccessMessage"] is string successMessage)
+{
+    <div class="alert alert-success" role="alert">@successMessage</div>
+}
+
+<div class="pm-page-header">
+    <h1 class="pm-page-title">Tenant Dashboard</h1>
+    <p class="pm-page-lead">Welcome, @Model.CurrentUserName. Track maintenance for @(unit == null ? "your unit" : $"{unit.PropertyName}, Unit {unit.UnitNumber}").</p>
+</div>
+
+<div class="pm-grid pm-grid--stats pm-mb-2">
+    @foreach (var metric in Model.Metrics)
+    {
+        <div class="pm-stat">
+            <span class="material-symbols-outlined pm-stat__icon">@(metric.Icon ?? "analytics")</span>
+            <div class="pm-stat__label">@metric.Label</div>
+            <div class="pm-stat__value">@metric.Value</div>
+            @if (!string.IsNullOrWhiteSpace(metric.Note))
+            {
+                <div class="pm-muted" style="font-size:.85rem">@metric.Note</div>
+            }
+        </div>
+    }
+</div>
+
+<div class="pm-grid pm-grid--12 pm-mb-2">
+    <div class="pm-card">
+        <div class="pm-card__header">
+            <h2 class="pm-card__title">Recent Requests</h2>
+            <a class="pm-btn pm-btn--secondary" asp-area="Tenant" asp-controller="Tenant" asp-action="TrackRequestStatus">View All</a>
+        </div>
+        <div class="pm-table-wrap">
+            @if (!Model.Requests.Any())
+            {
+                <div class="pm-card__body">
+                    <p class="pm-muted mb-0">No maintenance requests yet. Submit your first request to get started.</p>
+                </div>
+            }
+            else
+            {
+                <table class="pm-table">
+                    <thead>
+                        <tr>
+                            <th>Request</th>
+                            <th>Issue</th>
+                            <th>Priority</th>
+                            <th>Status</th>
+                            <th class="pm-text-end">Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var request in Model.Requests.Take(5))
+                        {
+                            var priorityClass = request.Priority is "High" or "Urgent" ? "pm-badge--high" : request.Priority == "Low" ? "pm-badge--low" : "pm-badge--medium";
+                            var statusClass = request.Status == "Completed" ? "pm-badge--avail" : request.Status == "In Progress" ? "pm-badge--inprogress" : request.Status == "Assigned" ? "pm-badge--assigned" : "pm-badge--pending";
+                            <tr>
+                                <td><strong>@request.DisplayId</strong></td>
+                                <td>@request.Title</td>
+                                <td><span class="pm-badge @priorityClass">@request.Priority</span></td>
+                                <td><span class="pm-badge @statusClass">@request.Status</span></td>
+                                <td class="pm-text-end">
+                                    <a class="pm-btn pm-btn--link" asp-area="Tenant" asp-controller="Tenant" asp-action="RequestDetail" asp-route-id="@request.RequestId" title="View details">
+                                        <span class="material-symbols-outlined" style="font-size:20px">visibility</span>
+                                    </a>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            }
+        </div>
+    </div>
+
+    <div class="d-flex flex-column gap-3">
+        <div class="pm-card">
+            <div class="pm-card__header">
+                <h2 class="pm-card__title">Quick Actions</h2>
+            </div>
+            <div class="pm-card__body pm-stack">
+                <a class="tenant-quick-link" asp-area="Tenant" asp-controller="Tenant" asp-action="SubmitMaintenanceRequest">
+                    <div class="pm-card pm-card__body">
+                        <strong>Submit Maintenance Request</strong>
+                        <p class="pm-muted mb-0 pm-mt-1">Create a new repair request and attach issue photos.</p>
+                    </div>
+                </a>
+                <a class="tenant-quick-link" asp-area="Tenant" asp-controller="Tenant" asp-action="SubmitFeedback">
+                    <div class="pm-card pm-card__body">
+                        <strong>Submit Feedback</strong>
+                        <p class="pm-muted mb-0 pm-mt-1">Rate completed repairs and leave comments.</p>
+                    </div>
+                </a>
+            </div>
+        </div>
+
+        <div class="pm-card">
+            <div class="pm-card__header">
+                <h2 class="pm-card__title">Unit Summary</h2>
+            </div>
+            <div class="pm-card__body">
+                @if (unit == null)
+                {
+                    <p class="pm-muted mb-0">No unit is assigned to your tenant profile.</p>
+                }
+                else
+                {
+                    <p class="mb-1"><strong>@unit.PropertyName</strong></p>
+                    <p class="pm-muted mb-2">Unit @unit.UnitNumber · @unit.UnitType</p>
+                    <div class="pm-flex-between">
+                        <span class="pm-muted">Open requests</span>
+                        <span class="pm-badge pm-badge--pending">@openCount</span>
+                    </div>
+                    <div class="pm-flex-between pm-mt-1">
+                        <span class="pm-muted">Completed</span>
+                        <span class="pm-badge pm-badge--avail">@completedCount</span>
+                    </div>
+                    <a class="pm-btn pm-btn--ghost pm-mt-3" asp-area="Tenant" asp-controller="Tenant" asp-action="ViewUnitDetails">View unit details</a>
+                }
+            </div>
+        </div>
+    </div>
+</div>

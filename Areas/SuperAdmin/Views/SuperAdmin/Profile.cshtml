@@ -1,0 +1,60 @@
+@model CloudMVCApplication.ViewModels.AreaDashboardViewModel
+@{
+    Layout = "~/Areas/SuperAdmin/Views/Shared/_SuperAdminLayout.cshtml";
+    ViewData["Title"] = "My Profile";
+}
+
+@if (TempData["SuccessMessage"] is string successMessage)
+{
+    <div class="alert alert-success" role="alert">@successMessage</div>
+}
+
+<div class="pm-page-header">
+    <h1 class="pm-page-title">My Profile</h1>
+    <p class="pm-page-lead">Manage your Super Admin account photo and account details.</p>
+</div>
+
+<div class="row g-4">
+    <div class="col-lg-4">
+        <div class="pm-card">
+            <div class="pm-card__body text-center">
+                @if (!string.IsNullOrWhiteSpace(Model.CurrentUserAvatarUrl))
+                {
+                    <img src="@Model.CurrentUserAvatarUrl" alt="Profile" class="pm-avatar-lg d-block mx-auto mb-3" style="object-fit: cover;" />
+                }
+                else
+                {
+                    <div class="pm-avatar-lg d-flex align-items-center justify-content-center mx-auto mb-3" style="background: #333d4d; color: #9da8bb; font-weight: 700; font-size: 2rem;">@Model.CurrentUserInitials</div>
+                }
+                <h2 class="h5 mb-1">@Model.CurrentUserName</h2>
+                <p class="pm-muted mb-2">@Model.CurrentUserEmail</p>
+                <span class="pm-badge pm-badge--dark">Super Admin</span>
+                <div class="mt-3 d-flex flex-column gap-2">
+                    <a class="pm-btn pm-btn--secondary pm-w-100" asp-area="SuperAdmin" asp-controller="SuperAdmin" asp-action="ChangeAvatar">Change Avatar</a>
+                    @if (!string.IsNullOrWhiteSpace(Model.CurrentUserAvatarUrl))
+                    {
+                        <form method="post" asp-area="SuperAdmin" asp-controller="SuperAdmin" asp-action="RemoveAvatar">
+                            @Html.AntiForgeryToken()
+                            <button type="submit" class="pm-btn pm-btn--link pm-w-100" style="color: #ba1a1a;"
+                                    data-confirm-title="Remove profile photo?"
+                                    data-confirm-message="Your current avatar will be removed from this Super Admin profile."
+                                    data-confirm-action="Remove photo">Remove Avatar</button>
+                        </form>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-8">
+        <div class="pm-card">
+            <div class="pm-card__header"><h2 class="pm-card__title">Account status</h2></div>
+            <div class="pm-card__body">
+                <ul class="list-unstyled mb-0 pm-stack">
+                    <li class="d-flex justify-content-between"><span class="pm-muted">Role</span><span class="pm-badge pm-badge--dark">Super Admin</span></li>
+                    <li class="d-flex justify-content-between"><span class="pm-muted">Email</span><span>@Model.CurrentUserEmail</span></li>
+                    <li class="d-flex justify-content-between"><span class="pm-muted">Phone</span><span>@(string.IsNullOrWhiteSpace(Model.CurrentUserPhoneNumber) ? "Not set" : Model.CurrentUserPhoneNumber)</span></li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>

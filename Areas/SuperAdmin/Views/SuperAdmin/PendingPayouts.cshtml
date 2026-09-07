@@ -1,0 +1,91 @@
+@model List<CloudMVCApplication.ViewModels.SuperAdminPendingPayoutViewModel>
+@{
+    ViewData["Title"] = "Pending Bank Transfers";
+}
+
+<div class="pm-page-header pm-flex-between">
+    <div>
+        <h1 class="pm-page-title">Pending bank transfers</h1>
+        <p class="pm-page-lead">Company charges are complete. Transfer the net amount to each technician and mark as sent. Platform commission is retained from the gross charge.</p>
+    </div>
+    <span class="pm-badge pm-badge--pending">@Model.Count awaiting</span>
+</div>
+
+@if (TempData["SuccessMessage"] != null)
+{
+    <div class="alert alert-success" role="alert">@TempData["SuccessMessage"]</div>
+}
+@if (TempData["ErrorMessage"] != null)
+{
+    <div class="alert alert-danger" role="alert">@TempData["ErrorMessage"]</div>
+}
+
+@if (!Model.Any())
+{
+    <div class="pm-card">
+        <div class="pm-card__body text-center py-5">
+            <span class="material-symbols-outlined" style="font-size:3rem;color:var(--pm-primary)">account_balance</span>
+            <h3 class="h5 mt-3">No pending bank transfers</h3>
+            <p class="pm-muted mb-0">New items appear here after managers release payment and the company charge succeeds.</p>
+        </div>
+    </div>
+}
+else
+{
+    <div class="pm-card">
+        <div class="pm-card__body pm-table-wrap">
+            <table class="pm-table">
+                <thead>
+                    <tr>
+                        <th>Job</th>
+                        <th>Company</th>
+                        <th>Technician</th>
+                        <th>Company charged</th>
+                        <th>Platform fee</th>
+                        <th>Transfer to tech</th>
+                        <th>Charged at</th>
+                        <th>Bank details</th>
+                        <th></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var payout in Model)
+                    {
+                        <tr>
+                            <td>
+                                <strong>@payout.DisplayRequestId</strong>
+                            </td>
+                            <td>@payout.CompanyName</td>
+                            <td>
+                                <strong>@payout.TechnicianName</strong>
+                                <div class="pm-muted" style="font-size:.8rem">@payout.TechnicianEmail</div>
+                            </td>
+                            <td>@payout.CompanyChargeAmount.ToString("C")</td>
+                            <td class="pm-muted">@payout.PlatformFeeAmount.ToString("C")</td>
+                            <td><strong>@payout.TechnicianTransferAmount.ToString("C")</strong></td>
+                            <td class="pm-muted">@(payout.CompanyChargedAt?.ToLocalTime().ToString("MMM d, yyyy HH:mm") ?? "—")</td>
+                            <td style="font-size:.875rem">
+                                <div><span class="pm-muted">Holder:</span> @payout.AccountHolderName</div>
+                                <div><span class="pm-muted">Bank:</span> @payout.BankName</div>
+                                <div><span class="pm-muted">Account:</span> @payout.AccountNumber</div>
+                            </td>
+                            <td class="pm-text-end">
+                                <form method="post" asp-action="MarkPayoutTransferred" class="d-inline-flex flex-column gap-2" style="min-width:12rem"
+                                      data-confirm-title="Mark payout sent?"
+                                      data-confirm-message="This records the technician bank transfer as completed. Make sure the transfer was actually sent."
+                                      data-confirm-action="Mark sent">
+                                    @Html.AntiForgeryToken()
+                                    <input type="hidden" name="PaymentId" value="@payout.PaymentId" />
+                                    <input class="pm-input pm-input--sm" type="text" name="BankTransferReference" placeholder="Bank ref (optional)" maxlength="120" />
+                                    <button type="submit" class="pm-btn pm-btn--primary pm-btn--sm">
+                                        Mark @payout.TechnicianTransferAmount.ToString("C") sent
+                                    </button>
+                                </form>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+}

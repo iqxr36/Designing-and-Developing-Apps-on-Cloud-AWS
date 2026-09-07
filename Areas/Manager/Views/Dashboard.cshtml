@@ -1,0 +1,80 @@
+@model CloudMVCApplication.ViewModels.AreaDashboardViewModel
+@{
+    Layout = "~/Areas/Manager/Views/Shared/_ManagerLayout.cshtml";
+    ViewData["Title"] = "Property Manager Dashboard";
+
+    var pendingCount = Model.Requests.Count(r => r.Status == "Pending");
+    var assignedCount = Model.Requests.Count(r => !string.IsNullOrWhiteSpace(r.TechnicianName));
+    var inProgressCount = Model.Requests.Count(r => r.Status == "In Progress");
+    var completedCount = Model.Requests.Count(r => r.Status == "Completed");
+    var urgentCount = Model.Requests.Count(r => r.Priority == "High");
+}
+<div class="pm-page-header">
+    <h1 class="pm-page-title">Property Manager Dashboard</h1>
+    <p class="pm-page-lead">Monitor tenant maintenance requests, technician assignments, and repair progress.</p>
+</div>
+
+<div class="pm-grid pm-grid--stats pm-mb-2">
+    <div class="pm-stat"><span class="material-symbols-outlined pm-stat__icon">confirmation_number</span><div class="pm-stat__label">Total Requests</div><div class="pm-stat__value">@Model.Requests.Count</div></div>
+    <div class="pm-stat"><span class="material-symbols-outlined pm-stat__icon">pending_actions</span><div class="pm-stat__label">Pending Requests</div><div class="pm-stat__value">@pendingCount</div></div>
+    <div class="pm-stat"><span class="material-symbols-outlined pm-stat__icon">engineering</span><div class="pm-stat__label">Assigned Jobs</div><div class="pm-stat__value">@assignedCount</div></div>
+    <div class="pm-stat"><span class="material-symbols-outlined pm-stat__icon">sync</span><div class="pm-stat__label">In Progress</div><div class="pm-stat__value">@inProgressCount</div></div>
+    <div class="pm-stat"><span class="material-symbols-outlined pm-stat__icon">task_alt</span><div class="pm-stat__label">Completed Repairs</div><div class="pm-stat__value">@completedCount</div></div>
+    <div class="pm-stat"><span class="material-symbols-outlined pm-stat__icon">warning</span><div class="pm-stat__label">Urgent Requests</div><div class="pm-stat__value">@urgentCount</div></div>
+</div>
+
+<div class="pm-grid pm-grid--12 pm-mb-2">
+    <div class="pm-card">
+        <div class="pm-card__header">
+            <h2 class="pm-card__title">Recent Maintenance Requests</h2>
+            <a class="pm-btn pm-btn--secondary" asp-area="Manager" asp-controller="Manager" asp-action="MaintenanceRequests">View All</a>
+        </div>
+        <div class="pm-table-wrap">
+            <table class="pm-table">
+                <thead>
+                    <tr>
+                        <th>Request ID</th>
+                        <th>Tenant / Unit</th>
+                        <th>Issue</th>
+                        <th>Priority</th>
+                        <th>Status</th>
+                        <th class="pm-text-end">Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var request in Model.Requests.Take(5))
+                    {
+                        var priorityClass = request.Priority == "High" ? "pm-badge--high" : request.Priority == "Low" ? "pm-badge--low" : "pm-badge--medium";
+                        var statusClass = request.Status == "Completed" ? "pm-badge--avail" : request.Status == "In Progress" ? "pm-badge--inprogress" : request.Status == "Assigned" ? "pm-badge--assigned" : "pm-badge--pending";
+                        <tr>
+                            <td><strong>@request.DisplayId</strong></td>
+                            <td>@request.TenantName<br /><span class="pm-muted" style="font-size:.8rem">@request.PropertyName, Unit @request.UnitNumber</span></td>
+                            <td>@request.Title</td>
+                            <td><span class="pm-badge @priorityClass">@request.Priority</span></td>
+                            <td><span class="pm-badge @statusClass">@request.Status</span></td>
+                            <td class="pm-text-end"><a class="pm-btn pm-btn--link" asp-area="Manager" asp-controller="Manager" asp-action="MaintenanceRequests" title="Open requests list"><span class="material-symbols-outlined" style="font-size:20px">visibility</span></a></td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+    <div class="d-flex flex-column gap-3">
+        <div class="pm-card">
+            <div class="pm-card__header">
+                <h2 class="pm-card__title">Technician Workload</h2>
+            </div>
+            <div class="pm-card__body">
+                @foreach (var technician in Model.Technicians)
+                {
+                    <div class="pm-mb-2">
+                        <div class="pm-flex-between"><span>@technician.FullName</span><span class="pm-muted">@technician.ActiveJobs/@technician.MaxActiveJobs - @technician.WorkloadPercentage%</span></div>
+                        <div class="pm-progress pm-mt-1"><div class="pm-progress__bar" style="width:@technician.WorkloadPercentage%"></div></div>
+                        <div class="pm-muted" style="font-size:.75rem">@technician.AvailabilityPercentage% available - @technician.AvailabilityStatus</div>
+                    </div>
+                }
+                <a class="pm-btn pm-btn--secondary pm-w-100 pm-mt-2" asp-area="Manager" asp-controller="Manager" asp-action="TechnicianWorkload">Open workload</a>
+            </div>
+        </div>
+    </div>
+</div>

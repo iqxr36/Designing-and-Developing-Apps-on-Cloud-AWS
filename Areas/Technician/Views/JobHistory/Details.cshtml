@@ -1,0 +1,228 @@
+@model CloudMVCApplication.ViewModels.TechnicianJobDetailViewModel
+@{
+    ViewData["Title"] = "Completed Job Details";
+
+    var request = Model.Request;
+    var proofPhotos = request.RequestImages.Where(i => i.ImageType == "CompletionProof").OrderByDescending(i => i.UploadedAt).ToList();
+    var issuePhotos = request.RequestImages.Where(i => i.ImageType == "IssuePhoto").OrderBy(i => i.UploadedAt).ToList();
+    var history = request.RequestStatusHistories.OrderByDescending(h => h.ChangedAt).ToList();
+}
+
+<div class="pm-flex-between pm-page-header">
+    <div>
+        <a class="pm-link-back" asp-area="Technician" asp-controller="JobHistory" asp-action="Index">
+            <span class="material-symbols-outlined" style="font-size:18px">arrow_back</span> Back to history
+        </a>
+        <div class="d-flex flex-wrap align-items-center gap-2">
+            <h1 class="pm-page-title mb-0">@request.Title</h1>
+            <span class="pm-badge pm-badge--completed">
+                <span class="material-symbols-outlined align-middle" style="font-size:16px">check_circle</span> Completed
+            </span>
+        </div>
+        <p class="pm-page-lead pm-mt-1">#REQ-@request.RequestId.ToString("0000") • Completed @request.Assignment?.CompletedAt?.ToLocalTime().ToString("MMM d, yyyy")</p>
+    </div>
+</div>
+
+<div class="row g-4">
+    <div class="col-xl-8 d-flex flex-column gap-4">
+        <div class="pm-card">
+            <div class="pm-card__header">
+                <h2 class="pm-card__title">Work summary</h2>
+            </div>
+            <div class="pm-card__body">
+                <p class="mb-4">@(request.Assignment?.CompletionNotes ?? request.Description ?? "No completion notes were recorded.")</p>
+                <div class="row g-3">
+                    <div class="col-md-4">
+                        <div class="pm-label">Tenant</div>
+                        <p class="mb-0"><strong>@request.Tenant.User.FullName</strong></p>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="pm-label">Property</div>
+                        <p class="mb-0"><strong>@request.Property.PropertyName</strong></p>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="pm-label">Unit</div>
+                        <p class="mb-0"><strong>@request.Unit.UnitNumber</strong></p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="pm-card">
+            <div class="pm-card__header">
+                <h2 class="pm-card__title">Completion proof</h2>
+            </div>
+            <div class="pm-card__body">
+                @if (proofPhotos.Any())
+                {
+                    <div class="row g-2">
+                        @foreach (var photo in proofPhotos)
+                        {
+                            <div class="col-6 col-md-3">
+                                <button type="button" class="pm-photo-thumb"
+                                        data-photo-preview
+                                        data-photo-group="technician-history-@request.RequestId"
+                                        data-photo-src="@photo.ImageUrl"
+                                        data-photo-title="Completion proof - #REQ-@request.RequestId.ToString("0000")"
+                                        data-photo-type="Completion proof"
+                                        data-photo-by="@photo.UploadedByUser.FullName"
+                                        data-photo-time="@photo.UploadedAt.ToLocalTime().ToString("MMM d, yyyy h:mm tt")">
+                                    <img src="@photo.ImageUrl" alt="Completion proof" class="img-fluid rounded border" style="aspect-ratio:1;object-fit:cover;width:100%" />
+                                </button>
+                            </div>
+                        }
+                    </div>
+                }
+                else
+                {
+                    <div class="border border-dashed rounded p-4 text-center pm-muted">No completion proof was uploaded.</div>
+                }
+            </div>
+        </div>
+
+        <div class="pm-card">
+            <div class="pm-card__header">
+                <h2 class="pm-card__title">Original issue photos</h2>
+            </div>
+            <div class="pm-card__body">
+                @if (issuePhotos.Any())
+                {
+                    <div class="row g-2">
+                        @foreach (var photo in issuePhotos)
+                        {
+                            <div class="col-6 col-md-3">
+                                <button type="button" class="pm-photo-thumb"
+                                        data-photo-preview
+                                        data-photo-group="technician-history-@request.RequestId"
+                                        data-photo-src="@photo.ImageUrl"
+                                        data-photo-title="Issue photo - #REQ-@request.RequestId.ToString("0000")"
+                                        data-photo-type="Issue photo"
+                                        data-photo-by="@photo.UploadedByUser.FullName"
+                                        data-photo-time="@photo.UploadedAt.ToLocalTime().ToString("MMM d, yyyy h:mm tt")">
+                                    <img src="@photo.ImageUrl" alt="Issue photo" class="img-fluid rounded border" style="aspect-ratio:1;object-fit:cover;width:100%" />
+                                </button>
+                            </div>
+                        }
+                    </div>
+                }
+                else
+                {
+                    <div class="border border-dashed rounded p-4 text-center pm-muted">No original issue photos were uploaded.</div>
+                }
+            </div>
+        </div>
+    </div>
+
+    <div class="col-xl-4 d-flex flex-column gap-4">
+        <div class="pm-card">
+            <div class="pm-card__header">
+                <h2 class="pm-card__title">Payment</h2>
+            </div>
+            <div class="pm-card__body">
+                <ul class="list-unstyled mb-0 pm-stack">
+                    <li class="d-flex justify-content-between gap-3">
+                        <span class="pm-muted">Amount</span>
+                        <strong>@(request.ServicePayment == null ? "N/A" : request.ServicePayment.Amount.ToString("C"))</strong>
+                    </li>
+                    <li class="d-flex justify-content-between gap-3">
+                        <span class="pm-muted">Status</span>
+                        <span>@(request.ServicePayment?.PaymentStatus ?? "Not recorded")</span>
+                    </li>
+                    <li class="d-flex justify-content-between gap-3">
+                        <span class="pm-muted">Paid at</span>
+                        <span class="text-end">@(request.ServicePayment?.PaidAt?.ToLocalTime().ToString("MMM d, yyyy") ?? "Pending")</span>
+                    </li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="pm-card">
+            <div class="pm-card__header">
+                <h2 class="pm-card__title">Tenant feedback</h2>
+            </div>
+            <div class="pm-card__body">
+                @if (request.RequestFeedback != null)
+                {
+                    <p class="h3 mb-2">@request.RequestFeedback.Rating / 5</p>
+                    <p class="pm-muted mb-0">@(request.RequestFeedback.Comment ?? "No comment provided.")</p>
+                }
+                else
+                {
+                    <p class="pm-muted mb-0">No tenant feedback has been recorded for this job.</p>
+                }
+            </div>
+        </div>
+
+        <div class="pm-card">
+            <div class="pm-card__header">
+                <div>
+                    <h2 class="pm-card__title">Job timeline</h2>
+                    <p class="pm-muted mb-0" style="font-size:.875rem">Status updates recorded before completion.</p>
+                </div>
+            </div>
+            <div class="pm-card__body">
+                <div class="pm-timeline pm-timeline--events">
+                    @if (history.Any())
+                    {
+                        @foreach (var item in history)
+                        {
+                            var status = item.NewStatus ?? "Updated";
+                            var icon = status switch
+                            {
+                                "Assigned" => "assignment_ind",
+                                "In Progress" => "construction",
+                                "Completed" => "task_alt",
+                                "Cancelled" => "cancel",
+                                _ => "history"
+                            };
+                            var badgeClass = status switch
+                            {
+                                "Completed" => "pm-badge--completed",
+                                "In Progress" => "pm-badge--inprogress",
+                                "Assigned" => "pm-badge--assigned",
+                                "Cancelled" => "pm-badge--high",
+                                _ => "pm-badge--pending"
+                            };
+                            var transitionLabel = item.OldStatus == null
+                                ? "Created"
+                                : item.OldStatus == item.NewStatus
+                                    ? "Timeline update"
+                                    : $"{item.OldStatus} to {item.NewStatus}";
+                            <div class="pm-timeline__item @(status == request.Status ? "pm-timeline__item--current" : null)">
+                                <div class="pm-timeline__marker">
+                                    <span class="material-symbols-outlined">@icon</span>
+                                </div>
+                                <div class="pm-timeline__content">
+                                    <div class="pm-flex-between gap-2">
+                                        <div>
+                                            <strong>@status</strong>
+                                            <span class="pm-badge @badgeClass ms-1">@transitionLabel</span>
+                                        </div>
+                                        <span class="pm-timeline__time">@item.ChangedAt.ToLocalTime().ToString("MMM d, yyyy h:mm tt")</span>
+                                    </div>
+                                    <p class="pm-muted mb-0" style="font-size:.85rem">Updated by @item.ChangedByUser.FullName</p>
+                                    @if (!string.IsNullOrWhiteSpace(item.Notes))
+                                    {
+                                        <p class="pm-timeline__note">@item.Notes</p>
+                                    }
+                                </div>
+                            </div>
+                        }
+                    }
+                    else
+                    {
+                        <div class="pm-timeline__item pm-timeline__item--current">
+                            <div class="pm-timeline__marker">
+                                <span class="material-symbols-outlined">task_alt</span>
+                            </div>
+                            <div class="pm-timeline__content">
+                                <strong>Completed</strong>
+                                <p class="pm-muted mb-0" style="font-size:.85rem">No detailed status updates were recorded.</p>
+                            </div>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

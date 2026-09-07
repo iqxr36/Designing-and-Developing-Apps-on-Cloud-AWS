@@ -1,0 +1,117 @@
+@page
+@model CloudMVCApplication.Areas.Identity.Pages.Account.LoginModel
+@{
+    ViewData["Title"] = "Login";
+    Layout = "/Views/Shared/_AuthLayout.cshtml";
+}
+
+<main class="auth-main auth-main--login">
+    <section class="auth-brand-panel" aria-label="ZamMaintain brand">
+        <div class="auth-brand-content">
+            <img src="~/images/brand/zammaintain-logo.png" alt="ZamMaintain Logo" class="auth-logo-icon auth-logo-icon--login" />
+            <p class="auth-subtitle">Cloud-Based Property Maintenance Platform</p>
+
+            <div class="auth-image-card">
+                <img src="https://lh3.googleusercontent.com/aida-public/AB6AXuBEmPBMXI4ah42P8bZjgyeGbYP2Fz6sY4oUUHTrZP3o9gZiwOY-ICwZWaUq1wVjZY7-6n0TLybhpx_NWuVCl6VAv3wOkiWL_C9lU8Su5ohPmG0Jux8SRpw5YUUCm5Z_8djb8Q43S8xtsY55xcFW8LCBCET6h7HGXwOjTyeca3r6yD9pgKd6FeejUm9gJ3zQbpu4jO-DJTjL89akL-8RIZi5C3aJfqmCfz2835TtgeSsiYGDD3qL0-8i4BoaUmYqGz00vWci1k4eI2M"
+                     alt="Modern glass property building representing the ZamMaintain enterprise platform" />
+            </div>
+        </div>
+    </section>
+
+    <section class="auth-form-panel" aria-label="Login form">
+        <div class="auth-card">
+            <div class="auth-card-header">
+                <h2 class="auth-card-title">Login</h2>
+                <p class="auth-card-subtitle">Welcome back to ZamMaintain Enterprise.</p>
+            </div>
+
+            <form class="auth-form" method="post" asp-route-returnUrl="@Model.ReturnUrl">
+                @if (Model.PasswordResetSucceeded)
+                {
+                    <div class="auth-success-banner" role="status">
+                        Your password has been reset successfully. You can now log in with your new password.
+                    </div>
+                }
+
+                <div asp-validation-summary="ModelOnly" class="auth-validation-summary" role="alert"></div>
+
+                <div class="auth-field">
+                    <label class="auth-label" asp-for="Input.Email">Email Address</label>
+                    <div class="auth-input-wrapper">
+                        <span class="material-symbols-outlined auth-input-icon" aria-hidden="true">mail</span>
+                        <input class="auth-input"
+                               asp-for="Input.Email"
+                               type="email"
+                               autocomplete="username"
+                               placeholder="name@company.com"
+                               aria-required="true" />
+                    </div>
+                    <span class="auth-validation-message" asp-validation-for="Input.Email"></span>
+                </div>
+
+                <div class="auth-field">
+                    <div class="auth-field-row">
+                        <label class="auth-label" asp-for="Input.Password">Password</label>
+                        <a class="auth-link" href="/Identity/Account/ForgotPassword">Forgot Password?</a>
+                    </div>
+                    <div class="auth-input-wrapper auth-input-wrapper--password">
+                        <input class="auth-input"
+                               id="LoginPassword"
+                               asp-for="Input.Password"
+                               autocomplete="current-password"
+                               placeholder="Password"
+                               aria-required="true" />
+                        <button class="auth-password-toggle" type="button" data-password-toggle="LoginPassword">
+                            <span class="material-symbols-outlined" aria-hidden="true" data-password-toggle-icon>visibility</span>
+                        </button>
+                    </div>
+                    <span class="auth-validation-message" asp-validation-for="Input.Password"></span>
+                </div>
+
+                <div class="auth-options">
+                    <label class="auth-checkbox" asp-for="Input.RememberMe">
+                        <input asp-for="Input.RememberMe" />
+                        <span>Remember me</span>
+                    </label>
+                </div>
+
+                <button class="auth-primary-button" type="submit">Login</button>
+            </form>
+
+            <div class="auth-card-link-row">
+                <a class="auth-link" asp-area="" asp-controller="Home" asp-action="Index">Back to Home</a>
+            </div>
+
+            <div class="auth-helper-box">
+                Managers and tenants receive login credentials from their property company admin.
+            </div>
+        </div>
+    </section>
+</main>
+
+<footer class="auth-footer">
+    <div class="auth-footer-inner">
+        <div class="auth-footer-brand" style="display: flex; align-items: center; gap: 16px;">
+            <img src="~/images/brand/zammaintain-logo.png" alt="ZamMaintain Logo" class="auth-footer-logo-img" style="height: 40px; filter: brightness(0) invert(1); opacity: 0.9;" />
+            <span>&copy; 2026 ZamMaintain Enterprise. All rights reserved.</span>
+        </div>
+        <div class="auth-footer-nav" aria-label="Footer links" style="align-items: center; gap: 24px;">
+            <div style="display: flex; gap: 24px; border-right: 1px solid rgba(255,255,255,0.2); padding-right: 24px;">
+                <span class="auth-footer-link" style="cursor: default; display: flex; align-items: center; gap: 6px;">
+                    <span class="material-symbols-outlined" style="font-size: 16px;">mail</span> support@zammaintain.com
+                </span>
+                <span class="auth-footer-link" style="cursor: default; display: flex; align-items: center; gap: 6px;">
+                    <span class="material-symbols-outlined" style="font-size: 16px;">call</span> +601163749281
+                </span>
+            </div>
+            <div style="display: flex; gap: 24px;">
+                <a class="auth-footer-link" href="/Home/Privacy">Privacy Policy</a>
+                <a class="auth-footer-link" href="/Home/Terms">Terms of Service</a>
+            </div>
+        </div>
+    </div>
+</footer>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

@@ -1,0 +1,85 @@
+@model CloudMVCApplication.ViewModels.AreaDashboardViewModel
+@{
+    Layout = "~/Areas/Administrator/Views/Shared/_AdministratorLayout.cshtml";
+    ViewData["Title"] = "Add New User";
+}
+
+<div class="pm-flex-between pm-page-header">
+    <div>
+        <h1 class="pm-page-title">Add New User</h1>
+        <p class="pm-page-lead">Create a new user account for the system.</p>
+    </div>
+    <div class="d-flex gap-2 flex-wrap">
+        <a class="pm-btn pm-btn--secondary" asp-controller="Administrator" asp-action="Users">
+            <span class="material-symbols-outlined">arrow_back</span> Back to Users
+        </a>
+    </div>
+</div>
+
+<div class="pm-card">
+    <div class="pm-card__header">
+        <h3 class="pm-card__title">User Information</h3>
+    </div>
+    <form asp-controller="Administrator" asp-action="AddUser" method="post">
+        @Html.AntiForgeryToken()
+        <div class="pm-card__body">
+            <div asp-validation-summary="All" class="pm-validation-summary"></div>
+            <div class="row g-3">
+                <div class="col-md-6">
+                    <label class="pm-label pm-label--required" for="firstName">First Name</label>
+                    <input id="firstName" type="text" name="FirstName" class="pm-input" placeholder="Enter first name" autocomplete="given-name" required />
+                </div>
+                <div class="col-md-6">
+                    <label class="pm-label pm-label--required" for="lastName">Last Name</label>
+                    <input id="lastName" type="text" name="LastName" class="pm-input" placeholder="Enter last name" autocomplete="family-name" required />
+                </div>
+                <div class="col-md-6">
+                    <label class="pm-label pm-label--required" for="email">Email Address</label>
+                    <input id="email" type="email" name="Email" class="pm-input" placeholder="user@example.com" autocomplete="email" required />
+                    <p class="pm-field-hint">This email is used as the username for login.</p>
+                </div>
+                <div class="col-md-6">
+                    <label class="pm-label" for="phoneNumber">Phone Number</label>
+                    <input id="phoneNumber" type="tel" name="PhoneNumber" class="pm-input" placeholder="(555) 000-0000" autocomplete="tel" />
+                </div>
+                <div class="col-md-6">
+                    <label class="pm-label pm-label--required" for="role">Role</label>
+                    <select id="role" name="Role" class="pm-select" required>
+                        <option value="">Select a role</option>
+                        @if (ViewBag.CanAddAdministrator == true)
+                        {
+                            <option value="Administrator">Admin</option>
+                        }
+                    <option value="Manager">Property Manager</option>
+                    <option value="Tenant">Tenant</option>
+                </select>
+                <p class="pm-field-hint">Technicians register on the platform and are approved by the platform administrator.</p>
+                    @if (ViewBag.CanAddAdministrator != true)
+                    {
+                        <p class="pm-field-hint">Each company is limited to one administrator. Additional staff can be added as property managers.</p>
+                    }
+                </div>
+                <div class="col-md-6">
+                    <label class="pm-label" for="status">Status</label>
+                    <select id="status" name="Status" class="pm-select">
+                        <option value="Active">Active</option>
+                        <option value="Inactive">Inactive</option>
+                    </select>
+                </div>
+                <div class="col-12">
+                    <label class="pm-label pm-label--required" for="temporaryPassword">Temporary Password</label>
+                    <input id="temporaryPassword" type="password" name="TemporaryPassword" class="pm-input" placeholder="Create a temporary password" autocomplete="new-password" minlength="8" required />
+                    <p class="pm-field-hint">Use at least 8 characters. Share this securely with the new user.</p>
+                </div>
+            </div>
+        </div>
+        <div class="pm-card__body border-top d-flex gap-2 justify-content-end pt-3">
+            <a class="pm-btn pm-btn--secondary" asp-controller="Administrator" asp-action="Users">Cancel</a>
+            <button type="submit" class="pm-btn pm-btn--primary">Create User</button>
+        </div>
+    </form>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

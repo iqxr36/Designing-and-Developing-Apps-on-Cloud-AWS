@@ -1,0 +1,88 @@
+@model CloudMVCApplication.ViewModels.AreaDashboardViewModel
+@{
+    ViewData["Title"] = "Job History";
+    var technician = Model.Technicians.FirstOrDefault();
+    var completedJobs = Model.Requests.Where(r => r.Status == "Completed").ToList();
+}
+
+<div class="pm-page-header">
+    <h1 class="pm-page-title">Job history</h1>
+    <p class="pm-page-lead">Review completed maintenance work and previous assignments.</p>
+</div>
+
+<div class="pm-grid pm-grid--stats pm-mb-2">
+    <div class="pm-stat">
+        <div class="pm-stat__label">Completed jobs</div>
+        <div class="pm-stat__value">@(technician?.CompletedJobs ?? 0)</div>
+        <div class="pm-muted" style="font-size:.75rem">Lifetime total</div>
+    </div>
+    <div class="pm-stat">
+        <div class="pm-stat__label">Completed in seed</div>
+        <div class="pm-stat__value">@completedJobs.Count</div>
+        <div class="pm-muted" style="font-size:.75rem">Database-backed rows</div>
+    </div>
+    <div class="pm-stat">
+        <div class="pm-stat__label">Average rating</div>
+        <div class="pm-stat__value">@(technician?.AverageRating.ToString("0.0") ?? "0.0")</div>
+        <div class="pm-muted" style="font-size:.75rem">Customer satisfaction</div>
+    </div>
+</div>
+
+<div class="pm-card">
+    <div class="pm-card__header">
+        <h2 class="pm-card__title">Completed jobs</h2>
+        <span class="pm-badge pm-badge--low">Total: @completedJobs.Count jobs</span>
+    </div>
+    <div class="pm-table-wrap">
+        @if (!completedJobs.Any())
+        {
+            <div class="pm-empty-state">
+                <div class="pm-empty-state__icon"><span class="material-symbols-outlined">history</span></div>
+                <h2 class="pm-empty-state__title">No completed jobs yet</h2>
+                <p class="pm-empty-state__text">Completed assignments and tenant feedback will appear here after jobs are closed.</p>
+            </div>
+        }
+        else
+        {
+        <table class="pm-table">
+            <thead>
+                <tr>
+                    <th>Job ID</th>
+                    <th>Title / details</th>
+                    <th>Property</th>
+                    <th>Completed</th>
+                    <th>Status</th>
+                    <th>Rating</th>
+                    <th class="pm-text-end">Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var job in completedJobs)
+                {
+                    <tr>
+                        <td><strong class="text-primary">#@job.DisplayId</strong></td>
+                        <td>
+                            <strong>@job.Title</strong><br />
+                            <span class="pm-muted" style="font-size:.8rem">@job.Category • @job.Priority priority</span>
+                        </td>
+                        <td>
+                            @job.PropertyName<br />
+                            <span class="pm-badge pm-badge--low">Unit: @job.UnitNumber</span>
+                        </td>
+                        <td class="pm-muted">@job.CreatedAt.ToLocalTime().ToString("MMM d, yyyy")</td>
+                        <td><span class="pm-badge pm-badge--completed">@job.Status</span></td>
+                        <td class="pm-muted">@(technician?.AverageRating.ToString("0.0") ?? "0.0") / 5</td>
+                        <td class="pm-text-end">
+                            <a class="pm-btn pm-btn--link"
+                               asp-area="Technician"
+                               asp-controller="JobHistory"
+                               asp-action="Details"
+                               asp-route-id="@job.RequestId">View details</a>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+        }
+    </div>
+</div>

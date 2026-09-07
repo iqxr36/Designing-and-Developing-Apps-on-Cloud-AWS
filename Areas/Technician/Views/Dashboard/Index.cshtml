@@ -1,0 +1,222 @@
+@model CloudMVCApplication.ViewModels.AreaDashboardViewModel
+@{
+    ViewData["Title"] = "Technician Dashboard";
+
+    var technician = Model.Technicians.FirstOrDefault();
+    var activeJobs = Model.Requests.Where(r => r.Status is not ("Completed" or "Cancelled" or "Rejected")).ToList();
+    var completedJobs = Model.Requests.Where(r => r.Status == "Completed").ToList();
+    var awaitingJobs = activeJobs.Where(r => r.Status != "In Progress").ToList();
+    var inProgressCount = Model.Requests.Count(r => r.Status == "In Progress");
+    var urgentCount = Model.Requests.Count(r => r.Priority == "High");
+    var recentJobs = Model.Requests.OrderByDescending(r => r.CreatedAt).Take(3).ToList();
+    var priorityJobs = activeJobs
+        .Where(r => r.Priority == "High")
+        .OrderByDescending(r => r.CreatedAt)
+        .Take(4)
+        .ToList();
+}
+
+<div class="pm-flex-between pm-page-header">
+    <div>
+        <h1 class="pm-page-title">Technician Dashboard</h1>
+        <p class="pm-page-lead">Welcome, @Model.CurrentUserName. View assigned jobs, track repair progress, and manage completion updates.</p>
+    </div>
+    <a class="pm-btn pm-btn--outline" asp-area="Technician" asp-controller="Settings" asp-action="Index">
+        <span class="material-symbols-outlined" style="font-size:20px">settings</span>
+        Settings
+    </a>
+</div>
+
+<div class="pm-grid pm-grid--stats pm-mb-2">
+    <div class="pm-stat">
+        <span class="material-symbols-outlined pm-stat__icon">assignment</span>
+        <div class="pm-stat__label">Assigned</div>
+        <div class="pm-stat__value">@(technician == null ? activeJobs.Count.ToString() : $"{technician.ActiveJobs}/{technician.MaxActiveJobs}")</div>
+        <div class="pm-muted" style="font-size:.75rem">Open assignments</div>
+    </div>
+    <div class="pm-stat">
+        <span class="material-symbols-outlined pm-stat__icon">pending_actions</span>
+        <div class="pm-stat__label">In progress</div>
+        <div class="pm-stat__value">@inProgressCount</div>
+        <div class="pm-muted" style="font-size:.75rem">Active repair cycles</div>
+    </div>
+    <div class="pm-stat">
+        <span class="material-symbols-outlined pm-stat__icon">check_circle</span>
+        <div class="pm-stat__label">Completed</div>
+        <div class="pm-stat__value">@completedJobs.Count</div>
+        <div class="pm-muted" style="font-size:.75rem">Seeded history</div>
+    </div>
+    <div class="pm-stat">
+        <span class="material-symbols-outlined pm-stat__icon">error</span>
+        <div class="pm-stat__label">Urgent</div>
+        <div class="pm-stat__value">@urgentCount</div>
+        <div class="pm-muted" style="font-size:.75rem">High priority alerts</div>
+    </div>
+    <div class="pm-stat">
+        <span class="material-symbols-outlined pm-stat__icon">speed</span>
+        <div class="pm-stat__label">Workload</div>
+        <div class="pm-stat__value">@(technician?.WorkloadPercentage ?? 0)%</div>
+        <div class="pm-muted" style="font-size:.75rem">Capacity used</div>
+    </div>
+    <div class="pm-stat">
+        <span class="material-symbols-outlined pm-stat__icon">engineering</span>
+        <div class="pm-stat__label">Availability</div>
+        <div class="pm-stat__value">@(technician?.AvailabilityPercentage ?? 100)%</div>
+        <div class="pm-muted" style="font-size:.75rem">@(technician?.AvailabilityStatus ?? "Fully Available")</div>
+    </div>
+</div>
+
+<div class="pm-grid pm-grid--12 pm-mb-2">
+    <div class="pm-card">
+        <div class="pm-card__header">
+            <h2 class="pm-card__title">Today's assigned jobs</h2>
+            <a class="pm-btn pm-btn--secondary" asp-area="Technician" asp-controller="MyJobs" asp-action="Index">View all</a>
+        </div>
+        <div class="pm-table-wrap">
+            <table class="pm-table">
+                <thead>
+                    <tr>
+                        <th>Job details</th>
+                        <th class="text-center">Priority</th>
+                        <th>Location</th>
+                        <th class="pm-text-end">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var request in activeJobs.Take(5))
+                    {
+                        var priorityClass = request.Priority == "High" ? "pm-badge--high" : request.Priority == "Medium" ? "pm-badge--medium" : "pm-badge--low";
+                        <tr>
+                            <td>
+                                <strong>@request.Title</strong><br />
+                                <span class="pm-muted" style="font-size:.8rem">ID: #@request.DisplayId • @request.Category</span>
+                            </td>
+                            <td class="text-center"><span class="pm-badge @priorityClass">@request.Priority</span></td>
+                            <td class="pm-muted">@request.PropertyName, Unit @request.UnitNumber</td>
+                            <td class="pm-text-end">
+                                <a class="pm-btn pm-btn--link" asp-area="Technician" asp-controller="MyJobs" asp-action="Details" asp-route-id="@request.RequestId" title="View job">
+                                    <span class="material-symbols-outlined" style="font-size:20px">play_arrow</span>
+                                </a>
+                            </td>
+                        </tr>
+                    }
+                    @if (!activeJobs.Any())
+                    {
+                        <tr>
+                            <td colspan="4" class="text-center pm-muted py-4">No active jobs assigned to you.</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <div class="d-flex flex-column gap-3">
+        <div class="pm-card">
+            <div class="pm-card__header">
+                <h2 class="pm-card__title">Current availability</h2>
+            </div>
+            <div class="pm-card__body">
+                <div class="pm-flex-between">
+                    <span class="pm-muted">Active jobs</span>
+                    <strong>@(technician?.ActiveJobs ?? activeJobs.Count) / @(technician?.MaxActiveJobs ?? 5)</strong>
+                </div>
+                <div class="pm-flex-between pm-mt-1">
+                    <span class="pm-muted">Workload</span>
+                    <strong>@(technician?.WorkloadPercentage ?? 0)%</strong>
+                </div>
+                <div class="pm-progress pm-mt-1">
+                    <div class="pm-progress__bar" style="width:@(technician?.WorkloadPercentage ?? 0)%"></div>
+                </div>
+                <div class="pm-flex-between pm-mt-1">
+                    <span class="pm-muted">Availability</span>
+                    <strong>@(technician?.AvailabilityPercentage ?? 100)%</strong>
+                </div>
+                <p class="mb-0 pm-mt-1"><span class="pm-badge pm-badge--assigned">@(technician?.AvailabilityStatus ?? "Fully Available")</span></p>
+            </div>
+        </div>
+        <div class="pm-card">
+            <div class="pm-card__header">
+                <h2 class="pm-card__title">Job status overview</h2>
+            </div>
+            <div class="pm-card__body">
+                <div class="text-center mb-4">
+                    <div class="pm-stat__value">@Model.Requests.Count</div>
+                    <div class="pm-muted">Total jobs</div>
+                </div>
+                <ul class="list-unstyled mb-0 pm-stack">
+                    <li class="d-flex justify-content-between">
+                        <span><span class="pm-badge pm-badge--completed me-2">&nbsp;</span>Completed</span>
+                        <strong>@completedJobs.Count</strong>
+                    </li>
+                    <li class="d-flex justify-content-between">
+                        <span><span class="pm-badge pm-badge--inprogress me-2">&nbsp;</span>In progress</span>
+                        <strong>@inProgressCount</strong>
+                    </li>
+                    <li class="d-flex justify-content-between">
+                        <span><span class="pm-badge pm-badge--pending me-2">&nbsp;</span>Awaiting</span>
+                        <strong>@awaitingJobs.Count</strong>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="pm-grid pm-grid--12">
+    <div class="pm-card">
+        <div class="pm-card__header">
+            <h2 class="pm-card__title"><span class="material-symbols-outlined align-middle">update</span> Recent job updates</h2>
+        </div>
+        <div class="pm-card__body">
+            <ul class="list-unstyled mb-0 pm-stack">
+                @foreach (var job in recentJobs)
+                {
+                    <li class="border-bottom pb-3" style="border-color:var(--pm-border)">
+                        <p class="fw-semibold mb-1">@job.Status: @job.Title</p>
+                        <p class="pm-muted mb-1" style="font-size:.875rem">@job.PropertyName, Unit @job.UnitNumber &bull; @job.Priority priority</p>
+                        <span class="pm-muted" style="font-size:.7rem;font-weight:700">@job.CreatedAt.ToLocalTime().ToString("MMM d, h:mm tt")</span>
+                    </li>
+                }
+                @if (!recentJobs.Any())
+                {
+                    <li>
+                        <p class="pm-muted mb-0">No job updates assigned to you yet.</p>
+                    </li>
+                }
+            </ul>
+        </div>
+    </div>
+
+    <div class="pm-card">
+        <div class="pm-card__header">
+            <h2 class="pm-card__title">High priority jobs</h2>
+        </div>
+        <div class="pm-card__body">
+            <div class="row g-3">
+                @foreach (var job in priorityJobs)
+                {
+                    <div class="col-md-6">
+                        <div class="p-3 border-start border-4 border-danger rounded-end">
+                            <div class="pm-flex-between gap-3">
+                                <div>
+                                    <p class="fw-bold mb-1">@job.Title</p>
+                                    <p class="pm-muted mb-0" style="font-size:.875rem">#@job.DisplayId &bull; @job.Status &bull; Unit @job.UnitNumber</p>
+                                </div>
+                                <a class="pm-btn pm-btn--link" asp-area="Technician" asp-controller="MyJobs" asp-action="Details" asp-route-id="@job.RequestId" title="View job">
+                                    <span class="material-symbols-outlined text-danger">priority_high</span>
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                }
+                @if (!priorityJobs.Any())
+                {
+                    <div class="col-12">
+                        <p class="pm-muted mb-0">No high priority jobs assigned to you.</p>
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+</div>

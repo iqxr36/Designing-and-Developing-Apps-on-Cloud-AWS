@@ -1,0 +1,82 @@
+using CloudMVCApplication.Models;
+using CloudMVCApplication.Services;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
+using System.Security.Claims;
+
+namespace CloudMVCApplication.Areas.Tenant.Controllers
+{
+    [Authorize(Roles = "Tenant")]
+    [Area("Tenant")]
+    public class MessagesController : Controller
+    {
+        private readonly MessagingService _messagingService;
+
+        public MessagesController(MessagingService messagingService)
+        {
+            _messagingService = messagingService;
+        }
+
+        public async Task<IActionResult> Index()
+        {
+            var userId = CurrentUserId;
+            if (string.IsNullOrWhiteSpace(userId))
+            {
+                return Challenge();
+            }
+
+            return View("~/Areas/Tenant/Views/Messages.cshtml", await _messagingService.GetInboxAsync(userId, "Tenant"));
+        }
+
+        public async Task<IActionResult> Chat(int id)
+        {
+            var userId = CurrentUserId;
+            if (string.IsNullOrWhiteSpace(userId))
+            {
+                return Challenge();
+            }
+
+            var chat = await _messagingService.GetConversationAsync(id, userId);
+            if (chat == null)
+            {
+                return Forbid();
+            }
+
+            await _messagingService.MarkAsReadAsync(id, userId);
+            return View("~/Areas/Tenant/Views/Chat.cshtml", chat);
+        }
+
+        public async Task<IActionResult> ChatByRequest(int requestId)
+        {
+            var userId = CurrentUserId;
+            if (string.IsNullOrWhiteSpace(userId))
+            {
+                return Challenge();
+            }
+
+            var conversationId = await _messagingService.GetConversationIdByRequestAsync(requestId, ConversationType.TenantSupport, userId);
+            if (!conversationId.HasValue)
+            {
+                return NotFound();
+            }
+
+            return RedirectToAction(nameof(Chat), new { id = conversationId.Value });
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Send(int id, string body)
+        {
+            var userId = CurrentUserId;
+            if (string.IsNullOrWhiteSpace(userId))
+            {
+                return Challenge();
+            }
+
+            await _messagingService.SendMessageAsync(id, userId, body);
+            return RedirectToAction(nameof(Chat), new { id });
+        }
+
+        private string? CurrentUserId => User.FindFirstValue(ClaimTypes.NameIdentifier);
+    }
+}

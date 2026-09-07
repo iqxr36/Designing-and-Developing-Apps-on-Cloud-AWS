@@ -1,0 +1,211 @@
+@model CloudMVCApplication.ViewModels.AreaDashboardViewModel
+@{
+    Layout = "~/Areas/Administrator/Views/Shared/_AdministratorLayout.cshtml";
+    ViewData["Title"] = "System Settings";
+    var company = ViewBag.Company as CloudMVCApplication.Models.PropertyManagementCompany;
+}
+
+<div class="pm-flex-between pm-page-header">
+    <div>
+        <h1 class="pm-page-title">System Settings</h1>
+        <p class="pm-page-lead">Manage your enterprise account configuration, notifications, and access.</p>
+    </div>
+</div>
+
+@if (TempData["SuccessMessage"] is string successMessage)
+{
+    <div class="pm-card mb-3" style="border-left: 4px solid #0a5c2e;">
+        <div class="pm-card__body" style="color: #0a5c2e; font-weight: 600;">@successMessage</div>
+    </div>
+}
+
+<partial name="_SubscriptionUsageBanner" />
+
+<div class="row g-3" style="grid-template-columns: 1fr 2fr; gap: 24px;">
+    <div>
+        <div class="pm-card">
+            <div class="pm-card__body">
+                <h3 style="font-size: 18px; font-weight: 600; margin: 0 0 16px; padding-bottom: 8px; border-bottom: 1px solid var(--pm-outline-variant);">Settings Menu</h3>
+                <nav style="display: flex; flex-direction: column; gap: 4px;">
+                    <a href="#profile" style="display: flex; align-items: center; justify-content: space-between; padding: 12px; border-radius: 8px; background: var(--pm-surface-container); color: var(--pm-primary); font-weight: 600; text-decoration: none; border-left: 2px solid var(--pm-primary);">
+                        Profile
+                        <span class="material-symbols-outlined" style="font-size: 18px;">chevron_right</span>
+                    </a>
+                    <a href="#organization" style="display: flex; align-items: center; justify-content: space-between; padding: 12px; border-radius: 8px; color: var(--pm-on-surface-variant); text-decoration: none;">
+                        Organization Details
+                        <span class="material-symbols-outlined" style="font-size: 18px;">chevron_right</span>
+                    </a>
+                    <a href="#notifications" style="display: flex; align-items: center; justify-content: space-between; padding: 12px; border-radius: 8px; color: var(--pm-on-surface-variant); text-decoration: none;">
+                        Notification Preferences
+                        <span class="material-symbols-outlined" style="font-size: 18px;">chevron_right</span>
+                    </a>
+                    <a href="#account" style="display: flex; align-items: center; justify-content: space-between; padding: 12px; border-radius: 8px; color: var(--pm-on-surface-variant); text-decoration: none;">
+                        Account Access
+                        <span class="material-symbols-outlined" style="font-size: 18px;">chevron_right</span>
+                    </a>
+                </nav>
+            </div>
+        </div>
+    </div>
+    <div style="display: flex; flex-direction: column; gap: 24px;">
+        <section id="profile" class="pm-card">
+            <div class="pm-card__header">
+                <div class="d-flex align-items-center gap-3">
+                    <div style="width: 48px; height: 48px; border-radius: 999px; background: #e1e1c9; display: flex; align-items: center; justify-content: center;">
+                        <span class="material-symbols-outlined" style="color: #474836;">person</span>
+                    </div>
+                    <div>
+                        <h3 class="pm-card__title">Profile Information</h3>
+                        <p class="pm-muted small" style="margin: 0;">Update your personal account details.</p>
+                    </div>
+                </div>
+            </div>
+            <form asp-controller="Administrator" asp-action="UpdateProfile" method="post">
+                @Html.AntiForgeryToken()
+                <div class="pm-card__body">
+                <div class="d-flex align-items-center gap-3 mb-4">
+                    @if (!string.IsNullOrWhiteSpace(Model.CurrentUserAvatarUrl))
+                    {
+                        <img src="@Model.CurrentUserAvatarUrl" alt="Profile" style="width: 80px; height: 80px; border-radius: 999px; object-fit: cover;" />
+                    }
+                    else
+                    {
+                        <div style="width: 80px; height: 80px; border-radius: 999px; background: #333d4d; color: #9da8bb; display: flex; align-items: center; justify-content: center; font-size: 24px; font-weight: 700;">@Model.CurrentUserInitials</div>
+                    }
+                    <div class="d-flex gap-2">
+                        <a class="pm-btn pm-btn--secondary" asp-controller="Administrator" asp-action="ChangeAvatar">Change Avatar</a>
+                        <button type="submit" formaction="@Url.Action("RemoveAvatar", "Administrator")" class="pm-btn pm-btn--link" style="color: #ba1a1a;"
+                                data-confirm-title="Remove profile photo?"
+                                data-confirm-message="Your current avatar will be removed from this administrator profile."
+                                data-confirm-action="Remove photo">Remove</button>
+                    </div>
+                </div>
+                <div class="row g-3">
+                    <div class="mb-3">
+                        <label class="pm-label">Full Name</label>
+                        <input type="text" name="FullName" class="pm-input" value="@Model.CurrentUserName" required />
+                    </div>
+                    <div class="mb-3">
+                        <label class="pm-label">Phone</label>
+                        <input type="tel" name="PhoneNumber" class="pm-input" value="@(Model.CurrentUserPhoneNumber ?? string.Empty)" />
+                    </div>
+                </div>
+                <div class="mb-3">
+                    <label class="pm-label">Email Address</label>
+                    <input type="email" class="pm-input" value="@Model.CurrentUserEmail" disabled style="background: var(--pm-surface-container); cursor: not-allowed;" />
+                </div>
+                </div>
+                <div class="pm-card__body border-top d-flex gap-2 justify-content-end pt-3">
+                    <button type="submit" class="pm-btn pm-btn--primary">Save Profile</button>
+                </div>
+            </form>
+        </section>
+
+        <section id="organization" class="pm-card">
+            <div class="pm-card__header">
+                <div class="d-flex align-items-center gap-3">
+                    <div style="width: 48px; height: 48px; border-radius: 999px; background: #e1e1c9; display: flex; align-items: center; justify-content: center;">
+                        <span class="material-symbols-outlined" style="color: #474836;">domain</span>
+                    </div>
+                    <div>
+                        <h3 class="pm-card__title">Organization</h3>
+                        <p class="pm-muted small" style="margin: 0;">Manage company-level identity and operating details.</p>
+                    </div>
+                </div>
+            </div>
+            <form asp-controller="Administrator" asp-action="UpdateCompanySettings" method="post">
+                @Html.AntiForgeryToken()
+                <div class="pm-card__body">
+                <div class="row g-3">
+                    <div class="mb-3">
+                        <label class="pm-label">Organization Name</label>
+                        <input type="text" name="CompanyName" class="pm-input" value="@(company?.CompanyName ?? string.Empty)" required />
+                    </div>
+                    <div class="mb-3">
+                        <label class="pm-label">Support Email</label>
+                        <input type="email" name="CompanyEmail" class="pm-input" value="@(company?.CompanyEmail ?? string.Empty)" required />
+                    </div>
+                </div>
+                <div class="row g-3">
+                    <div class="mb-3">
+                        <label class="pm-label">Phone</label>
+                        <input type="tel" name="CompanyPhone" class="pm-input" value="@(company?.CompanyPhone ?? string.Empty)" />
+                    </div>
+                    <div class="mb-3">
+                        <label class="pm-label">Address</label>
+                        <input type="text" name="CompanyAddress" class="pm-input" value="@(company?.CompanyAddress ?? string.Empty)" />
+                    </div>
+                </div>
+                </div>
+                <div class="pm-card__body border-top d-flex gap-2 justify-content-end pt-3">
+                    <button type="submit" class="pm-btn pm-btn--primary">Save Organization</button>
+                </div>
+            </form>
+        </section>
+
+        <section id="notifications" class="pm-card">
+            <form asp-controller="Administrator" asp-action="UpdateNotificationSettings" method="post">
+            @Html.AntiForgeryToken()
+            <div class="pm-card__header">
+                <div class="d-flex align-items-center gap-3">
+                    <div style="width: 48px; height: 48px; border-radius: 999px; background: #e1e1c9; display: flex; align-items: center; justify-content: center;">
+                        <span class="material-symbols-outlined" style="color: #474836;">notifications</span>
+                    </div>
+                    <div>
+                        <h3 class="pm-card__title">Notifications</h3>
+                        <p class="pm-muted small" style="margin: 0;">Choose which operational alerts should reach administrators.</p>
+                    </div>
+                </div>
+            </div>
+            <div class="pm-card__body">
+                <label style="display: flex; align-items: center; justify-content: space-between; padding: 16px; border: 1px solid var(--pm-outline-variant); border-radius: 8px; margin-bottom: 12px; cursor: pointer;">
+                    <span>
+                        <strong style="display: block;">Urgent maintenance alerts</strong>
+                        <span class="pm-muted small">Notify admins when urgent requests are created.</span>
+                    </span>
+                    <input type="checkbox" name="UrgentMaintenanceAlerts" value="true" checked="@(company?.UrgentMaintenanceAlerts == true)" />
+                </label>
+                <label style="display: flex; align-items: center; justify-content: space-between; padding: 16px; border: 1px solid var(--pm-outline-variant); border-radius: 8px; cursor: pointer;">
+                    <span>
+                        <strong style="display: block;">Weekly report summaries</strong>
+                        <span class="pm-muted small">Send portfolio summaries every Monday morning.</span>
+                    </span>
+                    <input type="checkbox" name="WeeklyReportSummaries" value="true" checked="@(company?.WeeklyReportSummaries == true)" />
+                </label>
+            </div>
+            <div class="pm-card__body border-top d-flex gap-2 justify-content-end pt-3">
+                <button type="submit" class="pm-btn pm-btn--primary">Save Notifications</button>
+            </div>
+            </form>
+        </section>
+
+        <section id="account" class="pm-card">
+            <div class="pm-card__header">
+                <div class="d-flex align-items-center gap-3">
+                    <div style="width: 48px; height: 48px; border-radius: 999px; background: #ffdad6; display: flex; align-items: center; justify-content: center;">
+                        <span class="material-symbols-outlined" style="color: #570000;">logout</span>
+                    </div>
+                    <div>
+                        <h3 class="pm-card__title">Account Access</h3>
+                        <p class="pm-muted small" style="margin: 0;">Sign out of this administrator session.</p>
+                    </div>
+                </div>
+            </div>
+            <div class="pm-card__body">
+                <p class="pm-muted" style="margin: 0;">You are currently signed in as <strong>@Model.CurrentUserEmail</strong>.</p>
+            </div>
+            <div class="pm-card__body border-top d-flex gap-2 justify-content-end pt-3">
+                <form asp-area="Identity" asp-page="/Account/Logout" asp-route-returnUrl="@Url.Action("Index", "Home", new { area = "" })" method="post" style="margin: 0;"
+                      data-confirm-title="Log out?"
+                      data-confirm-message="You will leave this administrator session and return to the home page."
+                      data-confirm-action="Log out">
+                    @Html.AntiForgeryToken()
+                    <button type="submit" class="pm-btn pm-btn--secondary" style="color: #ba1a1a; border-color: #ba1a1a;">
+                        <span class="material-symbols-outlined">logout</span>
+                        Logout
+                    </button>
+                </form>
+            </div>
+        </section>
+    </div>
+</div>

@@ -1,0 +1,44 @@
+@model CloudMVCApplication.ViewModels.TechnicianPaymentReportViewModel
+@{
+    Layout = "~/Areas/SuperAdmin/Views/Shared/_SuperAdminLayout.cshtml";
+    ViewData["Title"] = "Commission Report";
+}
+
+<div class="pm-page-header">
+    <h1 class="pm-page-title">Commission Report</h1>
+    <p class="pm-page-lead">Platform commission revenue from completed-job technician payments.</p>
+</div>
+
+<form class="row g-3 align-items-end mb-3" asp-area="SuperAdmin" asp-controller="SuperAdmin" asp-action="CommissionReport" method="get">
+    <div class="col-md-3">
+        <label class="pm-label" for="from">From</label>
+        <input id="from" class="pm-input" type="date" name="from" value="@Model.From?.ToString("yyyy-MM-dd")" />
+    </div>
+    <div class="col-md-3">
+        <label class="pm-label" for="to">To</label>
+        <input id="to" class="pm-input" type="date" name="to" value="@Model.To?.ToString("yyyy-MM-dd")" />
+    </div>
+    <div class="col-md-3">
+        <label class="pm-label" for="companyId">Company</label>
+        <select id="companyId" class="pm-select" name="companyId">
+            <option value="">All companies</option>
+            @foreach (var company in Model.Companies)
+            {
+                <option value="@company.CompanyId" selected="@(Model.CompanyId == company.CompanyId)">@company.CompanyName</option>
+            }
+        </select>
+    </div>
+    <div class="col-md-3 d-flex gap-2">
+        <button type="submit" class="pm-btn pm-btn--primary">Apply</button>
+        <a class="pm-btn pm-btn--secondary" asp-area="SuperAdmin" asp-controller="SuperAdmin" asp-action="CommissionReport">Reset</a>
+    </div>
+</form>
+
+<div class="pm-grid pm-grid--stats pm-mb-2">
+    <div class="pm-stat"><div class="pm-stat__label">Total gross job payments</div><div class="pm-stat__value">@Model.TotalGrossAmount.ToString("C")</div></div>
+    <div class="pm-stat"><div class="pm-stat__label">Platform commission earned</div><div class="pm-stat__value">@Model.TotalPlatformCommission.ToString("C")</div></div>
+    <div class="pm-stat"><div class="pm-stat__label">Technician net payouts</div><div class="pm-stat__value">@Model.TotalTechnicianNetAmount.ToString("C")</div></div>
+    <div class="pm-stat"><div class="pm-stat__label">Payment count</div><div class="pm-stat__value">@Model.PaymentCount</div></div>
+</div>
+
+<partial name="~/Views/Shared/_TechnicianPaymentReportTable.cshtml" model="Model" />

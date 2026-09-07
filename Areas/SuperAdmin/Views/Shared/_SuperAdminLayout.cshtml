@@ -1,0 +1,64 @@
+@using Microsoft.AspNetCore.Identity
+@using CloudMVCApplication.Models
+@inject UserManager<ApplicationUser> UserManager
+@{
+    Layout = null;
+    var title = ViewData["Title"]?.ToString() ?? "Platform Console";
+    var currentUser = await UserManager.GetUserAsync(User);
+    var displayName = currentUser?.FullName ?? "Super Admin";
+    var initials = string.Concat(displayName.Split(' ', StringSplitOptions.RemoveEmptyEntries).Take(2).Select(p => p[0])).ToUpperInvariant();
+}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@title - ZamMaintain Platform</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="~/css/manager.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/superadmin.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/toast.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/confirm.css" asp-append-version="true" />
+</head>
+<body class="pm-body">
+    <partial name="~/Views/Shared/_ToastNotifications.cshtml" />
+    <partial name="~/Views/Shared/_ConfirmDialog.cshtml" />
+    <div class="superadmin-shell manager-shell">
+        @await Html.PartialAsync("~/Areas/SuperAdmin/Views/Shared/_SuperAdminSidebar.cshtml")
+
+        <div class="superadmin-main manager-main">
+            <header class="manager-topbar pm-topbar">
+                <div class="pm-topbar__left">
+                    <span class="pm-topbar__section">@title</span>
+                </div>
+                <div class="pm-topbar__right">
+                    <span class="pm-badge pm-badge--dark d-none d-md-inline-flex">Platform Console</span>
+                    <a class="pm-topbar__avatar" asp-area="SuperAdmin" asp-controller="SuperAdmin" asp-action="Profile" title="Profile">
+                        @if (!string.IsNullOrWhiteSpace(currentUser?.AvatarUrl))
+                        {
+                            <img src="@currentUser.AvatarUrl" alt="Profile" />
+                        }
+                        else
+                        {
+                            @initials
+                        }
+                    </a>
+                </div>
+            </header>
+
+            <main class="superadmin-content pm-main" role="main">
+                @RenderBody()
+            </main>
+        </div>
+    </div>
+    <script src="~/lib/jquery/dist/jquery.min.js"></script>
+    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="~/js/confirm-dialog.js" asp-append-version="true"></script>
+    <script src="~/js/form-state.js" asp-append-version="true"></script>
+    @await RenderSectionAsync("Scripts", required: false)
+</body>
+</html>

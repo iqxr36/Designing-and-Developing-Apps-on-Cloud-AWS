@@ -1,0 +1,5 @@
+﻿INIT_START Runtime Version: python:3.12.mainlinev2.v14	Runtime Version ARN: arn:aws:lambda:ap-southeast-1::runtime:40182b778d40c8bdb13a6ef86990df74f5066cdb7d40aac1845f6f3fa5a1b20f
+	START RequestId: ef21fd53-2aad-45c1-b795-bdbe5b4db134 Version: $LATEST
+	END RequestId: ef21fd53-2aad-45c1-b795-bdbe5b4db134
+	REPORT RequestId: ef21fd53-2aad-45c1-b795-bdbe5b4db134	Duration: 308.98 ms	Billed Duration: 822 ms	Memory Size: 256 MB	Max Memory Used: 98 MB	Init Duration: 512.85 ms	
+

@@ -1,0 +1,51 @@
+@model CloudMVCApplication.ViewModels.AreaDashboardViewModel
+@{
+    Layout = "~/Areas/Administrator/Views/Shared/_AdministratorLayout.cshtml";
+    ViewData["Title"] = "Generate Report";
+}
+
+<div class="pm-flex-between pm-page-header">
+    <div>
+        <h1 class="pm-page-title">Generate Report</h1>
+        <p class="pm-page-lead">Export a CSV report from live database data.</p>
+    </div>
+    <div class="d-flex gap-2 flex-wrap">
+        <a class="pm-btn pm-btn--secondary" asp-controller="Administrator" asp-action="Reports">
+            <span class="material-symbols-outlined">arrow_back</span> Back to Reports
+        </a>
+    </div>
+</div>
+
+<div class="pm-card">
+    <div class="pm-card__header">
+        <h3 class="pm-card__title">Report Configuration</h3>
+    </div>
+    <form method="get" asp-controller="Administrator" asp-action="ExportReport">
+        <input type="hidden" name="timePeriod" value="@ViewBag.TimePeriod" />
+        <input type="hidden" name="propertyId" value="@ViewBag.PropertyId" />
+        <input type="hidden" name="category" value="@ViewBag.Category" />
+        <div class="pm-card__body">
+            <div class="row g-3">
+                <div class="mb-3">
+                    <label class="pm-label" for="reportType">Report Type *</label>
+                    <select id="reportType" name="type" class="pm-select" required>
+                        <option value="maintenance">Maintenance Summary</option>
+                        <option value="technicians">Technician Workload</option>
+                        <option value="units">Vacancy &amp; Unit Status</option>
+                    </select>
+                </div>
+                <div class="mb-3">
+                    <label class="pm-label">Output Format</label>
+                    <input class="pm-input" value="CSV" readonly style="background: var(--pm-surface-container);" />
+                </div>
+            </div>
+            <p class="pm-muted small" style="margin: 0;">The report downloads immediately using current database records.</p>
+        </div>
+        <div class="pm-card__body border-top d-flex gap-2 justify-content-end pt-3">
+            <a class="pm-btn pm-btn--secondary" asp-controller="Administrator" asp-action="Reports">Cancel</a>
+            <button type="submit" class="pm-btn pm-btn--primary">
+                <span class="material-symbols-outlined">download</span> Download Report
+            </button>
+        </div>
+    </form>
+</div>

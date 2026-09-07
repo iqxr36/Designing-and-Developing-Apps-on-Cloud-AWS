@@ -1,0 +1,130 @@
+.superadmin-shell {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+
+@media (min-width: 768px) {
+  .superadmin-shell {
+    flex-direction: row;
+    align-items: stretch;
+  }
+}
+
+.superadmin-sidebar {
+  width: 100%;
+  flex-shrink: 0;
+}
+
+@media (min-width: 768px) {
+  .superadmin-sidebar {
+    width: var(--pm-sidebar-w);
+    min-width: var(--pm-sidebar-w);
+    max-width: var(--pm-sidebar-w);
+    min-height: 100vh;
+    position: sticky;
+    top: 0;
+    align-self: flex-start;
+    overflow-y: auto;
+    max-height: 100vh;
+  }
+}
+
+.superadmin-sidebar__subtitle {
+  margin-top: 0.35rem;
+  font-size: 0.75rem;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--pm-on-tertiary-muted);
+}
+
+.superadmin-main {
+  flex: 1 1 auto;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+
+.superadmin-content {
+  flex: 1 1 auto;
+  padding: var(--pm-pad-y) var(--pm-pad-x) 64px;
+  max-width: var(--pm-content-max);
+  margin: 0 auto;
+  width: 100%;
+}
+
+.superadmin-login-brand {
+  color: #570000;
+}
+
+.pm-badge--subscription-active {
+  background: var(--pm-badge-success-bg);
+  color: var(--pm-badge-success-text);
+}
+
+.pm-badge--subscription-warning {
+  background: var(--pm-badge-warn-bg);
+  color: var(--pm-badge-warn-text);
+}
+
+.pm-badge--subscription-muted {
+  background: var(--pm-surface-container);
+  color: var(--pm-on-surface-variant);
+}
+
+.superadmin-plan-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.superadmin-plan-card {
+  border: 1px solid var(--pm-border);
+  border-radius: var(--pm-radius);
+  padding: 1rem;
+  background: #fff;
+}
+
+.superadmin-plan-card--current {
+  border-color: var(--pm-primary);
+  box-shadow: 0 0 0 1px rgba(87, 0, 0, 0.12);
+}
+
+.superadmin-plan-card__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 0.35rem;
+}
+
+.superadmin-plan-card__price {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: var(--pm-primary);
+  margin-bottom: 0.5rem;
+}
+
+.superadmin-plan-card__price span {
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: var(--pm-muted);
+}
+
+.superadmin-plan-card__limits {
+  list-style: none;
+  padding: 0;
+  margin: 0 0 0.75rem;
+  font-size: 0.875rem;
+  color: var(--pm-on-surface-variant);
+}
+
+.superadmin-plan-card__limits li {
+  padding: 0.15rem 0;
+}
+
+@media (max-width: 767.98px) {
+  .superadmin-content {
+    padding: 1rem 1rem 3rem;
+  }
+}

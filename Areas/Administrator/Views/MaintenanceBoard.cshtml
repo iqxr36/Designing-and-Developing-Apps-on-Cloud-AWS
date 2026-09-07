@@ -1,0 +1,71 @@
+@model CloudMVCApplication.ViewModels.AreaDashboardViewModel
+@{
+    Layout = "~/Areas/Administrator/Views/Shared/_AdministratorLayout.cshtml";
+    ViewData["Title"] = "Maintenance Board";
+}
+
+<div class="pm-flex-between pm-page-header">
+    <div>
+        <h1 class="pm-page-title">Maintenance Board</h1>
+        <p class="pm-page-lead">Kanban-style view of all maintenance requests.</p>
+    </div>
+    <div class="d-flex gap-2 flex-wrap">
+        <a class="pm-btn pm-btn--secondary" asp-controller="Administrator" asp-action="Maintenance">
+            <span class="material-symbols-outlined">view_list</span> List View
+        </a>
+        <a class="pm-btn pm-btn--primary" asp-controller="Administrator" asp-action="CreateRequest">
+            <span class="material-symbols-outlined">add</span> Create Request
+        </a>
+    </div>
+</div>
+
+<div class="pm-kanban">
+    <div class="pm-kanban__column">
+        <div class="pm-kanban__header d-flex justify-content-between align-items-center">
+            <span>Open</span>
+            <span class="pm-badge pm-badge--pending">@Model.Requests.Count(r => r.Status == "Pending")</span>
+        </div>
+        <div class="pm-kanban__body">
+            @foreach (var request in Model.Requests.Where(r => r.Status == "Pending"))
+            {
+                <a asp-controller="Administrator" asp-action="RequestDetail" asp-route-id="@request.RequestId" class="pm-kanban__card" style="border-left: 4px solid var(--pm-primary);">
+                    <span class="pm-badge pm-badge--urgent d-inline-block mb-2">@request.Priority</span>
+                    <h4 class="fs-6 fw-semibold mb-2">@request.Title</h4>
+                    <p class="pm-muted small mb-0">@request.PropertyName - Unit @request.UnitNumber</p>
+                </a>
+            }
+        </div>
+    </div>
+    <div class="pm-kanban__column">
+        <div class="pm-kanban__header d-flex justify-content-between align-items-center">
+            <span>In Progress</span>
+            <span class="pm-badge pm-badge--inprogress">@Model.Requests.Count(r => r.Status == "Assigned" || r.Status == "In Progress")</span>
+        </div>
+        <div class="pm-kanban__body">
+            @foreach (var request in Model.Requests.Where(r => r.Status == "Assigned" || r.Status == "In Progress"))
+            {
+                <a asp-controller="Administrator" asp-action="RequestDetail" asp-route-id="@request.RequestId" class="pm-kanban__card" style="border-left: 4px solid #1d2736;">
+                    <span class="pm-badge pm-badge--medium d-inline-block mb-2">@request.Priority</span>
+                    <h4 class="fs-6 fw-semibold mb-2">@request.Title</h4>
+                    <p class="pm-muted small mb-0">@request.PropertyName - Unit @request.UnitNumber</p>
+                </a>
+            }
+        </div>
+    </div>
+    <div class="pm-kanban__column">
+        <div class="pm-kanban__header d-flex justify-content-between align-items-center">
+            <span>Completed</span>
+            <span class="pm-badge pm-badge--completed">@Model.Requests.Count(r => r.Status == "Completed")</span>
+        </div>
+        <div class="pm-kanban__body">
+            @foreach (var request in Model.Requests.Where(r => r.Status == "Completed"))
+            {
+                <a asp-controller="Administrator" asp-action="RequestDetail" asp-route-id="@request.RequestId" class="pm-kanban__card opacity-75">
+                    <span class="pm-badge pm-badge--completed d-inline-block mb-2">Resolved</span>
+                    <h4 class="fs-6 fw-semibold mb-2 text-decoration-line-through">@request.Title</h4>
+                    <p class="pm-muted small mb-0">Completed @request.CreatedAt.ToLocalTime().ToString("MMM d")</p>
+                </a>
+            }
+        </div>
+    </div>
+</div>

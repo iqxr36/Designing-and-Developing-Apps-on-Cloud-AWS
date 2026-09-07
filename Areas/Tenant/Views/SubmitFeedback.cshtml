@@ -1,0 +1,76 @@
+@model CloudMVCApplication.ViewModels.AreaDashboardViewModel
+@{
+    Layout = "~/Areas/Tenant/Views/Shared/_TenantLayout.cshtml";
+    ViewData["Title"] = "Submit Feedback";
+
+    var feedbackRequestIds = ViewBag.FeedbackRequestIds as IReadOnlyList<int> ?? Array.Empty<int>();
+    var eligibleRequests = Model.Requests
+        .Where(r => r.Status == "Completed" && !feedbackRequestIds.Contains(r.RequestId))
+        .ToList();
+}
+
+@if (TempData["SuccessMessage"] is string successMessage)
+{
+    <div class="alert alert-success" role="alert">@successMessage</div>
+}
+
+<div class="pm-page-header">
+    <a class="pm-link-back" asp-area="Tenant" asp-controller="Tenant" asp-action="Dashboard"><span class="material-symbols-outlined" style="font-size:18px">arrow_back</span> Back to Dashboard</a>
+    <h1 class="pm-page-title">Submit Feedback</h1>
+    <p class="pm-page-lead">Share feedback about a completed repair.</p>
+</div>
+
+<div class="pm-card" style="max-width:880px">
+    <div class="pm-card__body">
+        @if (!eligibleRequests.Any())
+        {
+            <div class="alert alert-info mb-0">No completed requests are waiting for feedback right now.</div>
+        }
+        else
+        {
+            <form method="post" asp-area="Tenant" asp-controller="Tenant" asp-action="SubmitFeedback">
+                @Html.AntiForgeryToken()
+                <div asp-validation-summary="All" class="pm-validation-summary"></div>
+
+                <div class="mb-3">
+                    <label class="pm-label pm-label--required" for="requestId">Completed request</label>
+                    <select id="requestId" name="RequestId" class="pm-select" required>
+                        @foreach (var request in eligibleRequests)
+                        {
+                            <option value="@request.RequestId">@request.DisplayId - @request.Title</option>
+                        }
+                    </select>
+                    <p class="pm-field-hint">Only completed requests that have not received feedback are shown.</p>
+                </div>
+
+                <div class="mb-3">
+                    <div class="pm-label pm-label--required">Rating</div>
+                    <div class="tenant-rating-input">
+                        @for (var rating = 5; rating >= 1; rating--)
+                        {
+                            <label>
+                                <input type="radio" name="Rating" value="@rating" checked="@(rating == 5)" required />
+                                <span>@rating</span>
+                            </label>
+                        }
+                    </div>
+                    <p class="pm-field-hint">Rate the completed repair from 1 to 5.</p>
+                </div>
+
+                <div class="mb-3">
+                    <label class="pm-label" for="comment">Comments</label>
+                    <textarea id="comment" name="Comment" class="pm-textarea" rows="5" placeholder="Tell us about the completed repair..."></textarea>
+                    <p class="pm-field-hint">Mention work quality, timeliness, and anything the manager should know.</p>
+                </div>
+
+                <div class="pm-actions border-top pt-3 mt-4" style="border-color:var(--pm-border)">
+                    <button type="submit" class="pm-btn pm-btn--primary">Submit Feedback</button>
+                </div>
+            </form>
+        }
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

@@ -1,0 +1,116 @@
+@model CloudMVCApplication.ViewModels.AreaDashboardViewModel
+@{
+    Layout = "~/Areas/Administrator/Views/Shared/_AdministratorLayout.cshtml";
+    ViewData["Title"] = "Unit Details";
+    var unit = Model.SelectedUnit;
+    var tenant = Model.Users.FirstOrDefault(u => u.FullName == unit?.TenantName);
+}
+
+<div class="pm-flex-between pm-page-header">
+    <div>
+        <h1 class="pm-page-title">Unit @(unit?.UnitNumber ?? "N/A")</h1>
+        <p class="pm-page-lead">@(unit == null ? "No unit data available" : $"{unit.PropertyName} - {unit.UnitType} Unit")</p>
+    </div>
+    <div class="d-flex gap-2 flex-wrap">
+        <a class="pm-btn pm-btn--secondary" asp-controller="Administrator" asp-action="Units">
+            <span class="material-symbols-outlined">arrow_back</span> Back to Units
+        </a>
+    </div>
+</div>
+
+@if (TempData["SuccessMessage"] is string successMessage)
+{
+    <div class="pm-card mb-3" style="border-left: 4px solid #0a5c2e;">
+        <div class="pm-card__body" style="color: #0a5c2e; font-weight: 600;">@successMessage</div>
+    </div>
+}
+
+<div class="row g-3" style="grid-template-columns: 1fr 2fr; gap: 24px;">
+    <div>
+        <div class="pm-card">
+            <div class="pm-card__header">
+                <h3 class="pm-card__title">Current Tenant</h3>
+            </div>
+            <div class="pm-card__body">
+                <div class="d-flex align-items-center gap-3 mb-3">
+                    <div style="width: 48px; height: 48px; border-radius: 999px; background: #e1e3e4; display: flex; align-items: center; justify-content: center; font-weight: 700;">@(tenant?.Initials ?? "NA")</div>
+                    <div>
+                        <p style="font-weight: 600; margin: 0;">@(unit?.TenantName ?? "Vacant")</p>
+                        <p class="pm-muted small" style="margin: 0;">Tenant profile from database</p>
+                    </div>
+                </div>
+                <p class="small"><strong>Phone:</strong> @(tenant?.PhoneNumber ?? "N/A")</p>
+                <p class="small"><strong>Email:</strong> @(tenant?.Email ?? "N/A")</p>
+            </div>
+        </div>
+    </div>
+    <div class="pm-card">
+        <div class="pm-card__header">
+            <h3 class="pm-card__title">Unit Information</h3>
+        </div>
+        <form asp-controller="Administrator" asp-action="UpdateUnit" asp-route-id="@unit?.UnitId" method="post">
+            @Html.AntiForgeryToken()
+            <div class="pm-card__body">
+            <div asp-validation-summary="All" class="small" style="color: #ba1a1a; margin-bottom: 16px;"></div>
+            <div class="row g-3">
+                <div class="mb-3">
+                    <label class="pm-label">Unit Number</label>
+                    <input type="text" name="UnitNumber" class="pm-input" value="@(unit?.UnitNumber ?? string.Empty)" required />
+                </div>
+                <div class="mb-3">
+                    <label class="pm-label">Property</label>
+                    <select name="PropertyId" class="pm-select" required>
+                        @foreach (var property in Model.Properties)
+                        {
+                            <option value="@property.PropertyId" selected="@(property.Name == unit?.PropertyName)">@property.Name</option>
+                        }
+                    </select>
+                </div>
+                <div class="mb-3">
+                    <label class="pm-label">Unit Type</label>
+                    <select name="UnitType" class="pm-select" required>
+                        <option value="Studio" selected="@(unit?.UnitType == "Studio")">Studio</option>
+                        <option value="1 Bedroom" selected="@(unit?.UnitType == "1 Bedroom")">1 Bedroom</option>
+                        <option value="2 Bedroom" selected="@(unit?.UnitType == "2 Bedroom")">2 Bedroom</option>
+                        <option value="Penthouse" selected="@(unit?.UnitType == "Penthouse")">Penthouse</option>
+                    </select>
+                </div>
+                <div class="mb-3">
+                    <label class="pm-label">Floor Number</label>
+                    <input type="number" name="FloorNumber" class="pm-input" value="@unit?.FloorNumber" placeholder="Floor number" />
+                </div>
+                <div class="mb-3">
+                    <label class="pm-label">Assign Tenant</label>
+                    <select name="TenantUserId" class="pm-select">
+                        <option value="">No tenant / vacant</option>
+                        @foreach (var tenantOption in Model.Users.Where(u => u.Role == "Tenant"))
+                        {
+                            <option value="@tenantOption.Id" selected="@(tenantOption.FullName == unit?.TenantName)">@tenantOption.FullName</option>
+                        }
+                    </select>
+                </div>
+                <div class="mb-3">
+                    <label class="pm-label">Status</label>
+                    <select name="Status" class="pm-select">
+                        <option value="Vacant" selected="@(unit?.Status == "Vacant")">Vacant</option>
+                        <option value="Occupied" selected="@(unit?.Status == "Occupied")">Occupied</option>
+                        <option value="Maintenance" selected="@(unit?.Status == "Maintenance")">Maintenance</option>
+                    </select>
+                </div>
+            </div>
+            </div>
+            <div class="pm-card__body border-top d-flex gap-2 justify-content-end pt-3">
+                <button type="submit" class="pm-btn pm-btn--primary">Save Changes</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+    <script>
+        document.querySelector('select[name="TenantUserId"]')?.addEventListener('change', event => {
+            if (event.target.value) document.querySelector('select[name="Status"]').value = 'Occupied';
+        });
+    </script>
+}

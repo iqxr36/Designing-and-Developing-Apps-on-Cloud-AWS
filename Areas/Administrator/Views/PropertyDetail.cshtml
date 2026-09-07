@@ -1,0 +1,248 @@
+@model CloudMVCApplication.ViewModels.AreaDashboardViewModel
+@{
+    Layout = "~/Areas/Administrator/Views/Shared/_AdministratorLayout.cshtml";
+    ViewData["Title"] = "Property Details";
+    var property = Model.SelectedProperty;
+    var occupancy = property == null || property.UnitCount == 0 ? 0 : property.OccupiedUnits * 100 / property.UnitCount;
+}
+
+<div class="pm-flex-between pm-page-header">
+    <div>
+        <h1 class="pm-page-title">@(property?.Name ?? "No property selected")</h1>
+        <p class="pm-page-lead">@(property == null ? "No property data available" : $"{property.Type} - {property.Address}, {property.City}")</p>
+    </div>
+    <div class="d-flex gap-2 flex-wrap">
+        <a class="pm-btn pm-btn--secondary" asp-controller="Administrator" asp-action="Properties">
+            <span class="material-symbols-outlined">arrow_back</span> Back to Properties
+        </a>
+    </div>
+</div>
+
+@if (TempData["SuccessMessage"] is string successMessage)
+{
+    <div class="pm-card mb-3" style="border-left: 4px solid #0a5c2e;">
+        <div class="pm-card__body" style="color: #0a5c2e; font-weight: 600;">@successMessage</div>
+    </div>
+}
+@if (TempData["ErrorMessage"] is string errorMessage)
+{
+    <div class="pm-card mb-3" style="border-left: 4px solid #ba1a1a;">
+        <div class="pm-card__body" style="color: #ba1a1a; font-weight: 600;">@errorMessage</div>
+    </div>
+}
+
+<div class="pm-grid pm-grid--stats">
+    <div class="pm-stat">
+        <div class="d-flex justify-content-between align-items-start">
+            <span class="pm-stat__label">Total Units</span>
+        </div>
+        <h3 class="pm-stat__value">@(property?.UnitCount ?? 0)</h3>
+    </div>
+    <div class="pm-stat">
+        <div class="d-flex justify-content-between align-items-start">
+            <span class="pm-stat__label">Occupied</span>
+        </div>
+        <h3 class="pm-stat__value">@(property?.OccupiedUnits ?? 0)</h3>
+    </div>
+    <div class="pm-stat">
+        <div class="d-flex justify-content-between align-items-start">
+            <span class="pm-stat__label">Occupancy Rate</span>
+        </div>
+        <h3 class="pm-stat__value">@occupancy%</h3>
+    </div>
+</div>
+
+@if (!string.IsNullOrWhiteSpace(property?.ImageUrl))
+{
+    <div class="pm-photo-card pm-card mb-4">
+        <div class="pm-card__header">
+            <h3 class="pm-card__title">Property Photo</h3>
+        </div>
+        <div class="pm-card__body p-0">
+            <img src="@property.ImageUrl"
+                 alt="@property.Name property photo"
+                 class="pm-photo-preview"
+                 style="object-fit: contain; max-height: 320px; background: var(--pm-surface-container);" />
+        </div>
+    </div>
+}
+
+<div class="pm-card mb-4">
+    <div class="pm-card__header">
+        <h3 class="pm-card__title">Edit Property</h3>
+    </div>
+    <form asp-controller="Administrator" asp-action="UpdateProperty" asp-route-id="@property?.PropertyId" method="post" enctype="multipart/form-data">
+        @Html.AntiForgeryToken()
+        <div class="pm-card__body">
+            <div asp-validation-summary="All" class="small" style="color: #ba1a1a; margin-bottom: 16px;"></div>
+            <div class="row g-3">
+                <div class="mb-3">
+                    <label class="pm-label">Property Name</label>
+                    <input type="text" name="PropertyName" class="pm-input" value="@(property?.Name ?? string.Empty)" required />
+                </div>
+                <div class="mb-3">
+                    <label class="pm-label">Property Type</label>
+                    <select name="PropertyType" class="pm-select" required>
+                        <option value="Commercial Office" selected="@(property?.Type == "Commercial Office")">Commercial Office</option>
+                        <option value="Residential Building" selected="@(property?.Type == "Residential Building")">Residential Building</option>
+                        <option value="Townhouse Community" selected="@(property?.Type == "Townhouse Community")">Townhouse Community</option>
+                        <option value="Industrial" selected="@(property?.Type == "Industrial")">Industrial</option>
+                    </select>
+                </div>
+                <div class="mb-3">
+                    <label class="pm-label">Address</label>
+                    <input type="text" name="Address" class="pm-input" value="@(property?.Address ?? string.Empty)" />
+                </div>
+                <partial name="_PropertyPhotoField" model="property?.ImageUrl" />
+                <div class="mb-3">
+                    <label class="pm-label">City</label>
+                    <input type="text" name="City" class="pm-input" value="@(property?.City ?? string.Empty)" />
+                </div>
+                <div class="mb-3">
+                    <label class="pm-label">Status</label>
+                    <select name="Status" class="pm-select" required>
+                        <option value="Active" selected="@(property?.Status == "Active")">Active</option>
+                        <option value="Inactive" selected="@(property?.Status == "Inactive")">Inactive</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+        <div class="pm-card__body border-top d-flex gap-2 justify-content-end pt-3">
+            <button type="submit" class="pm-btn pm-btn--primary">Save Property</button>
+        </div>
+    </form>
+</div>
+
+<div class="row g-3">
+    <div class="pm-card col-lg-4">
+        <div class="pm-card__header">
+            <h3 class="pm-card__title">Assigned Managers</h3>
+        </div>
+        <div class="pm-card__body">
+            @if (Model.SelectedPropertyManagers.Any())
+            {
+                <div style="display: grid; gap: 14px;">
+                    @foreach (var manager in Model.SelectedPropertyManagers)
+                    {
+                        <div class="pm-flex-between d-flex gap-3" style="padding-bottom: 14px; border-bottom: 1px solid var(--pm-outline-variant);">
+                            <div class="d-flex align-items-center gap-3">
+                                <div style="width: 48px; height: 48px; border-radius: 999px; background: #e1e3e4; display: flex; align-items: center; justify-content: center; font-weight: 700;">@manager.FullName.Split(' ', StringSplitOptions.RemoveEmptyEntries).Select(part => part[0]).Take(2).Aggregate(string.Empty, (current, next) => current + next)</div>
+                                <div>
+                                    <p style="font-weight: 600; margin: 0;">@manager.FullName</p>
+                                    <p class="pm-muted small" style="margin: 0;">@manager.Email</p>
+                                    <p class="pm-muted small" style="margin: 2px 0 0;">@manager.JobTitle</p>
+                                </div>
+                            </div>
+                            <form asp-controller="Administrator" asp-action="RemoveManagerFromProperty" method="post">
+                                @Html.AntiForgeryToken()
+                                <input type="hidden" name="propertyId" value="@property?.PropertyId" />
+                                <input type="hidden" name="managerId" value="@manager.ManagerId" />
+                                <button type="submit" class="pm-btn pm-btn--link" style="color: #ba1a1a;">Remove</button>
+                            </form>
+                        </div>
+                    }
+                </div>
+            }
+            else
+            {
+                <p class="pm-muted" style="margin-top: 0;">No managers assigned yet.</p>
+            }
+
+            <form asp-controller="Administrator" asp-action="AssignManagerToProperty" method="post" style="margin-top: 18px;">
+                @Html.AntiForgeryToken()
+                <input type="hidden" name="propertyId" value="@property?.PropertyId" />
+                <div class="mb-3">
+                    <label class="pm-label">Assign Available Manager</label>
+                    <select name="managerId" class="pm-select" required disabled="@(!Model.AvailableManagers.Any())">
+                        <option value="">@(Model.AvailableManagers.Any() ? "Choose a manager" : "No available managers")</option>
+                        @foreach (var manager in Model.AvailableManagers)
+                        {
+                            <option value="@manager.ManagerId">@manager.FullName - @manager.Email</option>
+                        }
+                    </select>
+                </div>
+                <button type="submit" class="pm-btn pm-btn--primary" disabled="@(!Model.AvailableManagers.Any())">
+                    <span class="material-symbols-outlined">person_add</span> Assign Manager
+                </button>
+            </form>
+        </div>
+    </div>
+</div>
+
+<div class="row g-3 mt-4">
+    <div class="pm-card col-lg-6">
+        <div class="pm-card__header">
+            <h3 class="pm-card__title">Units Under This Property</h3>
+            <a class="pm-btn pm-btn--link" asp-controller="Administrator" asp-action="Units" asp-route-propertyId="@property?.PropertyId">Manage Units</a>
+        </div>
+        <div class="pm-table-wrap">
+            <table class="pm-table">
+                <thead>
+                    <tr>
+                        <th>Unit</th>
+                        <th>Type</th>
+                        <th>Status</th>
+                        <th>Tenant</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var unit in Model.SelectedPropertyUnits)
+                    {
+                        <tr>
+                            <td><a asp-controller="Administrator" asp-action="UnitDetail" asp-route-id="@unit.UnitId"><strong>@unit.UnitNumber</strong></a></td>
+                            <td>@unit.UnitType</td>
+                            <td><span class="pm-badge pm-badge--inprogress">@unit.Status</span></td>
+                            <td>@(unit.TenantName ?? "Unassigned")</td>
+                        </tr>
+                    }
+                    @if (!Model.SelectedPropertyUnits.Any())
+                    {
+                        <tr>
+                            <td colspan="4" class="pm-muted">No units added for this property yet.</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+    <div class="pm-card col-lg-6">
+        <div class="pm-card__header">
+            <h3 class="pm-card__title">Tenants Under This Property</h3>
+            <a class="pm-btn pm-btn--link" asp-controller="Administrator" asp-action="Users">Manage Users</a>
+        </div>
+        <div class="pm-table-wrap">
+            <table class="pm-table">
+                <thead>
+                    <tr>
+                        <th>Name</th>
+                        <th>Email</th>
+                        <th>Phone</th>
+                        <th>Status</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var tenant in Model.SelectedPropertyTenants)
+                    {
+                        <tr>
+                            <td><a asp-controller="Administrator" asp-action="UserDetail" asp-route-id="@tenant.Id"><strong>@tenant.FullName</strong></a></td>
+                            <td>@tenant.Email</td>
+                            <td>@(tenant.PhoneNumber ?? "No phone")</td>
+                            <td><span class="pm-badge pm-badge--inprogress">@tenant.Status</span></td>
+                        </tr>
+                    }
+                    @if (!Model.SelectedPropertyTenants.Any())
+                    {
+                        <tr>
+                            <td colspan="4" class="pm-muted">No tenants assigned to units in this property yet.</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+    <partial name="_PropertyPhotoFieldScripts" />
+}

@@ -1,0 +1,241 @@
+@page
+@model CloudMVCApplication.Areas.Identity.Pages.Account.RegisterCompanyModel
+@{
+    ViewData["Title"] = "Request Demo";
+    Layout = "/Views/Shared/_AuthLayout.cshtml";
+}
+
+<header class="auth-topbar">
+    <nav class="auth-topbar-inner" aria-label="Primary navigation">
+        <a class="auth-topbar-brand" asp-area="" asp-controller="Home" asp-action="Index">
+            <img src="~/images/brand/zammaintain-logo.png" alt="ZamMaintain Logo" style="height: 70px; width: auto;" />
+            <span>ZamMaintain</span>
+        </a>
+        <div class="auth-topbar-nav">
+            <a class="auth-topbar-link" href="/#about">About</a>
+            <a class="auth-topbar-link" href="/#services">Services</a>
+            <a class="auth-topbar-link" href="/#platform">Platform</a>
+            <a class="auth-topbar-link" href="/#contact">Contact</a>
+        </div>
+        <div class="auth-topbar-actions">
+            <a class="auth-topbar-link" href="/Identity/Account/Login">Log In</a>
+            <a class="auth-topbar-button" href="/Identity/Account/RegisterCompany">Request Demo</a>
+        </div>
+    </nav>
+</header>
+
+<main class="auth-public-main">
+    @if (Model.RegistrationSubmitted)
+    {
+        <section class="auth-success-card" aria-live="polite">
+            <span class="material-symbols-outlined auth-success-icon" aria-hidden="true">check_circle</span>
+            <h1 class="auth-success-title">Company registration complete.</h1>
+            <p class="auth-success-text">
+                @(Model.BillingMessage ?? "Your company account was created. Log in with your administrator email and password.")
+            </p>
+            <a class="auth-topbar-button" href="/Identity/Account/Login">Go to Login</a>
+        </section>
+    }
+    else
+    {
+        <section class="auth-wide-card auth-wide-card--large" aria-label="Company registration form">
+            <div class="auth-centered-header">
+                <h1 class="auth-card-title">Start Subscription</h1>
+                <p class="auth-card-subtitle">Tell us about your property company and pay securely with Xendit.</p>
+            </div>
+
+            <form class="auth-form" method="post">
+                @Html.AntiForgeryToken()
+                <div asp-validation-summary="All" class="auth-validation-summary" role="alert"></div>
+
+                @if (Model.XenditCheckoutAvailable)
+                {
+                    <p class="auth-card-subtitle" style="margin-bottom: 1rem;">
+                        After you submit, you will be redirected to Xendit to set up your subscription.
+                    </p>
+                }
+
+                <section class="auth-section">
+                    <div class="auth-section-header">
+                        <span class="material-symbols-outlined auth-section-icon" aria-hidden="true">corporate_fare</span>
+                        <h2 class="auth-section-title">Company Information</h2>
+                    </div>
+
+                    <div class="auth-form-grid">
+                        <div class="auth-field">
+                            <label class="auth-label" asp-for="Input.CompanyName"></label>
+                            <input class="auth-input" asp-for="Input.CompanyName" placeholder="e.g. Skyline Property Mgmt" />
+                            <span class="auth-validation-message" asp-validation-for="Input.CompanyName"></span>
+                        </div>
+
+                        <div class="auth-field">
+                            <label class="auth-label" asp-for="Input.CompanyEmail"></label>
+                            <input class="auth-input" asp-for="Input.CompanyEmail" type="email" autocomplete="email" placeholder="contact@company.com" />
+                            <span class="auth-validation-message" asp-validation-for="Input.CompanyEmail"></span>
+                            <div class="auth-field-hint">This email will also be used to log in as the company administrator.</div>
+                        </div>
+
+                        <div class="auth-field">
+                            <label class="auth-label" asp-for="Input.CompanyPhone"></label>
+                            <input class="auth-input" asp-for="Input.CompanyPhone" autocomplete="tel" placeholder="+60 ..." />
+                            <span class="auth-validation-message" asp-validation-for="Input.CompanyPhone"></span>
+                        </div>
+
+                        <div class="auth-field">
+                            <label class="auth-label" asp-for="Input.CompanyAddress"></label>
+                            <input class="auth-input" asp-for="Input.CompanyAddress" placeholder="Full street address" />
+                            <span class="auth-validation-message" asp-validation-for="Input.CompanyAddress"></span>
+                        </div>
+                    </div>
+                </section>
+
+                <section class="auth-section">
+                    <div class="auth-section-header">
+                        <span class="material-symbols-outlined auth-section-icon" aria-hidden="true">admin_panel_settings</span>
+                        <h2 class="auth-section-title">PropertyAdmin Information</h2>
+                    </div>
+
+                    <div class="auth-form-grid">
+                        <div class="auth-field">
+                            <label class="auth-label" asp-for="Input.AdminName"></label>
+                            <input class="auth-input" asp-for="Input.AdminName" autocomplete="name" placeholder="Full name" />
+                            <span class="auth-validation-message" asp-validation-for="Input.AdminName"></span>
+                        </div>
+
+                        <div class="auth-field">
+                            <label class="auth-label" asp-for="Input.AdminPhone"></label>
+                            <input class="auth-input" asp-for="Input.AdminPhone" autocomplete="tel" placeholder="+60 ..." />
+                            <span class="auth-validation-message" asp-validation-for="Input.AdminPhone"></span>
+                        </div>
+
+                        <div class="auth-field">
+                            <label class="auth-label" asp-for="Input.Password"></label>
+                            <div class="auth-input-wrapper auth-input-wrapper--password">
+                                <input class="auth-input"
+                                       id="RegisterPassword"
+                                       asp-for="Input.Password"
+                                       autocomplete="new-password"
+                                       placeholder="Password" />
+                                <button class="auth-password-toggle" type="button" data-password-toggle="RegisterPassword">
+                                    <span class="material-symbols-outlined" aria-hidden="true" data-password-toggle-icon>visibility</span>
+                                </button>
+                            </div>
+                            <span class="auth-validation-message" asp-validation-for="Input.Password"></span>
+                        </div>
+
+                        <div class="auth-field">
+                            <label class="auth-label" asp-for="Input.ConfirmPassword"></label>
+                            <div class="auth-input-wrapper auth-input-wrapper--password">
+                                <input class="auth-input"
+                                       id="ConfirmPassword"
+                                       asp-for="Input.ConfirmPassword"
+                                       autocomplete="new-password"
+                                       placeholder="Confirm password" />
+                                <button class="auth-password-toggle" type="button" data-password-toggle="ConfirmPassword">
+                                    <span class="material-symbols-outlined" aria-hidden="true" data-password-toggle-icon>visibility</span>
+                                </button>
+                            </div>
+                            <span class="auth-validation-message" asp-validation-for="Input.ConfirmPassword"></span>
+                        </div>
+                    </div>
+                </section>
+
+                <section class="auth-section">
+                    <div class="auth-section-header">
+                        <span class="material-symbols-outlined auth-section-icon" aria-hidden="true">credit_card</span>
+                        <h2 class="auth-section-title">Choose Subscription Plan</h2>
+                    </div>
+
+                    <div class="auth-plan-grid">
+                        <label class="auth-plan-card">
+                            <input asp-for="Input.Plan" type="radio" value="Starter" />
+                            <span>
+                                <span class="auth-plan-name">Starter</span>
+                                <span class="auth-plan-price">
+                                    <span class="auth-plan-amount">RM 99</span>
+                                    <span class="auth-plan-period">/mo</span>
+                                </span>
+                            </span>
+                            <ul class="auth-plan-features">
+                                <li><span class="material-symbols-outlined" aria-hidden="true">check_circle</span> 1 Property</li>
+                                <li><span class="material-symbols-outlined" aria-hidden="true">check_circle</span> Up to 25 Units</li>
+                                <li><span class="material-symbols-outlined" aria-hidden="true">check_circle</span> 2 Manager Accounts</li>
+                                <li><span class="material-symbols-outlined" aria-hidden="true">check_circle</span> Tenant Portal Included</li>
+                            </ul>
+                        </label>
+
+                        <label class="auth-plan-card">
+                            <span class="auth-plan-badge">RECOMMENDED</span>
+                            <input asp-for="Input.Plan" type="radio" value="Professional" />
+                            <span>
+                                <span class="auth-plan-name">Professional</span>
+                                <span class="auth-plan-price">
+                                    <span class="auth-plan-amount">RM 299</span>
+                                    <span class="auth-plan-period">/mo</span>
+                                </span>
+                            </span>
+                            <ul class="auth-plan-features">
+                                <li><span class="material-symbols-outlined" aria-hidden="true">check_circle</span> Up to 5 Properties</li>
+                                <li><span class="material-symbols-outlined" aria-hidden="true">check_circle</span> Up to 150 Units</li>
+                                <li><span class="material-symbols-outlined" aria-hidden="true">check_circle</span> 10 Manager Accounts</li>
+                                <li><span class="material-symbols-outlined" aria-hidden="true">check_circle</span> Reports &amp; Notifications</li>
+                            </ul>
+                        </label>
+
+                        <label class="auth-plan-card">
+                            <input asp-for="Input.Plan" type="radio" value="Enterprise" />
+                            <span>
+                                <span class="auth-plan-name">Enterprise</span>
+                                <span class="auth-plan-price">
+                                    <span class="auth-plan-amount">RM 599</span>
+                                    <span class="auth-plan-period">/mo</span>
+                                </span>
+                            </span>
+                            <ul class="auth-plan-features">
+                                <li><span class="material-symbols-outlined" aria-hidden="true">check_circle</span> Up to 20 Properties</li>
+                                <li><span class="material-symbols-outlined" aria-hidden="true">check_circle</span> Up to 500 Units</li>
+                                <li><span class="material-symbols-outlined" aria-hidden="true">check_circle</span> Unlimited Manager Accounts</li>
+                                <li><span class="material-symbols-outlined" aria-hidden="true">check_circle</span> Priority Support</li>
+                            </ul>
+                        </label>
+                    </div>
+                    <span class="auth-validation-message" asp-validation-for="Input.Plan"></span>
+                </section>
+
+                <div class="auth-form-footer">
+                    <button class="auth-primary-button" type="submit">Pay with Xendit</button>
+                    <p class="auth-card-subtitle">
+                        Already have an account? <a class="auth-link" href="/Identity/Account/Login">Log In</a>
+                    </p>
+                </div>
+            </form>
+        </section>
+    }
+</main>
+
+<footer class="auth-footer">
+    <div class="auth-footer-inner">
+        <div class="auth-footer-brand" style="display: flex; align-items: center; gap: 16px;">
+            <img src="~/images/brand/zammaintain-logo.png" alt="ZamMaintain Logo" class="auth-footer-logo-img" style="height: 40px; filter: brightness(0) invert(1); opacity: 0.9;" />
+            <span>&copy; 2026 ZamMaintain Enterprise. All rights reserved.</span>
+        </div>
+        <div class="auth-footer-nav" aria-label="Footer links" style="align-items: center; gap: 24px;">
+            <div style="display: flex; gap: 24px; border-right: 1px solid rgba(255,255,255,0.2); padding-right: 24px;">
+                <span class="auth-footer-link" style="cursor: default; display: flex; align-items: center; gap: 6px;">
+                    <span class="material-symbols-outlined" style="font-size: 16px;">mail</span> support@zammaintain.com
+                </span>
+                <span class="auth-footer-link" style="cursor: default; display: flex; align-items: center; gap: 6px;">
+                    <span class="material-symbols-outlined" style="font-size: 16px;">call</span> +601163749281
+                </span>
+            </div>
+            <div style="display: flex; gap: 24px;">
+                <a class="auth-footer-link" href="/Home/Privacy">Privacy Policy</a>
+                <a class="auth-footer-link" href="/Home/Terms">Terms of Service</a>
+            </div>
+        </div>
+    </div>
+</footer>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

@@ -1,0 +1,376 @@
+@model CloudMVCApplication.ViewModels.SuperAdminCompanyDetailViewModel
+@using CloudMVCApplication.Models
+@{
+    ViewData["Title"] = Model.CompanyName;
+    var managerLimitDisplay = SubscriptionPlans.IsUnlimitedManagers(Model.MaxManagers) ? "Unlimited" : Model.MaxManagers.ToString();
+    var trialEndValue = Model.TrialEndsAt?.ToLocalTime().ToString("yyyy-MM-dd");
+}
+
+<div class="pm-page-header pm-flex-between">
+    <div>
+        <h1 class="pm-page-title">@Model.CompanyName</h1>
+        <p class="pm-page-lead">@Model.CompanyEmail · Registered @Model.CreatedAt.ToLocalTime().ToString("f")</p>
+    </div>
+    <div class="d-flex flex-wrap gap-2">
+        <a class="pm-btn pm-btn--secondary" asp-action="EditCompany" asp-route-id="@Model.CompanyId">Edit</a>
+        @if (Model.Status != "Deleted")
+        {
+            <form asp-action="DeleteCompany" method="post" class="d-inline"
+                  data-confirm-title="Delete company?"
+                  data-confirm-message="This soft-deletes the company and deactivates its users. Related requests and payments are kept."
+                  data-confirm-action="Delete company">
+                @Html.AntiForgeryToken()
+                <input type="hidden" name="id" value="@Model.CompanyId" />
+                <button type="submit" class="pm-btn pm-btn--outline">Delete</button>
+            </form>
+        }
+        <a class="pm-btn pm-btn--secondary" asp-action="Companies">Back to companies</a>
+    </div>
+</div>
+
+<div class="pm-card mb-4" id="company-info">
+    <div class="pm-card__header pm-flex-between">
+        <h2 class="pm-card__title">Company information</h2>
+        <span class="pm-badge @(Model.Status == "Active" ? "pm-badge--subscription-active" : "pm-badge--subscription-muted")">@Model.Status</span>
+    </div>
+    <div class="pm-card__body">
+        <dl class="row mb-0">
+            <dt class="col-sm-3">Business email</dt>
+            <dd class="col-sm-9">@Model.CompanyEmail</dd>
+            <dt class="col-sm-3">Phone</dt>
+            <dd class="col-sm-9">@(Model.CompanyPhone ?? "—")</dd>
+            <dt class="col-sm-3">Address</dt>
+            <dd class="col-sm-9">@(Model.CompanyAddress ?? "—")</dd>
+        </dl>
+    </div>
+</div>
+
+<div class="row g-4 mb-4">
+    <div class="col-lg-6" id="manage-subscription">
+        <div class="pm-card h-100">
+            <div class="pm-card__header">
+                <h2 class="pm-card__title">Manage subscription</h2>
+            </div>
+            <div class="pm-card__body">
+                <p class="pm-muted small mb-3">Update billing status manually. Online payment integration is coming later.</p>
+
+                <dl class="row mb-3">
+                    <dt class="col-sm-5">Current status</dt>
+                    <dd class="col-sm-7">
+                        <span class="pm-badge @(Model.SubscriptionStatus == CompanySubscriptionStatuses.Active || Model.SubscriptionStatus == CompanySubscriptionStatuses.Trialing ? "pm-badge--subscription-active" : Model.SubscriptionStatus == CompanySubscriptionStatuses.PastDue ? "pm-badge--subscription-warning" : "pm-badge--subscription-muted")">
+                            @Model.SubscriptionStatus
+                        </span>
+                    </dd>
+                    <dt class="col-sm-5">Billing period</dt>
+                    <dd class="col-sm-7">
+                        @if (Model.CurrentPeriodStart.HasValue && Model.CurrentPeriodEnd.HasValue)
+                        {
+                            @Model.CurrentPeriodStart.Value.ToLocalTime().ToString("d") @:– @Model.CurrentPeriodEnd.Value.ToLocalTime().ToString("d")
+                        }
+                        else
+                        {
+                            <span class="pm-muted">Not set</span>
+                        }
+                    </dd>
+                    <dt class="col-sm-5">Trial ends</dt>
+                    <dd class="col-sm-7">@(Model.TrialEndsAt?.ToLocalTime().ToString("d") ?? "—")</dd>
+                </dl>
+
+                <form asp-action="UpdateSubscriptionStatus" method="post" class="mb-3">
+                    @Html.AntiForgeryToken()
+                    <input type="hidden" name="id" value="@Model.CompanyId" />
+                    <div class="mb-2">
+                        <label class="pm-label" for="subscription-status">Subscription status</label>
+                        <select class="pm-select" id="subscription-status" name="status">
+                            @foreach (var status in CompanySubscriptionStatuses.All)
+                            {
+                                <option value="@status" selected="@(Model.SubscriptionStatus == status)">@status</option>
+                            }
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label class="pm-label" for="trial-ends">Trial end date (optional)</label>
+                        <input class="pm-input" type="date" id="trial-ends" name="trialEndsAt" value="@trialEndValue" />
+                    </div>
+                    <button type="submit" class="pm-btn pm-btn--primary">Save subscription status</button>
+                </form>
+
+                <div class="d-flex flex-wrap gap-2">
+                    <form asp-action="MarkSubscriptionActive" method="post" class="d-inline"
+                          data-confirm-title="Mark subscription active?"
+                          data-confirm-message="This will manually set the company's subscription to active."
+                          data-confirm-action="Mark active">
+                        @Html.AntiForgeryToken()
+                        <input type="hidden" name="id" value="@Model.CompanyId" />
+                        <button type="submit" class="pm-btn pm-btn--secondary pm-btn--sm">Mark active</button>
+                    </form>
+                    @if (Model.Status == "Suspended")
+                    {
+                        <form asp-action="ReactivateCompany" method="post" class="d-inline"
+                              data-confirm-title="Reactivate company?"
+                              data-confirm-message="This will restore company access for its users."
+                              data-confirm-action="Reactivate company">
+                            @Html.AntiForgeryToken()
+                            <input type="hidden" name="id" value="@Model.CompanyId" />
+                            <button type="submit" class="pm-btn pm-btn--primary pm-btn--sm">Reactivate company</button>
+                        </form>
+                    }
+                    else
+                    {
+                        <form asp-action="SuspendCompany" method="post" class="d-inline"
+                              data-confirm-title="Suspend company?"
+                              data-confirm-message="This will suspend company access until it is reactivated."
+                              data-confirm-action="Suspend company">
+                            @Html.AntiForgeryToken()
+                            <input type="hidden" name="id" value="@Model.CompanyId" />
+                            <button type="submit" class="pm-btn pm-btn--outline pm-btn--sm">Suspend company</button>
+                        </form>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-6" id="manage-plan">
+        <div class="pm-card h-100">
+            <div class="pm-card__header">
+                <h2 class="pm-card__title">Manage plan</h2>
+            </div>
+            <div class="pm-card__body">
+                <p class="pm-muted small mb-3">Current plan: <strong>@Model.SubscriptionPlan</strong> — @SubscriptionPlans.GetPlanDescription(Model.SubscriptionPlan)</p>
+                <div class="superadmin-plan-grid">
+                    @foreach (var plan in SubscriptionPlans.All)
+                    {
+                        var isCurrent = Model.SubscriptionPlan == plan;
+                        var (maxProperties, maxUnits, maxManagers) = SubscriptionPlans.GetLimits(plan);
+                        var managersLabel = SubscriptionPlans.IsUnlimitedManagers(maxManagers) ? "Unlimited" : maxManagers.ToString();
+                        <div class="superadmin-plan-card @(isCurrent ? "superadmin-plan-card--current" : null)">
+                            <div class="superadmin-plan-card__header">
+                                <strong>@plan</strong>
+                                @if (isCurrent)
+                                {
+                                    <span class="pm-badge pm-badge--subscription-active">Current</span>
+                                }
+                            </div>
+                            <div class="superadmin-plan-card__price">@SubscriptionPlans.GetDisplayPrice(plan)<span>/mo</span></div>
+                            <ul class="superadmin-plan-card__limits">
+                                <li>@maxProperties properties</li>
+                                <li>@maxUnits units</li>
+                                <li>@managersLabel managers</li>
+                            </ul>
+                            @if (!isCurrent)
+                            {
+                                <form asp-action="ChangePlan" method="post"
+                                      data-confirm-title="Switch company plan?"
+                                      data-confirm-message="This will update the company's subscription plan and usage limits."
+                                      data-confirm-action="Switch plan">
+                                    @Html.AntiForgeryToken()
+                                    <input type="hidden" name="id" value="@Model.CompanyId" />
+                                    <input type="hidden" name="plan" value="@plan" />
+                                    <button type="submit" class="pm-btn pm-btn--ghost pm-btn--sm w-100">Switch to @plan</button>
+                                </form>
+                            }
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="pm-card mb-4" id="usage-limits">
+    <div class="pm-card__header">
+        <h2 class="pm-card__title">Usage vs limits</h2>
+    </div>
+    <div class="pm-card__body">
+        <div class="pm-grid pm-grid--stats" style="grid-template-columns: repeat(4, 1fr);">
+            <div class="pm-stat">
+                <span class="pm-stat__label">Company admin</span>
+                <h3 class="pm-stat__value">@Model.AdministratorCount <span class="pm-muted" style="font-size: 1rem;">/ @SubscriptionPlans.MaxAdministratorsPerCompany</span></h3>
+            </div>
+            <div class="pm-stat">
+                <span class="pm-stat__label">Properties</span>
+                <h3 class="pm-stat__value">@Model.PropertyCount <span class="pm-muted" style="font-size: 1rem;">/ @Model.MaxProperties</span></h3>
+            </div>
+            <div class="pm-stat">
+                <span class="pm-stat__label">Units</span>
+                <h3 class="pm-stat__value">@Model.UnitCount <span class="pm-muted" style="font-size: 1rem;">/ @Model.MaxUnits</span></h3>
+            </div>
+            <div class="pm-stat">
+                <span class="pm-stat__label">Managers</span>
+                <h3 class="pm-stat__value">@Model.ManagerCount <span class="pm-muted" style="font-size: 1rem;">/ @managerLimitDisplay</span></h3>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row g-4 mb-4" id="billing-history">
+    <div class="col-lg-6">
+        <div class="pm-card h-100">
+            <div class="pm-card__header">
+                <h2 class="pm-card__title">Billing events</h2>
+            </div>
+            <div class="pm-card__body pm-table-wrap">
+                @if (!Model.BillingEvents.Any())
+                {
+                    <p class="pm-muted mb-0">No billing events recorded yet. Events appear after Xendit webhooks or manual plan/status changes.</p>
+                }
+                else
+                {
+                    <table class="pm-table">
+                        <thead>
+                            <tr>
+                                <th>Event</th>
+                                <th>Details</th>
+                                <th>Date</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var evt in Model.BillingEvents)
+                            {
+                                <tr>
+                                    <td>@evt.EventType</td>
+                                    <td class="small">
+                                        @if (!string.IsNullOrWhiteSpace(evt.PreviousPlan) || !string.IsNullOrWhiteSpace(evt.NewPlan))
+                                        {
+                                            <span>@(evt.PreviousPlan ?? "—") → @(evt.NewPlan ?? "—")</span>
+                                        }
+                                        else if (!string.IsNullOrWhiteSpace(evt.PreviousStatus) || !string.IsNullOrWhiteSpace(evt.NewStatus))
+                                        {
+                                            <span>@(evt.PreviousStatus ?? "—") → @(evt.NewStatus ?? "—")</span>
+                                        }
+                                        else if (evt.Amount.HasValue)
+                                        {
+                                            <span>@evt.Amount.Value.ToString("0.00") @(evt.Currency?.ToUpperInvariant() ?? "")</span>
+                                        }
+                                        else
+                                        {
+                                            <span class="pm-muted">—</span>
+                                        }
+                                    </td>
+                                    <td>@evt.CreatedAt.ToLocalTime().ToString("g")</td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                }
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-6">
+        <div class="pm-card h-100">
+            <div class="pm-card__header">
+                <h2 class="pm-card__title">Invoices</h2>
+            </div>
+            <div class="pm-card__body pm-table-wrap">
+                @if (!Model.Invoices.Any())
+                {
+                    <p class="pm-muted mb-0">No invoices synced yet. Invoices appear when Xendit sends invoice webhooks during test billing.</p>
+                }
+                else
+                {
+                    <table class="pm-table">
+                        <thead>
+                            <tr>
+                                <th>Status</th>
+                                <th>Amount</th>
+                                <th>Period</th>
+                                <th></th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var invoice in Model.Invoices)
+                            {
+                                <tr>
+                                    <td>
+                                        <span class="pm-badge pm-badge--subscription-muted">@invoice.Status</span>
+                                    </td>
+                                    <td>@invoice.AmountPaid.ToString("0.00") / @invoice.AmountDue.ToString("0.00") @invoice.Currency.ToUpperInvariant()</td>
+                                    <td class="small">
+                                        @if (invoice.PeriodStart.HasValue && invoice.PeriodEnd.HasValue)
+                                        {
+                                            @invoice.PeriodStart.Value.ToLocalTime().ToString("d") @:– @invoice.PeriodEnd.Value.ToLocalTime().ToString("d")
+                                        }
+                                        else
+                                        {
+                                            <span class="pm-muted">—</span>
+                                        }
+                                    </td>
+                                    <td>
+                                        @if (!string.IsNullOrWhiteSpace(invoice.HostedInvoiceUrl))
+                                        {
+                                            <a class="pm-btn pm-btn--ghost pm-btn--sm" href="@invoice.HostedInvoiceUrl" target="_blank" rel="noopener">View</a>
+                                        }
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                }
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="pm-card" id="company-admins">
+    <div class="pm-card__header pm-flex-between">
+        <h2 class="pm-card__title">Company admin</h2>
+        <span class="pm-muted small">@Model.AdministratorCount / @SubscriptionPlans.MaxAdministratorsPerCompany</span>
+    </div>
+    <div class="pm-card__body pm-table-wrap">
+        @if (Model.AdministratorCount > SubscriptionPlans.MaxAdministratorsPerCompany)
+        {
+            <div class="pm-card mb-3" style="border-left: 4px solid #b45309;">
+                <div class="pm-card__body" style="color: #92400e;">
+                    This company has more than one administrator account. Only one is allowed; the company admin should change extra accounts to Property Manager.
+                </div>
+            </div>
+        }
+        @if (!Model.Administrators.Any())
+        {
+            <p class="pm-muted mb-0">No administrator accounts found for this company.</p>
+        }
+        else
+        {
+            <table class="pm-table">
+                <thead>
+                    <tr>
+                        <th>Name</th>
+                        <th>Email</th>
+                        <th>Status</th>
+                        <th>Joined</th>
+                        <th></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var admin in Model.Administrators)
+                    {
+                        <tr>
+                            <td>@admin.FullName</td>
+                            <td>@admin.Email</td>
+                            <td>
+                                <span class="pm-badge @(admin.IsActive ? "pm-badge--subscription-active" : "pm-badge--subscription-muted")">
+                                    @(admin.IsActive ? "Active" : "Inactive")
+                                </span>
+                            </td>
+                            <td>@admin.CreatedAt.ToLocalTime().ToString("d")</td>
+                            <td>
+                                <form asp-action="ToggleAdminActive" method="post" class="d-inline"
+                                      data-confirm-title="@(admin.IsActive ? "Deactivate administrator?" : "Activate administrator?")"
+                                      data-confirm-message="This changes whether this company administrator can access the system."
+                                      data-confirm-action="@(admin.IsActive ? "Deactivate" : "Activate")">
+                                    @Html.AntiForgeryToken()
+                                    <input type="hidden" name="userId" value="@admin.UserId" />
+                                    <input type="hidden" name="companyId" value="@Model.CompanyId" />
+                                    <button type="submit" class="pm-btn pm-btn--ghost pm-btn--sm">
+                                        @(admin.IsActive ? "Deactivate" : "Activate")
+                                    </button>
+                                </form>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        }
+    </div>
+</div>

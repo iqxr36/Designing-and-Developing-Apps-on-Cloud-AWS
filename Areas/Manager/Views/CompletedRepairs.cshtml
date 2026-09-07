@@ -1,0 +1,77 @@
+@model CloudMVCApplication.ViewModels.AreaDashboardViewModel
+@{
+    Layout = "~/Areas/Manager/Views/Shared/_ManagerLayout.cshtml";
+    ViewData["Title"] = "Completed Repairs";
+}
+<div class="pm-flex-between pm-page-header">
+    <div>
+        <h1 class="pm-page-title">Completed Repairs</h1>
+        <p class="pm-page-lead">Review historical maintenance logs and tenant feedback.</p>
+    </div>
+    <button type="button" class="pm-btn pm-btn--secondary" disabled title="UI only">Export CSV</button>
+</div>
+
+<div class="pm-card pm-mb-2">
+    <div class="pm-card__body">
+        <div class="row g-3 align-items-end">
+            <div class="col-md-4">
+                <label class="pm-label" for="s">Search tenant / unit</label>
+                <input id="s" class="pm-input" placeholder="e.g. Unit 4B" />
+            </div>
+            <div class="col-md-3">
+                <label class="pm-label" for="tech">Technician</label>
+                <select id="tech" class="pm-select">
+                    <option value="">All technicians</option>
+                    @foreach (var technician in Model.Technicians)
+                    {
+                        <option>@technician.FullName</option>
+                    }
+                </select>
+            </div>
+            <div class="col-md-3">
+                <label class="pm-label" for="dr">Date range</label>
+                <input id="dr" class="pm-input" placeholder="Last 30 days" readonly />
+            </div>
+            <div class="col-md-2">
+                <button type="button" class="pm-btn pm-btn--primary pm-w-100" disabled>Apply</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="pm-card">
+    <div class="pm-table-wrap">
+        <table class="pm-table">
+            <thead>
+                <tr>
+                    <th>Req ID</th>
+                    <th>Tenant / property</th>
+                    <th>Issue</th>
+                    <th>Technician</th>
+                    <th>Completed</th>
+                    <th>Status</th>
+                    <th>Rating</th>
+                    <th>Proof</th>
+                    <th class="pm-text-end">Action</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var request in Model.Requests.Where(r => r.Status == "Completed"))
+                {
+                    var technician = Model.Technicians.FirstOrDefault(t => t.FullName == request.TechnicianName);
+                    <tr>
+                        <td><strong>@request.DisplayId</strong></td>
+                        <td>@request.TenantName<br /><span class="pm-muted" style="font-size:.8rem">@request.PropertyName, Unit @request.UnitNumber</span></td>
+                        <td>@request.Title</td>
+                        <td>@(request.TechnicianName ?? "Unassigned")</td>
+                        <td class="pm-muted">@request.CreatedAt.ToLocalTime().ToString("MMM d")</td>
+                        <td><span class="pm-badge pm-badge--completed">@request.Status</span></td>
+                        <td><span class="pm-muted">@(technician == null ? "No rating yet" : $"{technician.AverageRating:0.0} / 5")</span></td>
+                        <td><span class="pm-muted" style="font-size:.75rem">Seeded proof on request</span></td>
+                        <td class="pm-text-end"><a class="pm-btn pm-btn--ghost" asp-area="Manager" asp-controller="Manager" asp-action="MaintenanceRequests" asp-route-status="Completed">View in List</a></td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>

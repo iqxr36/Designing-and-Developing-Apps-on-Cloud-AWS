@@ -1,0 +1,209 @@
+@model CloudMVCApplication.ViewModels.AreaDashboardViewModel
+@{
+    Layout = "~/Areas/Tenant/Views/Shared/_TenantLayout.cshtml";
+    ViewData["Title"] = "Request Details";
+    var request = Model.SelectedRequest;
+    var statusClass = request?.Status == "Completed" ? "pm-badge--avail" : request?.Status == "In Progress" ? "pm-badge--inprogress" : request?.Status == "Assigned" ? "pm-badge--assigned" : "pm-badge--pending";
+    var priorityClass = request?.Priority == "High" || request?.Priority == "Urgent" ? "pm-badge--high" : request?.Priority == "Low" ? "pm-badge--low" : "pm-badge--medium";
+    var progress = request?.Status switch
+    {
+        "Completed" => 100,
+        "In Progress" => 70,
+        "Assigned" => 45,
+        "Pending" => 20,
+        _ => 0
+    };
+}
+
+@if (TempData["SuccessMessage"] is string successMessage)
+{
+    <div class="alert alert-success" role="alert">@successMessage</div>
+}
+@if (TempData["ErrorMessage"] is string errorMessage)
+{
+    <div class="alert alert-danger" role="alert">@errorMessage</div>
+}
+
+<div class="pm-flex-between pm-page-header">
+    <div>
+        <a class="pm-link-back" asp-area="Tenant" asp-controller="Tenant" asp-action="TrackRequestStatus"><span class="material-symbols-outlined" style="font-size:18px">arrow_back</span> Back to Requests</a>
+        <div class="d-flex flex-wrap align-items-center gap-2">
+            <h1 class="pm-page-title mb-0">Request Details</h1>
+            <span class="pm-badge @statusClass">@(request?.Status ?? "No status")</span>
+        </div>
+        <p class="pm-page-lead pm-mt-1">@(request == null ? "No request selected." : $"{request.DisplayId} - {request.Category}")</p>
+    </div>
+    <div class="pm-actions">
+        @if (request != null)
+        {
+            <a class="pm-btn pm-btn--secondary" asp-area="Tenant" asp-controller="Messages" asp-action="ChatByRequest" asp-route-requestId="@request.RequestId">
+                <span class="material-symbols-outlined" style="font-size:18px">chat</span> Support Chat
+            </a>
+        }
+    </div>
+</div>
+
+<div class="pm-grid pm-grid--12">
+    <div class="d-flex flex-column gap-3">
+        <div class="pm-card">
+            <div class="pm-card__body">
+                <div class="pm-flex-between mb-3">
+                    <div>
+                        <h2 class="h5 mb-1">@(request?.Title ?? "No request")</h2>
+                        <p class="pm-muted mb-0">@(request?.DisplayId ?? "N/A")</p>
+                    </div>
+                    <span class="pm-badge @priorityClass">@(request?.Priority ?? "Priority")</span>
+                </div>
+                <div class="row g-4">
+                    <div class="col-md-6">
+                        <div class="pm-label">Location</div>
+                        <p class="mb-0"><strong>@(request?.PropertyName ?? "No property")</strong></p>
+                        <p class="pm-muted mb-0">Unit @(request?.UnitNumber ?? "N/A")</p>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="pm-label">Category</div>
+                        <p class="mb-0">@(request?.Category ?? "N/A")</p>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="pm-label">Date submitted</div>
+                        <p class="mb-0">@(request?.CreatedAt.ToLocalTime().ToString("MMM d, yyyy - HH:mm") ?? "N/A")</p>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="pm-label">Assigned technician</div>
+                        <p class="mb-0">@(request?.TechnicianName ?? "Pending assignment")</p>
+                    </div>
+                </div>
+                <hr class="my-4" />
+                <div class="pm-label">Description</div>
+                <p class="mb-0">@(request?.Description ?? "No description provided.")</p>
+            </div>
+        </div>
+
+        <div class="pm-card">
+            <div class="pm-card__header">
+                <h2 class="pm-card__title">Issue photos</h2>
+            </div>
+            <div class="pm-card__body">
+                <div class="row g-3">
+                    @if (Model.SelectedRequestImages.Any())
+                    {
+                        @foreach (var image in Model.SelectedRequestImages)
+                        {
+                            <div class="col-md-6">
+                                <div class="p-3 rounded border" style="border-color:var(--pm-border)!important">
+                                    <button type="button" class="pm-photo-thumb mb-2"
+                                            data-photo-preview
+                                            data-photo-group="tenant-request-@request?.RequestId"
+                                            data-photo-src="@image.ImageUrl"
+                                            data-photo-title="@($"{image.ImageType} - {request?.DisplayId}")"
+                                            data-photo-type="@image.ImageType"
+                                            data-photo-by="@image.UploadedByName"
+                                            data-photo-time="@image.UploadedAt.ToLocalTime().ToString("MMM d, yyyy h:mm tt")">
+                                        <img src="@image.ImageUrl" alt="@image.ImageType" class="img-fluid rounded" />
+                                    </button>
+                                    <div class="pm-label">@image.ImageType</div>
+                                    <p class="pm-muted mb-0" style="font-size:.85rem">Uploaded by @image.UploadedByName on @image.UploadedAt.ToLocalTime().ToString("MMM d, HH:mm")</p>
+                                </div>
+                            </div>
+                        }
+                    }
+                    else
+                    {
+                        <div class="col-12 d-flex align-items-center justify-content-center border border-2 border-dashed rounded text-center pm-muted p-3">
+                            No uploaded issue photos for @(request?.DisplayId ?? "this request").
+                        </div>
+                    }
+                </div>
+
+                @if (request != null && request.Status is not "Completed" and not "Cancelled")
+                {
+                    <form method="post" asp-area="Tenant" asp-controller="Tenant" asp-action="UploadIssuePhotos" enctype="multipart/form-data" class="border-top pt-3 mt-3" id="tenant-photo-upload-form" style="border-color:var(--pm-border)">
+                        @Html.AntiForgeryToken()
+                        <input type="hidden" name="RequestId" value="@request.RequestId" />
+                        <label class="pm-label" for="files">Add more issue photos</label>
+                        <input id="files" name="Files" type="file" class="pm-input mb-2" accept="image/*" multiple required />
+                        <p class="pm-muted mb-2" style="font-size:.85rem">JPG, PNG, GIF, or WebP up to 10MB each. Camera capture is supported.</p>
+                        <p id="photo-validation-error" class="pm-field-error mb-3" hidden></p>
+                        <button type="submit" class="pm-btn pm-btn--secondary">
+                            <span class="material-symbols-outlined" style="font-size:18px">cloud_upload</span>
+                            Upload Photos
+                        </button>
+                    </form>
+                }
+            </div>
+        </div>
+    </div>
+
+    <div class="d-flex flex-column gap-3">
+        <div class="pm-card">
+            <div class="pm-card__header">
+                <h2 class="pm-card__title">Progress</h2>
+            </div>
+            <div class="pm-card__body">
+                <div class="pm-label">Current progress</div>
+                <div class="pm-flex-between pm-mt-1"><span class="pm-muted">Workflow</span><span>@progress%</span></div>
+                <div class="pm-progress pm-mt-1"><div class="pm-progress__bar" style="width:@progress%"></div></div>
+                <p class="pm-muted pm-mt-1 mb-0" style="font-size:.85rem">Current status: @(request?.Status ?? "N/A").</p>
+            </div>
+        </div>
+
+        <partial name="~/Views/Shared/_RequestTimeline.cshtml" model="Model" />
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        (function () {
+            var form = document.getElementById('tenant-photo-upload-form');
+            var input = document.getElementById('files');
+            var errorEl = document.getElementById('photo-validation-error');
+            if (!form || !input) return;
+
+            var maxSize = 10 * 1024 * 1024;
+            var allowedExt = ['.jpg', '.jpeg', '.png', '.gif', '.webp'];
+            var allowedMime = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
+
+            function ext(name) {
+                var i = name.lastIndexOf('.');
+                return i < 0 ? '' : name.substring(i).toLowerCase();
+            }
+
+            function validate(files) {
+                if (!files || !files.length) return 'Upload at least one issue photo.';
+                for (var i = 0; i < files.length; i++) {
+                    var f = files[i];
+                    if (!f.size) return 'Photos cannot be empty.';
+                    if (f.size > maxSize) return 'Each image must be 10MB or smaller.';
+                    var e = ext(f.name || '');
+                    if (!e || allowedExt.indexOf(e) === -1) return 'Only JPG, PNG, GIF, or WebP files are allowed.';
+                    if (f.type && allowedMime.indexOf(String(f.type).toLowerCase()) === -1) return 'Only JPG, PNG, GIF, or WebP files are allowed.';
+                }
+                return null;
+            }
+
+            function showError(msg) {
+                if (!errorEl) { window.alert(msg); return; }
+                errorEl.textContent = msg || '';
+                errorEl.hidden = !msg;
+            }
+
+            input.addEventListener('change', function () {
+                var err = validate(input.files);
+                if (err) {
+                    showError(err);
+                    input.value = '';
+                } else {
+                    showError('');
+                }
+            });
+
+            form.addEventListener('submit', function (event) {
+                var err = validate(input.files);
+                if (err) {
+                    event.preventDefault();
+                    showError(err);
+                }
+            });
+        })();
+    </script>
+}

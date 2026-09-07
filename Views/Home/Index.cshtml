@@ -1,0 +1,220 @@
+@{
+    ViewData["Title"] = "Property Management";
+    Layout = "~/Views/Shared/_LandingLayout.cshtml";
+}
+
+<header class="landing-nav">
+    <div class="landing-nav__inner">
+        <a class="landing-brand" asp-area="" asp-controller="Home" asp-action="Index" aria-label="ZamMaintain home">
+            <img src="~/images/brand/zammaintain-logo.png" alt="ZamMaintain Logo" style="height: 70px;" />
+            <span>ZamMaintain</span>
+        </a>
+
+        <nav class="landing-nav__links" aria-label="Main navigation">
+            <a href="#about">About</a>
+            <a href="#services">Services</a>
+            <a href="#platform">Platform</a>
+            <a href="#contact">Contact</a>
+        </nav>
+
+        <div class="landing-nav__actions">
+            <a class="landing-btn landing-btn--outline" asp-area="Identity" asp-page="/Account/RegisterCompany">Request Demo</a>
+            <a class="landing-btn landing-btn--primary" asp-area="Identity" asp-page="/Account/Login">Login</a>
+        </div>
+    </div>
+</header>
+
+<main>
+    <section class="landing-hero">
+        <div class="landing-hero__inner">
+            <span class="landing-kicker">Cloud property operations</span>
+            <h1>Property Management</h1>
+            <p>
+                Manage maintenance requests, role dashboards, technician progress, proof uploads, payments, and tenant communication from one connected platform.
+            </p>
+            <div class="landing-hero__actions">
+                <a class="landing-btn landing-btn--primary" asp-area="Identity" asp-page="/Account/RegisterCompany">Request a Demo</a>
+                <a class="landing-btn landing-btn--outline" asp-area="Identity" asp-page="/Account/Login">Access Portal</a>
+                <a class="landing-btn landing-btn--outline" asp-area="Identity" asp-page="/Account/RegisterTechnician">Register as Technician</a>
+            </div>
+        </div>
+    </section>
+
+    <section class="landing-section" id="about">
+        <div class="landing-container landing-split">
+            <div>
+                <span class="landing-section__eyebrow">Online Property Management</span>
+                <h2 class="landing-section__title">A smarter way to coordinate properties, people, and repairs.</h2>
+                <p class="landing-section__lead">
+                    ZamMaintain helps property teams track maintenance requests from tenant submission to manager assignment, technician completion, proof upload, feedback, and payment. Every role sees the information they need without losing the full repair history.
+                </p>
+            </div>
+
+            <div class="landing-visual" aria-label="Property management dashboard preview">
+                <div class="landing-visual__panel">
+                    <div class="landing-visual__row">
+                        <div>
+                            <strong>Kitchen sink leaking</strong>
+                            <div>High priority • Cedar Heights Tower</div>
+                        </div>
+                        <span class="landing-pill">In Progress</span>
+                    </div>
+                    <div class="landing-visual__row">
+                        <div>
+                            <strong>Proof uploaded</strong>
+                            <div>Photos and completion notes submitted</div>
+                        </div>
+                        <span class="landing-pill">Review</span>
+                    </div>
+                    <div class="landing-visual__row">
+                        <div>
+                            <strong>Service payment</strong>
+                            <div>Pending manager approval</div>
+                        </div>
+                        <span class="landing-pill">RM / $</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="landing-section landing-section--soft" id="services">
+        <div class="landing-container">
+            <span class="landing-section__eyebrow">Main Functions</span>
+            <h2 class="landing-section__title">Everything needed for daily maintenance operations.</h2>
+            <p class="landing-section__lead">
+                Built around the real workflows inside the system: administrators configure the property data, managers assign work, tenants submit requests, and technicians complete repairs with evidence.
+            </p>
+
+            <div class="landing-grid landing-grid--3 mt-5">
+                <article class="landing-card">
+                    <span class="landing-card__icon material-symbols-outlined">confirmation_number</span>
+                    <h3>Online Ticketing</h3>
+                    <p>Tenants submit maintenance requests with descriptions, priority, unit details, and issue photos for faster triage.</p>
+                </article>
+
+                <article class="landing-card">
+                    <span class="landing-card__icon material-symbols-outlined">assignment_ind</span>
+                    <h3>Technician Workflow</h3>
+                    <p>Technicians view assigned jobs, update status, upload completion proof, and review job history from their portal.</p>
+                </article>
+
+                <article class="landing-card">
+                    <span class="landing-card__icon material-symbols-outlined">notifications_active</span>
+                    <h3>Communication</h3>
+                    <p>Notifications keep users informed about assignments, proof uploads, request updates, and completion activity.</p>
+                </article>
+
+                <article class="landing-card">
+                    <span class="landing-card__icon material-symbols-outlined">domain</span>
+                    <h3>Property Data</h3>
+                    <p>Maintain companies, properties, units, tenants, managers, and technicians in one organized structure.</p>
+                </article>
+
+                <article class="landing-card">
+                    <span class="landing-card__icon material-symbols-outlined">payments</span>
+                    <h3>Service Payments</h3>
+                    <p>Track technician payment status, paid amounts, pending totals, and payout history for completed service work.</p>
+                </article>
+
+                <article class="landing-card">
+                    <span class="landing-card__icon material-symbols-outlined">analytics</span>
+                    <h3>Reports &amp; Audits</h3>
+                    <p>Use management reports and audit logs to understand activity, performance, and operational history.</p>
+                </article>
+            </div>
+        </div>
+    </section>
+
+    <section class="landing-section" id="platform">
+        <div class="landing-container">
+            <div class="landing-grid landing-grid--2">
+                <div>
+                    <span class="landing-section__eyebrow">Platform Modules</span>
+                    <h2 class="landing-section__title">Designed for the full property service cycle.</h2>
+                    <p class="landing-section__lead">
+                        The homepage introduces the same role-based structure users will find after login, from administration to maintenance execution.
+                    </p>
+                </div>
+
+                <div class="landing-modules">
+                    <div class="landing-module">
+                        <span class="landing-module__number">01</span>
+                        <div>
+                            <h3>User &amp; Role Management</h3>
+                            <p>Administrator tools for users, roles, properties, units, and company settings.</p>
+                        </div>
+                    </div>
+
+                    <div class="landing-module">
+                        <span class="landing-module__number">02</span>
+                        <div>
+                            <h3>Facility &amp; Maintenance Management</h3>
+                            <p>Manager dashboards for requests, technician workload, completed repairs, and assignment decisions.</p>
+                        </div>
+                    </div>
+
+                    <div class="landing-module">
+                        <span class="landing-module__number">03</span>
+                        <div>
+                            <h3>Tenant Self-Service</h3>
+                            <p>Tenant pages for submitting requests, uploading issue photos, tracking status, and submitting feedback.</p>
+                        </div>
+                    </div>
+
+                    <div class="landing-module">
+                        <span class="landing-module__number">04</span>
+                        <div>
+                            <h3>Process Automation</h3>
+                            <p>Status histories, notifications, proof uploads, and payment records connect the workflow end to end.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="landing-section landing-section--soft" id="demo">
+        <div class="landing-container">
+            <div class="landing-cta">
+                <div>
+                    <h2>Ready to manage properties with less back-and-forth?</h2>
+                    <p>
+                        Use ZamMaintain to centralize maintenance communication, technician execution, and service history for every property and unit.
+                    </p>
+                </div>
+
+                <div class="landing-hero__actions">
+                    <a class="landing-btn landing-btn--outline" asp-area="Identity" asp-page="/Account/Login">Login</a>
+                    <a class="landing-btn landing-btn--outline" asp-area="Identity" asp-page="/Account/RegisterTechnician">Register as Technician</a>
+                    <a class="landing-btn landing-btn--primary" asp-area="Identity" asp-page="/Account/RegisterCompany">Request Demo</a>
+                </div>
+            </div>
+        </div>
+    </section>
+</main>
+
+<footer class="landing-footer" id="contact">
+    <div class="landing-footer__inner">
+        <div class="landing-footer__brand">
+            <img class="landing-footer__logo" src="~/images/brand/zammaintain-logo.png" alt="ZamMaintain Logo" />
+            <span>&copy; 2026 ZamMaintain Enterprise. All rights reserved.</span>
+        </div>
+
+        <div class="landing-footer__nav" aria-label="Footer links">
+            <div class="landing-footer__contact">
+                <span class="landing-footer__link landing-footer__link--static">
+                    <span class="material-symbols-outlined" aria-hidden="true">mail</span> support@zammaintain.com
+                </span>
+                <span class="landing-footer__link landing-footer__link--static">
+                    <span class="material-symbols-outlined" aria-hidden="true">call</span> +601163749281
+                </span>
+            </div>
+
+            <div class="landing-footer__legal">
+                <a class="landing-footer__link" asp-area="" asp-controller="Home" asp-action="Privacy">Privacy Policy</a>
+                <a class="landing-footer__link" asp-area="" asp-controller="Home" asp-action="Terms">Terms of Service</a>
+            </div>
+        </div>
+    </div>
+</footer>

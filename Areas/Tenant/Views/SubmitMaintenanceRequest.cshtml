@@ -1,0 +1,133 @@
+@model CloudMVCApplication.ViewModels.AreaDashboardViewModel
+@{
+    Layout = "~/Areas/Tenant/Views/Shared/_TenantLayout.cshtml";
+    ViewData["Title"] = "Submit Maintenance Request";
+
+    var unit = Model.Units.FirstOrDefault();
+}
+
+@if (TempData["SuccessMessage"] is string successMessage)
+{
+    <div class="alert alert-success" role="alert">@successMessage</div>
+}
+
+<div class="pm-page-header">
+    <a class="pm-link-back" asp-area="Tenant" asp-controller="Tenant" asp-action="Dashboard"><span class="material-symbols-outlined" style="font-size:18px">arrow_back</span> Back to Dashboard</a>
+    <h1 class="pm-page-title">Submit Maintenance Request</h1>
+    <p class="pm-page-lead">Describe the issue and optionally attach photos. Your property manager will review and set priority.</p>
+</div>
+
+<div class="pm-card" style="max-width:880px">
+    <div class="pm-card__body">
+        @if (unit == null)
+        {
+            <div class="alert alert-warning mb-0">No unit is assigned to your tenant profile. Contact your property manager before submitting a request.</div>
+        }
+        else
+        {
+            <form method="post" asp-area="Tenant" asp-controller="Tenant" asp-action="SubmitMaintenanceRequest" enctype="multipart/form-data">
+                @Html.AntiForgeryToken()
+                <div asp-validation-summary="ModelOnly" class="pm-validation-summary"></div>
+
+                <div class="alert alert-light border mb-4">
+                    Requesting service for <strong>@unit.PropertyName, Unit @unit.UnitNumber</strong>.
+                </div>
+
+                <div class="row g-3">
+                    <div class="col-md-6">
+                        <label class="pm-label pm-label--required" for="category">Category</label>
+                        <select id="category" name="Category" class="pm-select" required>
+                            <option value="">Select category</option>
+                            @foreach (var category in new[] { "Plumbing", "Electrical", "HVAC", "Appliance", "General", "Other" })
+                            {
+                                <option value="@category">@category</option>
+                            }
+                        </select>
+                    </div>
+                    <div class="col-12">
+                        <label class="pm-label pm-label--required" for="title">Issue title</label>
+                        <input id="title" name="Title" class="pm-input" placeholder="Brief description of the issue" required />
+                        <p class="pm-field-hint">Keep it short and specific, for example "Kitchen sink leaking".</p>
+                    </div>
+                    <div class="col-12">
+                        <label class="pm-label pm-label--required" for="description">Detailed description</label>
+                        <textarea id="description" name="Description" class="pm-textarea" rows="5" placeholder="Provide as much detail as possible about the issue..." required></textarea>
+                        <p class="pm-field-hint">Include where the issue is, when it started, and anything that makes it urgent.</p>
+                    </div>
+                    <div class="col-12">
+                        <label class="pm-label" for="files">Issue photos (optional)</label>
+                        <input id="files" name="Files" type="file" class="pm-input" accept="image/*" multiple />
+                        <p class="pm-field-hint">Attach photos that help explain the problem. JPG, PNG, GIF, or WebP up to 10MB each. Camera capture is supported.</p>
+                        <p id="photo-validation-error" class="pm-field-error" hidden></p>
+                    </div>
+                </div>
+
+                <div class="pm-actions border-top pt-3 mt-4" style="border-color:var(--pm-border)">
+                    <a class="pm-btn pm-btn--outline" asp-area="Tenant" asp-controller="Tenant" asp-action="Dashboard">Cancel</a>
+                    <button type="submit" class="pm-btn pm-btn--primary">
+                        <span class="material-symbols-outlined" style="font-size:18px">send</span>
+                        Submit Request
+                    </button>
+                </div>
+            </form>
+        }
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+    <script>
+        (function () {
+            var form = document.querySelector('form[enctype="multipart/form-data"]');
+            var input = document.getElementById('files');
+            var errorEl = document.getElementById('photo-validation-error');
+            if (!form || !input) return;
+
+            var maxSize = 10 * 1024 * 1024;
+            var allowedExt = ['.jpg', '.jpeg', '.png', '.gif', '.webp'];
+            var allowedMime = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
+
+            function ext(name) {
+                var i = name.lastIndexOf('.');
+                return i < 0 ? '' : name.substring(i).toLowerCase();
+            }
+
+            function validate(files) {
+                if (!files || !files.length) return null;
+                for (var i = 0; i < files.length; i++) {
+                    var f = files[i];
+                    if (!f.size) return 'Photos cannot be empty.';
+                    if (f.size > maxSize) return 'Each image must be 10MB or smaller.';
+                    var e = ext(f.name || '');
+                    if (!e || allowedExt.indexOf(e) === -1) return 'Only JPG, PNG, GIF, or WebP files are allowed.';
+                    if (f.type && allowedMime.indexOf(String(f.type).toLowerCase()) === -1) return 'Only JPG, PNG, GIF, or WebP files are allowed.';
+                }
+                return null;
+            }
+
+            function showError(msg) {
+                if (!errorEl) { window.alert(msg); return; }
+                errorEl.textContent = msg;
+                errorEl.hidden = !msg;
+            }
+
+            input.addEventListener('change', function () {
+                var err = validate(input.files);
+                if (err) {
+                    showError(err);
+                    input.value = '';
+                } else {
+                    showError('');
+                }
+            });
+
+            form.addEventListener('submit', function (event) {
+                var err = validate(input.files);
+                if (err) {
+                    event.preventDefault();
+                    showError(err);
+                }
+            });
+        })();
+    </script>
+}

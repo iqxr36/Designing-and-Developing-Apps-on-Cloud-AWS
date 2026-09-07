@@ -1,0 +1,111 @@
+/* Tenant portal — extends Manager design system (pm-* components) */
+
+.tenant-shell {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  width: 100%;
+  background: var(--pm-neutral);
+}
+
+@media (min-width: 768px) {
+  .tenant-shell {
+    flex-direction: row;
+    align-items: stretch;
+  }
+}
+
+.tenant-sidebar {
+  width: 100%;
+  flex-shrink: 0;
+}
+
+@media (min-width: 768px) {
+  .tenant-sidebar {
+    width: var(--pm-sidebar-w);
+    min-width: var(--pm-sidebar-w);
+    max-width: var(--pm-sidebar-w);
+    min-height: 100vh;
+    position: sticky;
+    top: 0;
+    align-self: flex-start;
+    overflow-y: auto;
+    max-height: 100vh;
+  }
+}
+
+.tenant-main {
+  flex: 1 1 auto;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+
+.tenant-content {
+  flex: 1 1 auto;
+  padding: var(--pm-pad-y) var(--pm-pad-x) 64px;
+  max-width: var(--pm-content-max);
+  margin: 0 auto;
+  width: 100%;
+}
+
+.tenant-quick-link {
+  display: block;
+  text-decoration: none;
+  color: inherit;
+  height: 100%;
+}
+
+.tenant-quick-link:hover {
+  color: inherit;
+}
+
+.tenant-quick-link .pm-card {
+  height: 100%;
+  transition: box-shadow 0.2s ease, border-color 0.2s ease;
+}
+
+.tenant-quick-link:hover .pm-card {
+  box-shadow: 0 4px 12px rgba(25, 28, 29, 0.1);
+  border-color: var(--pm-outline);
+}
+
+.tenant-rating-input {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.tenant-rating-input label {
+  cursor: pointer;
+}
+
+.tenant-rating-input input {
+  position: absolute;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.tenant-rating-input span {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  border-radius: 999px;
+  border: 1px solid var(--pm-border);
+  font-weight: 600;
+}
+
+.tenant-rating-input input:checked + span {
+  background: var(--pm-primary);
+  border-color: var(--pm-primary);
+  color: #fff;
+}
+
+@media (max-width: 767.98px) {
+  .tenant-content {
+    padding: 1rem 1rem 3rem;
+  }
+}

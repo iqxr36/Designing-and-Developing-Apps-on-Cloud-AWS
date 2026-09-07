@@ -1,0 +1,158 @@
+@model CloudMVCApplication.ViewModels.AreaDashboardViewModel
+@{
+    Layout = "~/Areas/Manager/Views/Shared/_ManagerLayout.cshtml";
+    ViewData["Title"] = "Assign Technician";
+
+    var request = Model.SelectedRequest;
+    var technicians = Model.Technicians
+        .OrderBy(t => t.WorkloadPercentage >= 100 ? 1 : 0)
+        .ThenBy(t => t.WorkloadPercentage)
+        .ThenBy(t => t.FullName)
+        .ToList();
+}
+@if (TempData["ErrorMessage"] is string errorMessage)
+{
+    <div class="alert alert-danger" role="alert">@errorMessage</div>
+}
+<div class="pm-page-header">
+    <h1 class="pm-page-title">Assign Technician</h1>
+    <p class="pm-page-lead">Review request details and dispatch a specialist.</p>
+</div>
+
+<div class="row g-4 align-items-start">
+    <div class="col-lg-5">
+        <div class="pm-card">
+            <div class="pm-card__header">
+                <h2 class="pm-card__title">Request summary</h2>
+                <span class="pm-badge pm-badge--urgent">@(request?.Priority ?? "Priority")</span>
+            </div>
+            <div class="pm-card__body">
+                <div class="row g-3">
+                    <div class="col-6">
+                        <div class="pm-label">Request ID</div>
+                        <div><strong>@(request?.DisplayId ?? "No request")</strong></div>
+                    </div>
+                    <div class="col-6">
+                        <div class="pm-label">Status</div>
+                        <span class="pm-badge pm-badge--pending">@(request?.Status ?? "Pending")</span>
+                    </div>
+                    <div class="col-12">
+                        <div class="pm-label">Tenant &amp; property</div>
+                        <div class="p-3 rounded border" style="border-color:var(--pm-border)!important;background:var(--pm-neutral)">
+                            <strong>@(request?.TenantName ?? "No tenant"), Unit @(request?.UnitNumber ?? "N/A")</strong>
+                            <div class="pm-muted" style="font-size:.875rem">@(request?.PropertyName ?? "No property")</div>
+                        </div>
+                    </div>
+                    <div class="col-12">
+                        <div class="pm-label">Issue</div>
+                        <p class="mb-0">@(request?.Description ?? "Select a request before dispatching a technician.")</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-7">
+        <div class="pm-card">
+            <div class="pm-card__header">
+                <h2 class="pm-card__title">Dispatch form</h2>
+            </div>
+            <div class="pm-card__body">
+                <form method="post" asp-area="Manager" asp-controller="Manager" asp-action="AssignTechnician" asp-route-id="@request?.RequestId">
+                    @Html.AntiForgeryToken()
+                    <input type="hidden" name="RequestId" value="@request?.RequestId" />
+                    <div asp-validation-summary="All" class="pm-validation-summary"></div>
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label class="pm-label pm-label--required" for="tech">Assign technician</label>
+                            <select id="tech" class="pm-select" name="TechnicianId" required>
+                                <option value="">Select a technician&hellip;</option>
+                                @foreach (var technician in technicians)
+                                {
+                                    var isCurrentTechnician = technician.TechnicianId == request?.TechnicianId;
+                                    var isFull = technician.WorkloadPercentage >= 100 && !isCurrentTechnician;
+                                    <option value="@technician.TechnicianId" selected="@isCurrentTechnician" disabled="@isFull">@technician.FullName (@technician.Specialization, @technician.ActiveJobs/@technician.MaxActiveJobs, @technician.AvailabilityStatus)</option>
+                                }
+                            </select>
+                            <p class="pm-field-hint">Technicians at 100% workload are unavailable for new assignments.</p>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="pm-label" for="priority">Priority</label>
+                            <select id="priority" class="pm-select" name="Priority">
+                                @foreach (var priorityOption in new[] { "Low", "Medium", "High", "Urgent" })
+                                {
+                                    <option value="@priorityOption" selected="@(request?.Priority == priorityOption)">@priorityOption</option>
+                                }
+                            </select>
+                        </div>
+                        <div class="col-12">
+                            <label class="pm-label" for="notes">Manager notes (visible to tech)</label>
+                            <textarea id="notes" class="pm-textarea" rows="3" name="Notes" placeholder="E.g., key is with the front desk&hellip;"></textarea>
+                            <p class="pm-field-hint">Include access instructions, safety notes, or tenant availability.</p>
+                        </div>
+                    </div>
+                    <div class="pm-actions border-top pt-3 mt-3" style="border-color:var(--pm-border)">
+                        <a class="pm-btn pm-btn--outline" asp-area="Manager" asp-controller="Manager" asp-action="RequestDetails" asp-route-id="@request?.RequestId">Cancel</a>
+                        <button type="submit" class="pm-btn pm-btn--primary" disabled="@(!technicians.Any())"
+                                data-confirm-title="Assign technician?"
+                                data-confirm-message="This will dispatch the selected technician to this maintenance request."
+                                data-confirm-action="Assign technician"><span class="material-symbols-outlined" style="font-size:18px">send</span> Assign technician</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="pm-card pm-mt-2">
+    <div class="pm-card__header">
+        <h2 class="pm-card__title">Available technicians</h2>
+        <a class="pm-btn pm-btn--link" asp-area="Manager" asp-controller="Manager" asp-action="TechnicianWorkload">View workload</a>
+    </div>
+    @if (!technicians.Any())
+    {
+        <div class="pm-empty-state">
+            <div class="pm-empty-state__icon"><span class="material-symbols-outlined">engineering</span></div>
+            <h2 class="pm-empty-state__title">No technicians available</h2>
+            <p class="pm-empty-state__text">Approved technicians will appear here when they are active and ready for assignment.</p>
+        </div>
+    }
+    else
+    {
+        <div class="pm-table-wrap">
+            <table class="pm-table">
+                <thead>
+                    <tr>
+                        <th>Name</th>
+                        <th>Specialization</th>
+                        <th>Active jobs</th>
+                        <th>Workload</th>
+                        <th>Availability</th>
+                        <th>Status</th>
+                        <th>Rating</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var technician in technicians)
+                    {
+                        var badgeClass = technician.WorkloadPercentage >= 100 ? "pm-badge--high" : technician.WorkloadPercentage >= 51 ? "pm-badge--busy" : "pm-badge--avail";
+                        var capacityClass = technician.WorkloadPercentage >= 80 ? "pm-progress__bar--danger" : technician.WorkloadPercentage >= 50 ? "pm-progress__bar--warn" : "pm-progress__bar--ok";
+                        <tr>
+                            <td><strong>@technician.FullName</strong></td>
+                            <td>@technician.Specialization</td>
+                            <td>@technician.ActiveJobs / @technician.MaxActiveJobs</td>
+                            <td style="min-width:150px">
+                                <div class="pm-progress pm-progress--capacity">
+                                    <div class="pm-progress__bar @capacityClass" style="width:@technician.WorkloadPercentage%"></div>
+                                </div>
+                                <span class="pm-capacity-label @capacityClass" style="font-size:.75rem">@technician.WorkloadPercentage%</span>
+                            </td>
+                            <td>@technician.AvailabilityPercentage%</td>
+                            <td><span class="pm-badge @badgeClass">@technician.AvailabilityStatus</span></td>
+                            <td>@technician.AverageRating.ToString("0.0")</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    }
+</div>

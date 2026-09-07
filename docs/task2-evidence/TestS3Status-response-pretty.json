@@ -1,0 +1,96 @@
+﻿{
+    "statusCode":  200,
+    "bucket":  "zammaintain-s3",
+    "folders":  [
+                    "avatars/",
+                    "issues/",
+                    "proofs/",
+                    "properties/",
+                    "site/",
+                    "technician-documents/"
+                ],
+    "objectCount":  16,
+    "objects":  [
+                    {
+                        "key":  "avatars/sample-avatar.txt",
+                        "size":  30,
+                        "lastModified":  "2026-07-15T08:46:04+00:00"
+                    },
+                    {
+                        "key":  "issues/login-tenant-7-29c68b44e2c045b4a4e61aaa4cfeeefb.jpg",
+                        "size":  74267,
+                        "lastModified":  "2026-07-15T08:51:57+00:00"
+                    },
+                    {
+                        "key":  "issues/login-tenant-7-8b02e9d31a7e4cc78659cd4bf344227c.jpeg",
+                        "size":  46072,
+                        "lastModified":  "2026-07-15T08:51:57+00:00"
+                    },
+                    {
+                        "key":  "issues/sample-issue.txt",
+                        "size":  47,
+                        "lastModified":  "2026-07-15T08:46:01+00:00"
+                    },
+                    {
+                        "key":  "proofs/898b2a46-0249-4224-8a38-3c531460b817-4-b16f83d601b448deb4c57afafc9bfb68.jpeg",
+                        "size":  46072,
+                        "lastModified":  "2026-07-15T08:51:59+00:00"
+                    },
+                    {
+                        "key":  "proofs/login-technician-10-e307a8ea3ac544bf95207a49144d6bbf.png",
+                        "size":  373978,
+                        "lastModified":  "2026-07-15T08:51:57+00:00"
+                    },
+                    {
+                        "key":  "proofs/login-technician-5-0b5dfe69f8dd49ec98b35ed4a4ac0ed9.jpeg",
+                        "size":  46072,
+                        "lastModified":  "2026-07-15T08:51:57+00:00"
+                    },
+                    {
+                        "key":  "proofs/login-technician-7-7efa894457794847bba2693aedc30f0b.jpeg",
+                        "size":  304969,
+                        "lastModified":  "2026-07-15T08:51:57+00:00"
+                    },
+                    {
+                        "key":  "proofs/sample-proof.txt",
+                        "size":  40,
+                        "lastModified":  "2026-07-15T08:46:02+00:00"
+                    },
+                    {
+                        "key":  "properties/8ca760a7be264e4ab298fc46910c24a0.jpeg",
+                        "size":  46072,
+                        "lastModified":  "2026-07-15T08:51:57+00:00"
+                    },
+                    {
+                        "key":  "properties/sample-property.txt",
+                        "size":  38,
+                        "lastModified":  "2026-07-15T08:46:05+00:00"
+                    },
+                    {
+                        "key":  "site/logo.txt",
+                        "size":  34,
+                        "lastModified":  "2026-07-15T08:46:08+00:00"
+                    },
+                    {
+                        "key":  "site/zammaintain-logo.png",
+                        "size":  39608,
+                        "lastModified":  "2026-07-15T08:52:01+00:00"
+                    },
+                    {
+                        "key":  "technician-documents/3c1a3b84-1eaf-4cc2-9ee8-9523be2e1956/fd61335c60d34c6a91d5db2089df04a1.jpg",
+                        "size":  342821,
+                        "lastModified":  "2026-07-15T09:34:10+00:00"
+                    },
+                    {
+                        "key":  "technician-documents/a4cb9f25-6380-45f9-97b7-7580a07b2f98/f9ba25cbb4c54b96b8e7ee3505af0fc6.pdf",
+                        "size":  117481,
+                        "lastModified":  "2026-07-15T08:51:57+00:00"
+                    },
+                    {
+                        "key":  "technician-documents/sample-tech-doc.txt",
+                        "size":  43,
+                        "lastModified":  "2026-07-15T08:46:07+00:00"
+                    }
+                ],
+    "message":  "S3 status retrieved successfully"
+}

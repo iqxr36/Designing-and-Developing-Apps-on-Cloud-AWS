@@ -1,0 +1,60 @@
+@model CloudMVCApplication.ViewModels.TechnicianStatusUpdateViewModel
+@{
+    ViewData["Title"] = "Update Job Status";
+}
+
+<div class="pm-page-header">
+    <a class="pm-link-back" asp-area="Technician" asp-controller="MyJobs" asp-action="Details" asp-route-id="@Model.RequestId">
+        <span class="material-symbols-outlined" style="font-size:18px">arrow_back</span> Back to job details
+    </a>
+    <h1 class="pm-page-title">Update job status</h1>
+    <p class="pm-page-lead">#@Model.DisplayId • @Model.Title</p>
+</div>
+
+<div class="row justify-content-center">
+    <div class="col-lg-8">
+        <form asp-area="Technician" asp-controller="MyJobs" asp-action="UpdateStatus" method="post" class="pm-card">
+            @Html.AntiForgeryToken()
+            <input asp-for="RequestId" type="hidden" />
+            <input asp-for="DisplayId" type="hidden" />
+            <input asp-for="Title" type="hidden" />
+            <input asp-for="CurrentStatus" type="hidden" />
+
+            <div class="pm-card__body border-bottom" style="border-color:var(--pm-border)">
+                <div class="pm-label">Current status</div>
+                <p class="h5 mb-0">@Model.CurrentStatus</p>
+            </div>
+
+            <div class="pm-card__body">
+                <div class="mb-4">
+                    <label asp-for="NewStatus" class="pm-label pm-label--required">New status</label>
+                    <select asp-for="NewStatus" class="pm-select">
+                        @foreach (var status in Model.StatusOptions)
+                        {
+                            <option value="@status">@status</option>
+                        }
+                    </select>
+                    <span asp-validation-for="NewStatus" class="pm-field-error"></span>
+                </div>
+
+                <div>
+                    <label asp-for="Notes" class="pm-label">Notes</label>
+                    <textarea asp-for="Notes" class="pm-textarea" rows="5" placeholder="Add a short update for the manager and tenant."></textarea>
+                    <p class="pm-field-hint">Share what changed, blockers, or what remains before completion.</p>
+                    <span asp-validation-for="Notes" class="pm-field-error"></span>
+                </div>
+            </div>
+
+            <div class="pm-card__body border-top pt-3" style="border-color:var(--pm-border)">
+                <div class="pm-actions justify-content-end">
+                    <a class="pm-btn pm-btn--outline" asp-area="Technician" asp-controller="MyJobs" asp-action="Details" asp-route-id="@Model.RequestId">Cancel</a>
+                    <button type="submit" class="pm-btn pm-btn--primary">Save status</button>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

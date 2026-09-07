@@ -1,0 +1,64 @@
+@using Microsoft.AspNetCore.Identity
+@using CloudMVCApplication.Models
+@inject UserManager<ApplicationUser> UserManager
+@inject CloudMVCApplication.Services.MessagingService MessagingService
+@{
+    var current = ViewContext.RouteData.Values["action"]?.ToString() ?? "";
+    var currentUser = await UserManager.GetUserAsync(User);
+    var unreadMessages = currentUser == null ? 0 : await MessagingService.GetUnreadCountAsync(currentUser.Id);
+}
+<aside class="manager-sidebar pm-sidebar" aria-label="Manager navigation">
+    <div class="pm-sidebar__brand">
+        <img class="pm-sidebar__brand-image" src="~/images/brand/zammaintain-logo.png" alt="ZamMaintain" asp-append-version="true" />
+    </div>
+    <nav class="pm-sidebar__nav">
+        <a class="pm-sidebar__link @(current == "Dashboard" ? "pm-sidebar__link--active" : null)" asp-area="Manager" asp-controller="Manager" asp-action="Dashboard">
+            <span class="material-symbols-outlined" aria-hidden="true">dashboard</span>
+            Dashboard
+        </a>
+        <a class="pm-sidebar__link @(current == "MaintenanceRequests" ? "pm-sidebar__link--active" : null)" asp-area="Manager" asp-controller="Manager" asp-action="MaintenanceRequests">
+            <span class="material-symbols-outlined" aria-hidden="true">build</span>
+            Maintenance Requests
+        </a>
+        <a class="pm-sidebar__link @(current == "TechnicianWorkload" ? "pm-sidebar__link--active" : null)" asp-area="Manager" asp-controller="Manager" asp-action="TechnicianWorkload">
+            <span class="material-symbols-outlined" aria-hidden="true">group</span>
+            Technician Workload
+        </a>
+        <a class="pm-sidebar__link @(current == "CompletedRepairs" ? "pm-sidebar__link--active" : null)" asp-area="Manager" asp-controller="Manager" asp-action="CompletedRepairs">
+            <span class="material-symbols-outlined" aria-hidden="true">task_alt</span>
+            Completed Repairs
+        </a>
+        <a class="pm-sidebar__link @(current == "Reports" ? "pm-sidebar__link--active" : null)" asp-area="Manager" asp-controller="Manager" asp-action="Reports">
+            <span class="material-symbols-outlined" aria-hidden="true">assessment</span>
+            Reports / Summary
+        </a>
+        <a class="pm-sidebar__link @(current == "TechnicianPayments" ? "pm-sidebar__link--active" : null)" asp-area="Manager" asp-controller="Manager" asp-action="TechnicianPayments">
+            <span class="material-symbols-outlined" aria-hidden="true">payments</span>
+            Technician Payments
+        </a>
+        <a class="pm-sidebar__link @(current == "Messages" || current == "Chat" ? "pm-sidebar__link--active" : null)" asp-area="Manager" asp-controller="Manager" asp-action="Messages">
+            <span class="material-symbols-outlined" aria-hidden="true">chat</span>
+            Messages
+            <span class="chat-unread-badge ms-auto" data-sidebar-unread-badge @(unreadMessages == 0 ? "hidden" : null)>@unreadMessages</span>
+        </a>
+        <a class="pm-sidebar__link @(current == "Notifications" ? "pm-sidebar__link--active" : null)" asp-area="Manager" asp-controller="Manager" asp-action="Notifications">
+            <span class="material-symbols-outlined" aria-hidden="true">notifications</span>
+            Notifications
+        </a>
+        <a class="pm-sidebar__link @(current == "Profile" ? "pm-sidebar__link--active" : null)" asp-area="Manager" asp-controller="Manager" asp-action="Profile">
+            <span class="material-symbols-outlined" aria-hidden="true">account_circle</span>
+            Profile / Account Settings
+        </a>
+    </nav>
+    <div class="pm-sidebar__footer">
+        <form asp-area="Identity" asp-page="/Account/Logout" asp-route-returnUrl="@Url.Action("Index", "Home", new { area = "" })" method="post"
+              data-confirm-title="Log out?"
+              data-confirm-message="You will leave this manager session and return to the home page."
+              data-confirm-action="Log out">
+            <button type="submit" class="pm-sidebar__link pm-sidebar__link--logout w-100 border-0 bg-transparent text-start">
+                <span class="material-symbols-outlined" aria-hidden="true">logout</span>
+                Logout
+            </button>
+        </form>
+    </div>
+</aside>

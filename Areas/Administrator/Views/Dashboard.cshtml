@@ -1,0 +1,88 @@
+@model CloudMVCApplication.ViewModels.AreaDashboardViewModel
+@{
+    Layout = "~/Areas/Administrator/Views/Shared/_AdministratorLayout.cshtml";
+    ViewData["Title"] = "Admin Dashboard";
+
+    var occupiedUnits = Model.Units.Count(u => u.Status == "Occupied");
+    var activeUsers = Model.Users.Count(u => u.Status == "Active");
+    var occupancyPercent = Model.Units.Count == 0 ? 0 : occupiedUnits * 100 / Model.Units.Count;
+}
+
+<div class="pm-flex-between pm-page-header">
+    <div>
+        <h1 class="pm-page-title">Dashboard Overview</h1>
+        <p class="pm-page-lead">Monitor portfolio performance, track operations, and manage users.</p>
+    </div>
+    <div class="d-flex gap-2 flex-wrap">
+        <a class="pm-btn pm-btn--secondary" asp-controller="Administrator" asp-action="AddUser">
+            <span class="material-symbols-outlined">person_add</span> Add User
+        </a>
+    </div>
+</div>
+
+<partial name="_SubscriptionUsageBanner" />
+
+<div class="pm-grid pm-grid--stats pm-mb-2">
+    <div class="pm-stat">
+        <span class="material-symbols-outlined pm-stat__icon pm-stat__icon--primary">domain</span>
+        <div class="pm-stat__label">Total Properties</div>
+        <div class="pm-stat__value">@Model.Properties.Count</div>
+    </div>
+    <div class="pm-stat">
+        <span class="material-symbols-outlined pm-stat__icon pm-stat__icon--primary">meeting_room</span>
+        <div class="pm-stat__label">Total Units</div>
+        <div class="pm-stat__value">@Model.Units.Count</div>
+    </div>
+    <div class="pm-stat">
+        <span class="material-symbols-outlined pm-stat__icon pm-stat__icon--success">door_front</span>
+        <div class="pm-stat__label">Occupied Units</div>
+        <div class="pm-stat__value">@occupiedUnits</div>
+        <p class="small pm-muted mb-0">@occupancyPercent% occupancy</p>
+    </div>
+    <div class="pm-stat">
+        <span class="material-symbols-outlined pm-stat__icon pm-stat__icon--info">group</span>
+        <div class="pm-stat__label">Active Users</div>
+        <div class="pm-stat__value">@activeUsers</div>
+    </div>
+</div>
+
+<div class="pm-grid pm-grid--12">
+    <div class="pm-card">
+        <div class="pm-card__header">
+            <h2 class="pm-card__title">Portfolio Snapshot</h2>
+        </div>
+        <div class="pm-card__body">
+            <ul class="list-unstyled mb-0 pm-stack">
+                <li class="d-flex justify-content-between">
+                    <span class="pm-muted">Managers</span>
+                    <span class="fw-semibold">@Model.Managers.Count</span>
+                </li>
+                <li class="d-flex justify-content-between">
+                    <span class="pm-muted">Vacant Units</span>
+                    <span class="fw-semibold">@Model.Units.Count(u => u.Status == "Vacant")</span>
+                </li>
+                <li class="d-flex justify-content-between">
+                    <span class="pm-muted">Unread Alerts</span>
+                    <span class="fw-semibold">@Model.Notifications.Count(n => !n.IsRead)</span>
+                </li>
+            </ul>
+        </div>
+    </div>
+    <div class="pm-card">
+        <div class="pm-card__header">
+            <h2 class="pm-card__title">Recent Activity</h2>
+        </div>
+        <div class="pm-card__body">
+            <div class="pm-timeline">
+                @foreach (var log in Model.AuditLogs.Take(5))
+                {
+                    <div class="pm-timeline__item pm-timeline__item--current">
+                        <p class="fw-semibold mb-1">@log.UserName <span class="fw-normal pm-muted">@log.Action</span></p>
+                        <p class="pm-muted small mb-1">@log.Description</p>
+                        <span class="small pm-muted">@log.CreatedAt.ToLocalTime().ToString("MMM d, h:mm tt")</span>
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+</div>

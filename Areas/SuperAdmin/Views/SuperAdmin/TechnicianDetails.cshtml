@@ -1,0 +1,150 @@
+@model CloudMVCApplication.ViewModels.SuperAdminTechnicianViewModel
+@{
+    ViewData["Title"] = "Technician Details";
+    var isApproved = Model.AvailabilityStatus == "Available";
+}
+
+<div class="pm-page-header pm-flex-between">
+    <div>
+        <a class="pm-link-back" asp-action="Technicians" asp-route-pendingOnly="@(Model.IsPending ? "true" : null)">
+            <span class="material-symbols-outlined" style="font-size:18px">arrow_back</span>
+            @(Model.IsPending ? "Back to Pending Technicians" : "Back to Technicians")
+        </a>
+        <h1 class="pm-page-title">@Model.FullName</h1>
+        <p class="pm-page-lead">Review technician profile, certificates, and approval status.</p>
+    </div>
+    <div class="d-flex flex-wrap gap-2">
+        <a class="pm-btn pm-btn--secondary" asp-action="EditTechnician" asp-route-userId="@Model.UserId">Edit</a>
+        <form asp-action="DeleteTechnician" method="post" class="d-inline"
+              data-confirm-title="Delete technician?"
+              data-confirm-message="This permanently deletes the account from the database. If the technician has job or payment history, deletion will be blocked—use Deactivate instead."
+              data-confirm-action="Delete permanently">
+            @Html.AntiForgeryToken()
+            <input type="hidden" name="userId" value="@Model.UserId" />
+            <button type="submit" class="pm-btn pm-btn--outline">Delete</button>
+        </form>
+        @if (Model.IsPending)
+        {
+            <form asp-action="ApproveTechnician" method="post" class="d-inline"
+                  data-confirm-title="Approve technician?"
+                  data-confirm-message="This will approve the technician and allow platform access."
+                  data-confirm-action="Approve">
+                @Html.AntiForgeryToken()
+                <input type="hidden" name="userId" value="@Model.UserId" />
+                <button type="submit" class="pm-btn pm-btn--primary">Approve</button>
+            </form>
+            <form asp-action="RejectTechnician" method="post" class="d-inline"
+                  data-confirm-title="Reject technician?"
+                  data-confirm-message="This will reject the technician registration and keep the account inactive."
+                  data-confirm-action="Reject">
+                @Html.AntiForgeryToken()
+                <input type="hidden" name="userId" value="@Model.UserId" />
+                <input type="hidden" name="returnPending" value="true" />
+                <button type="submit" class="pm-btn pm-btn--outline">Reject</button>
+            </form>
+        }
+        else if (isApproved)
+        {
+            <form asp-action="RejectTechnician" method="post" class="d-inline"
+                  data-confirm-title="Deactivate technician?"
+                  data-confirm-message="This will deactivate the technician account."
+                  data-confirm-action="Deactivate">
+                @Html.AntiForgeryToken()
+                <input type="hidden" name="userId" value="@Model.UserId" />
+                <input type="hidden" name="returnPending" value="false" />
+                <button type="submit" class="pm-btn pm-btn--outline">Deactivate</button>
+            </form>
+        }
+    </div>
+</div>
+
+<div class="pm-grid pm-grid--12">
+    <div class="pm-card">
+        <div class="pm-card__header">
+            <h2 class="pm-card__title">Profile</h2>
+            <span class="pm-badge @(Model.IsPending ? "pm-badge--subscription-warning" : Model.IsActive ? "pm-badge--subscription-active" : "pm-badge--subscription-muted")">
+                @Model.AvailabilityStatus
+            </span>
+        </div>
+        <div class="pm-card__body">
+            <div class="row g-4">
+                <div class="col-md-6">
+                    <div class="pm-label">Full name</div>
+                    <p class="mb-0"><strong>@Model.FullName</strong></p>
+                </div>
+                <div class="col-md-6">
+                    <div class="pm-label">Email</div>
+                    <p class="mb-0">@Model.Email</p>
+                </div>
+                <div class="col-md-6">
+                    <div class="pm-label">Phone number</div>
+                    <p class="mb-0">@(Model.PhoneNumber ?? "Not provided")</p>
+                </div>
+                <div class="col-md-6">
+                    <div class="pm-label">Registered</div>
+                    <p class="mb-0">@Model.CreatedAt.ToLocalTime().ToString("MMM d, yyyy")</p>
+                </div>
+                <div class="col-md-6">
+                    <div class="pm-label">Skills / specialization</div>
+                    <p class="mb-0">@Model.Specialization</p>
+                </div>
+                <div class="col-md-6">
+                    <div class="pm-label">Experience</div>
+                    <p class="mb-0">@Model.ExperienceYears year@(Model.ExperienceYears == 1 ? "" : "s")</p>
+                </div>
+                <div class="col-md-6">
+                    <div class="pm-label">Service area</div>
+                    <p class="mb-0">@(Model.ServiceArea ?? "Not provided")</p>
+                </div>
+                <div class="col-md-6">
+                    <div class="pm-label">Approval status</div>
+                    <p class="mb-0">@(Model.IsActive ? "Active" : Model.IsPending ? "Pending review" : "Inactive")</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="pm-card">
+        <div class="pm-card__header">
+            <h2 class="pm-card__title">Certificates &amp; Documents</h2>
+            <span class="pm-badge pm-badge--low">@Model.Documents.Count file@(Model.Documents.Count == 1 ? "" : "s")</span>
+        </div>
+        @if (!Model.Documents.Any())
+        {
+            <div class="pm-card__body text-center py-5">
+                <span class="material-symbols-outlined" style="font-size:3rem;color:var(--pm-primary)">folder_off</span>
+                <h3 class="h5 mt-3">No uploaded documents</h3>
+                <p class="pm-muted mb-0">This technician did not upload certificates or supporting documents.</p>
+            </div>
+        }
+        else
+        {
+            <div class="pm-table-wrap">
+                <table class="pm-table">
+                    <thead>
+                        <tr>
+                            <th>File name</th>
+                            <th>File type</th>
+                            <th>Uploaded</th>
+                            <th class="pm-text-end">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var document in Model.Documents)
+                        {
+                            <tr>
+                                <td><strong>@document.FileName</strong></td>
+                                <td class="pm-muted">@document.FileType</td>
+                                <td class="pm-muted">@document.UploadedAt.ToLocalTime().ToString("MMM d, yyyy")</td>
+                                <td class="pm-text-end">
+                                    <a class="pm-btn pm-btn--secondary pm-btn--sm" href="@document.FilePath" target="_blank" rel="noopener">Open Document</a>
+                                    <a class="pm-btn pm-btn--ghost pm-btn--sm" href="@document.FilePath" download>Download</a>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        }
+    </div>
+</div>

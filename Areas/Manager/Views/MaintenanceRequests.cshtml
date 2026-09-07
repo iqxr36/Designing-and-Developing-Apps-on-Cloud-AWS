@@ -1,0 +1,126 @@
+@model CloudMVCApplication.ViewModels.AreaDashboardViewModel
+@{
+    Layout = "~/Areas/Manager/Views/Shared/_ManagerLayout.cshtml";
+    ViewData["Title"] = "Maintenance Requests";
+}
+@if (TempData["ErrorMessage"] is string errorMessage)
+{
+    <div class="alert alert-danger" role="alert">@errorMessage</div>
+}
+<div class="pm-page-header">
+    <h1 class="pm-page-title">Maintenance Requests</h1>
+    <p class="pm-page-lead">Review, prioritize, and assign technicians to tenant requests.</p>
+</div>
+
+<div class="pm-card pm-mb-2">
+    <div class="pm-card__body">
+        <form method="get" asp-area="Manager" asp-controller="Manager" asp-action="MaintenanceRequests" class="row g-3 align-items-end">
+            <div class="col-12 col-lg-4">
+                <label class="pm-label" for="q">Search</label>
+                <input id="q" class="pm-input" type="search" name="search" value="@ViewBag.Search" placeholder="Search ID, tenant, or issue&hellip;" />
+            </div>
+            <div class="col-6 col-md-4 col-lg-2">
+                <label class="pm-label" for="status">Status</label>
+                <select id="status" class="pm-select" name="status">
+                    <option value="">All statuses</option>
+                    @foreach (var statusOption in new[] { "Pending", "Assigned", "In Progress", "Completed", "Cancelled" })
+                    {
+                        <option value="@statusOption" selected="@(ViewBag.Status == statusOption)">@statusOption</option>
+                    }
+                </select>
+            </div>
+            <div class="col-6 col-md-4 col-lg-2">
+                <label class="pm-label" for="pri">Priority</label>
+                <select id="pri" class="pm-select" name="priority">
+                    <option value="">All priorities</option>
+                    @foreach (var priorityOption in new[] { "Low", "Medium", "High", "Urgent" })
+                    {
+                        <option value="@priorityOption" selected="@(ViewBag.Priority == priorityOption)">@priorityOption</option>
+                    }
+                </select>
+            </div>
+            <div class="col-12 col-md-4 col-lg-2">
+                <label class="pm-label" for="prop">Property</label>
+                <select id="prop" class="pm-select" name="property">
+                    <option value="">All properties</option>
+                    @foreach (var propertyName in Model.Requests.Select(r => r.PropertyName).Distinct())
+                    {
+                        <option value="@propertyName" selected="@(ViewBag.Property == propertyName)">@propertyName</option>
+                    }
+                </select>
+            </div>
+            <div class="col-12 col-lg-2 d-flex gap-2">
+                <button type="submit" class="pm-btn pm-btn--primary pm-w-100">Apply</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<div class="pm-card">
+    @if (!Model.Requests.Any())
+    {
+        <div class="pm-empty-state">
+            <div class="pm-empty-state__icon"><span class="material-symbols-outlined">assignment_late</span></div>
+            <h2 class="pm-empty-state__title">No maintenance requests found</h2>
+            <p class="pm-empty-state__text">No tenant requests match the selected search, status, priority, or property filters.</p>
+            <div class="pm-empty-state__actions">
+                <a class="pm-btn pm-btn--secondary" asp-area="Manager" asp-controller="Manager" asp-action="MaintenanceRequests">Clear filters</a>
+            </div>
+        </div>
+    }
+    else
+    {
+        <div class="pm-table-wrap">
+            <table class="pm-table">
+                <thead>
+                    <tr>
+                        <th>Request ID</th>
+                        <th>Tenant / Property</th>
+                        <th>Issue</th>
+                        <th>Priority</th>
+                        <th>Status</th>
+                        <th>Submitted</th>
+                        <th>Assigned tech</th>
+                        <th class="pm-text-end">Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var request in Model.Requests)
+                    {
+                        var priorityClass = request.Priority == "High" ? "pm-badge--high" : request.Priority == "Low" ? "pm-badge--low" : "pm-badge--medium";
+                        var statusClass = request.Status == "Completed" ? "pm-badge--avail" : request.Status == "In Progress" ? "pm-badge--inprogress" : request.Status == "Assigned" ? "pm-badge--assigned" : "pm-badge--pending";
+                        var canAssign = (request.Status == "Pending" || string.IsNullOrWhiteSpace(request.TechnicianName))
+                            && request.Status != "Completed"
+                            && request.Status != "Cancelled";
+                        <tr>
+                            <td><a asp-area="Manager" asp-controller="Manager" asp-action="RequestDetails" asp-route-id="@request.RequestId">@request.DisplayId</a></td>
+                            <td>@request.TenantName<br /><span class="pm-muted" style="font-size:.8rem">@request.PropertyName, Unit @request.UnitNumber</span></td>
+                            <td>@request.Title</td>
+                            <td><span class="pm-badge @priorityClass">@request.Priority</span></td>
+                            <td><span class="pm-badge @statusClass">@request.Status</span></td>
+                            <td class="pm-muted">@request.CreatedAt.ToLocalTime().ToString("MMM d, HH:mm")</td>
+                            <td class="pm-muted">@(request.TechnicianName ?? "Unassigned")</td>
+                            <td class="pm-text-end">
+                                <div class="pm-table-actions">
+                                    <a class="pm-btn pm-btn--ghost pm-btn--table" asp-area="Manager" asp-controller="Manager" asp-action="RequestDetails" asp-route-id="@request.RequestId">View Details</a>
+                                    @if (canAssign)
+                                    {
+                                        <a class="pm-btn pm-btn--primary pm-btn--table" asp-area="Manager" asp-controller="Manager" asp-action="AssignTechnician" asp-route-id="@request.RequestId">Assign</a>
+                                    }
+                                </div>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+        <div class="pm-card__header border-top" style="border-top:1px solid var(--pm-border)">
+            <span class="pm-muted" style="font-size:.875rem">Showing @Model.Requests.Count requests</span>
+            <div class="pm-actions">
+                <button type="button" class="pm-btn pm-btn--outline" disabled>Prev</button>
+                <button type="button" class="pm-btn pm-btn--primary" disabled>1</button>
+                <button type="button" class="pm-btn pm-btn--outline" disabled>Next</button>
+            </div>
+        </div>
+    }
+</div>

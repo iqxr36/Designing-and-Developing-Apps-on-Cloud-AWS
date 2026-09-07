@@ -1,0 +1,28 @@
+@model CloudMVCApplication.Models.SubscriptionPayment
+@{
+    ViewData["Title"] = "Subscription Payment Status";
+    Layout = "/Views/Shared/_AuthLayout.cshtml";
+    var isPaid = Model.PaymentStatus == CloudMVCApplication.Models.PaymentStatuses.Paid;
+    var statusMessage = Model.PaymentStatus switch
+    {
+        CloudMVCApplication.Models.PaymentStatuses.Paid => "Subscription activated.",
+        CloudMVCApplication.Models.PaymentStatuses.Failed or CloudMVCApplication.Models.PaymentStatuses.Expired => "Payment failed or expired.",
+        _ => "Payment is being verified."
+    };
+}
+
+<main class="auth-public-main">
+    <section class="auth-success-card" aria-live="polite">
+        <span class="material-symbols-outlined auth-success-icon" aria-hidden="true">@(isPaid ? "check_circle" : "schedule")</span>
+        <h1 class="auth-success-title">Subscription payment @Model.PaymentStatus.ToLowerInvariant()</h1>
+        <p class="auth-success-text">
+            @statusMessage
+        </p>
+        <p class="auth-success-text">
+            @Model.Company.CompanyName<br />
+            @Model.CompanySubscription.SubscriptionPlan.Name - @Model.GrossAmount.ToString("C") @Model.Currency<br />
+            Reference: @(Model.TransactionReference ?? "-")
+        </p>
+        <a class="auth-topbar-button" href="/Identity/Account/Login">Go to Login</a>
+    </section>
+</main>

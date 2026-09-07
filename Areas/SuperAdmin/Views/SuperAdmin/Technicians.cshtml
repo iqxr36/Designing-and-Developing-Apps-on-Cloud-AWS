@@ -1,0 +1,178 @@
+@model List<CloudMVCApplication.ViewModels.SuperAdminTechnicianViewModel>
+@{
+    ViewData["Title"] = ViewBag.PendingOnly == true ? "Pending Technicians" : "Technicians";
+    var pendingOnly = ViewBag.PendingOnly == true;
+    var reviewStatus = ViewBag.ReviewStatus as string ?? string.Empty;
+}
+
+<div class="pm-page-header pm-flex-between">
+    <div>
+        <h1 class="pm-page-title">@ViewData["Title"]</h1>
+        <p class="pm-page-lead">
+            @if (pendingOnly)
+            {
+                @:Review new technician registrations awaiting approval.
+            }
+            else
+            {
+                @:View approved and rejected technicians across the platform.
+            }
+        </p>
+    </div>
+    <div class="d-flex gap-2">
+        <a class="pm-btn pm-btn--primary" asp-action="CreateTechnician">Add Technician</a>
+        @if (pendingOnly)
+        {
+            <a class="pm-btn pm-btn--secondary" asp-action="Technicians">View technicians</a>
+        }
+        else
+        {
+            <a class="pm-btn pm-btn--secondary" asp-action="Technicians" asp-route-pendingOnly="true">Pending approvals</a>
+        }
+    </div>
+</div>
+
+@if (!pendingOnly)
+{
+    <form method="get" class="pm-card mb-4">
+        <div class="pm-card__body">
+            <div class="row g-3 align-items-end">
+                <div class="col-md-4">
+                    <label class="pm-label">Review status</label>
+                    <select class="pm-select" name="reviewStatus">
+                        <option value="" selected="@(string.IsNullOrEmpty(reviewStatus))">All reviewed</option>
+                        <option value="approved" selected="@(reviewStatus == "approved")">Approved only</option>
+                        <option value="rejected" selected="@(reviewStatus == "rejected")">Rejected only</option>
+                    </select>
+                </div>
+                <div class="col-md-2">
+                    <button type="submit" class="pm-btn pm-btn--primary w-100">Filter</button>
+                </div>
+            </div>
+        </div>
+    </form>
+}
+
+<div class="pm-card">
+    <div class="pm-card__body pm-table-wrap">
+        @if (!Model.Any())
+        {
+            <div class="pm-empty-state">
+                <div class="pm-empty-state__icon"><span class="material-symbols-outlined">engineering</span></div>
+                <h2 class="pm-empty-state__title">No technicians found</h2>
+                <p class="pm-empty-state__text">
+                    @if (pendingOnly)
+                    {
+                        @:There are no technician registrations waiting for review.
+                    }
+                    else if (reviewStatus == "approved")
+                    {
+                        @:No approved technicians match this filter.
+                    }
+                    else if (reviewStatus == "rejected")
+                    {
+                        @:No rejected technicians match this filter.
+                    }
+                    else
+                    {
+                        @:No reviewed technicians found.
+                    }
+                </p>
+                <div class="pm-empty-state__actions">
+                    @if (pendingOnly)
+                    {
+                        <a class="pm-btn pm-btn--secondary" asp-action="Technicians">View technicians</a>
+                    }
+                    else if (!string.IsNullOrEmpty(reviewStatus))
+                    {
+                        <a class="pm-btn pm-btn--secondary" asp-action="Technicians">Clear filter</a>
+                    }
+                </div>
+            </div>
+        }
+        else
+        {
+        <table class="pm-table">
+            <thead>
+                <tr>
+                    <th>Name</th>
+                    <th>Email</th>
+                    <th>Specialization</th>
+                    <th>Experience</th>
+                    <th>Documents</th>
+                    <th>Status</th>
+                    <th>Payout bank</th>
+                    <th>Registered</th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var tech in Model)
+                {
+                    var isApproved = tech.AvailabilityStatus == "Available";
+                    var isRejected = tech.AvailabilityStatus == "Rejected";
+                    <tr>
+                        <td>@tech.FullName</td>
+                        <td>@tech.Email</td>
+                        <td>@tech.Specialization</td>
+                        <td>@tech.ExperienceYears yrs</td>
+                        <td>
+                            @if (tech.HasDocuments)
+                            {
+                                <span class="pm-badge pm-badge--subscription-active">@tech.Documents.Count file@(tech.Documents.Count == 1 ? "" : "s")</span>
+                            }
+                            else
+                            {
+                                <span class="pm-badge pm-badge--subscription-muted">No files</span>
+                            }
+                        </td>
+                        <td>
+                            <span class="pm-badge @(tech.IsPending ? "pm-badge--subscription-warning" : isApproved ? "pm-badge--subscription-active" : "pm-badge--subscription-muted")">
+                                @(isApproved ? "Approved" : isRejected ? "Rejected" : tech.AvailabilityStatus)
+                            </span>
+                        </td>
+                        <td class="pm-muted" style="font-size:.875rem">@tech.PayoutBankSummary</td>
+                        <td>@tech.CreatedAt.ToLocalTime().ToString("d")</td>
+                        <td>
+                            <a class="pm-btn pm-btn--secondary pm-btn--sm" asp-action="TechnicianDetails" asp-route-userId="@tech.UserId">View Details</a>
+                            @if (pendingOnly && tech.IsPending)
+                            {
+                                <form asp-action="ApproveTechnician" method="post" class="d-inline"
+                                      data-confirm-title="Approve technician?"
+                                      data-confirm-message="This will approve the technician and allow platform access."
+                                      data-confirm-action="Approve">
+                                    @Html.AntiForgeryToken()
+                                    <input type="hidden" name="userId" value="@tech.UserId" />
+                                    <button type="submit" class="pm-btn pm-btn--primary pm-btn--sm">Approve</button>
+                                </form>
+                                <form asp-action="RejectTechnician" method="post" class="d-inline"
+                                      data-confirm-title="Reject technician?"
+                                      data-confirm-message="This will reject the technician registration and keep the account inactive."
+                                      data-confirm-action="Reject">
+                                    @Html.AntiForgeryToken()
+                                    <input type="hidden" name="userId" value="@tech.UserId" />
+                                    <input type="hidden" name="returnPending" value="true" />
+                                    <button type="submit" class="pm-btn pm-btn--outline pm-btn--sm">Reject</button>
+                                </form>
+                            }
+                            else if (!pendingOnly && isApproved)
+                            {
+                                <form asp-action="RejectTechnician" method="post" class="d-inline"
+                                      data-confirm-title="Deactivate technician?"
+                                      data-confirm-message="This will deactivate the technician account."
+                                      data-confirm-action="Deactivate">
+                                    @Html.AntiForgeryToken()
+                                    <input type="hidden" name="userId" value="@tech.UserId" />
+                                    <input type="hidden" name="returnPending" value="false" />
+                                    <input type="hidden" name="reviewStatus" value="@reviewStatus" />
+                                    <button type="submit" class="pm-btn pm-btn--ghost pm-btn--sm">Deactivate</button>
+                                </form>
+                            }
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+        }
+    </div>
+</div>

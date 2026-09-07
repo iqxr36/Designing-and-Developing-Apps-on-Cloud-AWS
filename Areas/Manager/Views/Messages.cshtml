@@ -1,0 +1,17 @@
+@model CloudMVCApplication.ViewModels.MessagingInboxViewModel
+@{
+    Layout = "~/Areas/Manager/Views/Shared/_ManagerLayout.cshtml";
+    ViewData["Title"] = "Messages";
+    ViewData["ChatArea"] = "Manager";
+    ViewData["ChatController"] = "Manager";
+    ViewData["ChatAction"] = "Chat";
+}
+
+<div class="pm-page-header mb-4">
+    <h1 class="pm-page-title">Messages</h1>
+    <p class="pm-page-lead">Chat with tenants about support requests and with technicians about job coordination.</p>
+</div>
+
+<link rel="stylesheet" href="~/css/chat.css" asp-append-version="true" />
+@await Html.PartialAsync("~/Views/Shared/Messaging/_ChatInbox.cshtml", Model)
+@await Html.PartialAsync("~/Views/Shared/Messaging/_ChatInboxScripts.cshtml", Model)

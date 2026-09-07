@@ -1,0 +1,204 @@
+@model CloudMVCApplication.ViewModels.AreaDashboardViewModel
+@{
+    Layout = "~/Areas/Administrator/Views/Shared/_AdministratorLayout.cshtml";
+    ViewData["Title"] = "Reports";
+    var completed = Model.Requests.Count(r => r.Status == "Completed");
+    var total = Math.Max(Model.Requests.Count, 1);
+    var urgent = Model.Requests.Count(r => r.Priority is "High" or "Critical");
+    var medium = Model.Requests.Count(r => r.Priority == "Medium");
+    var low = Model.Requests.Count(r => r.Priority == "Low");
+    var now = DateTime.UtcNow;
+    var requestsThisMonth = Model.Requests.Count(r => r.CreatedAt.Year == now.Year && r.CreatedAt.Month == now.Month);
+    var chartMonths = Enumerable.Range(0, 6)
+        .Select(i => new DateTime(now.Year, now.Month, 1).AddMonths(-5 + i))
+        .ToList();
+    var monthlyCounts = chartMonths
+        .Select(m => Model.Requests.Count(r => r.CreatedAt.Year == m.Year && r.CreatedAt.Month == m.Month))
+        .ToList();
+    var maxMonthly = Math.Max(monthlyCounts.DefaultIfEmpty(0).Max(), 1);
+    var urgentPct = urgent * 100.0 / total;
+    var mediumPct = medium * 100.0 / total;
+    var lowPct = low * 100.0 / total;
+    var pieGradient = $"conic-gradient(var(--pm-primary) 0 {urgentPct:F1}%, #333d4d {urgentPct:F1}% {urgentPct + mediumPct:F1}%, #e4e4cc {urgentPct + mediumPct:F1}% 100%)";
+}
+
+<div class="pm-flex-between pm-page-header">
+    <div>
+        <h1 class="pm-page-title">Reports</h1>
+        <p class="pm-page-lead">Monitor portfolio performance, request trends, technician workload, and service quality.</p>
+    </div>
+    <div class="d-flex gap-2 flex-wrap">
+        <a class="pm-btn pm-btn--primary" asp-controller="Administrator" asp-action="GenerateReport" asp-route-timePeriod="@ViewBag.TimePeriod" asp-route-propertyId="@ViewBag.PropertyId" asp-route-category="@ViewBag.Category">
+            Generate Report
+        </a>
+    </div>
+</div>
+
+<div class="pm-grid pm-grid--stats">
+    <div class="pm-stat">
+        <div style="display: flex; justify-content: space-between; align-items: center; width: 100%;">
+            <div>
+                <span class="pm-stat__label">Requests This Month</span>
+                <h3 class="pm-stat__value" style="color: var(--pm-primary);">@requestsThisMonth</h3>
+                <p class="small pm-muted" style="color: var(--pm-on-surface-variant);">@now.ToString("MMMM yyyy")</p>
+            </div>
+            <div class="pm-stat__icon" style="background: #e1e1c9; color: #474836;">
+                <span class="material-symbols-outlined">receipt_long</span>
+            </div>
+        </div>
+    </div>
+    <div class="pm-stat">
+        <div style="display: flex; justify-content: space-between; align-items: center; width: 100%;">
+            <div>
+                <span class="pm-stat__label">Avg Resolution Time</span>
+                <h3 class="pm-stat__value">@completed</h3>
+                <p class="small pm-muted" style="color: var(--pm-on-surface-variant);">Completed requests</p>
+            </div>
+            <div class="pm-stat__icon" style="background: #e1e1c9; color: #474836;">
+                <span class="material-symbols-outlined">schedule</span>
+            </div>
+        </div>
+    </div>
+    <div class="pm-stat">
+        <div style="display: flex; justify-content: space-between; align-items: center; width: 100%;">
+            <div>
+                <span class="pm-stat__label">Tenant Satisfaction</span>
+                <h3 class="pm-stat__value">@(completed * 100 / total)%</h3>
+                <p class="small pm-muted" style="color: var(--pm-on-surface-variant);">Completion rate</p>
+            </div>
+            <div class="pm-stat__icon" style="background: #e1e1c9; color: #474836;">
+                <span class="material-symbols-outlined">thumb_up</span>
+            </div>
+        </div>
+    </div>
+</div>
+
+<form class="row g-3 align-items-end mb-3" asp-action="Reports" method="get">
+    <div class="col-md-4 col-lg-3">
+        <label>Time Period</label>
+        <select name="timePeriod" class="pm-select">
+            <option value="30days" selected="@(ViewBag.TimePeriod == "30days")">Last 30 Days</option>
+            <option value="quarter" selected="@(ViewBag.TimePeriod == "quarter")">This Quarter</option>
+            <option value="year" selected="@(ViewBag.TimePeriod == "year")">This Year</option>
+        </select>
+    </div>
+    <div class="col-md-4 col-lg-3">
+        <label>Property</label>
+        <select name="propertyId" class="pm-select">
+            <option value="">All Properties</option>
+            @foreach (var property in Model.Properties)
+            {
+                <option value="@property.PropertyId" selected="@(ViewBag.PropertyId == property.PropertyId)">@property.Name</option>
+            }
+        </select>
+    </div>
+    <div class="col-md-4 col-lg-3">
+        <label>Category</label>
+        <select name="category" class="pm-select">
+            <option value="">All Categories</option>
+            @foreach (var category in new[] { "HVAC", "Plumbing", "Electrical", "Appliance", "Structural", "Security", "Other" })
+            {
+                <option value="@category" selected="@(ViewBag.Category == category)">@category</option>
+            }
+        </select>
+    </div>
+    <button type="submit" class="pm-btn pm-btn--secondary" style="align-self: flex-end;">Apply Filters</button>
+    <a class="pm-btn pm-btn--secondary" asp-controller="Administrator" asp-action="ExportReport" asp-route-type="maintenance" asp-route-timePeriod="@ViewBag.TimePeriod" asp-route-propertyId="@ViewBag.PropertyId" asp-route-category="@ViewBag.Category" style="align-self: flex-end;">
+        Export CSV
+    </a>
+</form>
+
+<div class="row g-3 mb-4">
+    <div class="col-lg-8">
+        <div class="pm-card h-100">
+        <div class="pm-card__header">
+            <h3 class="pm-card__title">Maintenance Requests by Month</h3>
+        </div>
+        <div class="pm-card__body">
+            <div class="pm-chart-bars">
+                <div class="pm-chart-bars__grid" aria-hidden="true"></div>
+                @if (Model.Requests.Count == 0)
+                {
+                    <div class="pm-chart-empty">
+                        <p class="pm-muted mb-0">No maintenance requests yet. Data will appear here as tenants submit requests.</p>
+                    </div>
+                }
+                else
+                {
+                    @for (var i = 0; i < chartMonths.Count; i++)
+                    {
+                        var month = chartMonths[i];
+                        var count = monthlyCounts[i];
+                        var heightPct = count == 0 ? 0 : (int)Math.Round(count * 100.0 / maxMonthly);
+                        <div class="pm-chart-bar" title="@count request@(count == 1 ? "" : "s")">
+                            @if (count > 0)
+                            {
+                                <span class="pm-chart-bar__count">@count</span>
+                            }
+                            <div class="pm-chart-bar__fill" style="height: @(Math.Max(heightPct, count > 0 ? 8 : 0))%;"></div>
+                            <span class="pm-chart-bar__label">@month.ToString("MMM")</span>
+                        </div>
+                    }
+                }
+            </div>
+        </div>
+        </div>
+    </div>
+    <div class="col-lg-4">
+        <div class="pm-card h-100">
+        <div class="pm-card__header">
+            <h3 class="pm-card__title">Request Priority Mix</h3>
+        </div>
+        <div class="pm-card__body">
+            <div style="width: 150px; height: 150px; border-radius: 50%; margin: 20px auto; background: @pieGradient; position: relative;">
+                <div style="position: absolute; inset: 35px; border-radius: 50%; background: white;"></div>
+            </div>
+            <div style="display: grid; gap: 8px;">
+                <div class="pm-flex-between d-flex">
+                    <span>Critical / Urgent</span>
+                    <strong>@(urgent * 100 / total)%</strong>
+                </div>
+                <div class="pm-flex-between d-flex">
+                    <span>Medium</span>
+                    <strong>@(medium * 100 / total)%</strong>
+                </div>
+                <div class="pm-flex-between d-flex">
+                    <span>Low</span>
+                    <strong>@(low * 100 / total)%</strong>
+                </div>
+            </div>
+        </div>
+        </div>
+    </div>
+</div>
+
+<div class="pm-card">
+    <div class="pm-table-wrap">
+        <table class="pm-table">
+            <thead>
+                <tr>
+                    <th>Report Name</th>
+                    <th>Scope</th>
+                    <th>Last Generated</th>
+                    <th>Status</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var report in new[] { ("Maintenance Summary", "maintenance"), ("Technician Workload", "technicians"), ("Vacancy & Unit Status", "units") })
+                {
+                    <tr>
+                        <td><strong>@report.Item1</strong></td>
+                        <td>@Model.Properties.Count properties</td>
+                        <td>@DateTime.Now.ToString("MMM d, h:mm tt")</td>
+                        <td><span class="pm-badge pm-badge--completed">Ready</span></td>
+                        <td>
+                            <a asp-controller="Administrator" asp-action="ExportReport" asp-route-type="@report.Item2" asp-route-timePeriod="@ViewBag.TimePeriod" asp-route-propertyId="@ViewBag.PropertyId" asp-route-category="@ViewBag.Category" style="color: var(--pm-primary); font-weight: 700; text-decoration: none;">Download</a>
+                            <a asp-controller="Administrator" asp-action="ExportReport" asp-route-type="@report.Item2" asp-route-timePeriod="@ViewBag.TimePeriod" asp-route-propertyId="@ViewBag.PropertyId" asp-route-category="@ViewBag.Category" class="pm-btn pm-btn--secondary" style="margin-left: 8px; padding: 4px 10px; min-height: auto;">Export CSV</a>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>

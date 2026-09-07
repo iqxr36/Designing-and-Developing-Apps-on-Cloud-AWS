@@ -1,0 +1,19 @@
+@model CloudMVCApplication.ViewModels.TechnicianPaymentReportViewModel
+@{
+    Layout = "~/Areas/Manager/Views/Shared/_ManagerLayout.cshtml";
+    ViewData["Title"] = "Technician Payments";
+}
+
+<div class="pm-page-header">
+    <h1 class="pm-page-title">Technician Payments</h1>
+    <p class="pm-page-lead">Payments made for completed jobs under your company.</p>
+</div>
+
+<div class="pm-grid pm-grid--stats pm-mb-2">
+    <div class="pm-stat"><div class="pm-stat__label">Gross paid</div><div class="pm-stat__value">@Model.TotalGrossAmount.ToString("C")</div></div>
+    <div class="pm-stat"><div class="pm-stat__label">Commission</div><div class="pm-stat__value">@Model.TotalPlatformCommission.ToString("C")</div></div>
+    <div class="pm-stat"><div class="pm-stat__label">Technician net</div><div class="pm-stat__value">@Model.TotalTechnicianNetAmount.ToString("C")</div></div>
+    <div class="pm-stat"><div class="pm-stat__label">Payment count</div><div class="pm-stat__value">@Model.PaymentCount</div></div>
+</div>
+
+<partial name="~/Views/Shared/_TechnicianPaymentReportTable.cshtml" model="Model" />

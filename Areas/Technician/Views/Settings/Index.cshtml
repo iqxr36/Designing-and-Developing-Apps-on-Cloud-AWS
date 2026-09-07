@@ -1,0 +1,244 @@
+@model CloudMVCApplication.ViewModels.AreaDashboardViewModel
+@{
+    ViewData["Title"] = "Technician Settings";
+    var technician = Model.Technicians.FirstOrDefault();
+    var availabilityOptions = new[] { "Available", "On Job", "Unavailable", "Emergency Only" };
+    var payout = Model.PayoutStatus;
+}
+
+@if (payout != null && payout.CanSaveDetails && !payout.IsReady)
+{
+    <div class="alert alert-warning" role="alert">
+        <strong>Add bank payout details</strong>
+        <p class="mb-0">Save your bank account below so managers can release payment for completed jobs. You receive the net amount after the platform fee; bank transfer follows after release.</p>
+    </div>
+}
+else if (payout?.IsReady == true)
+{
+    <div class="alert alert-success" role="alert">
+        Payout details on file at @payout.BankName (@payout.AccountNumberMasked). Net earnings are transferred by bank after managers release payment and the platform fee is deducted.
+    </div>
+}
+else if (payout != null && !string.IsNullOrWhiteSpace(payout.BlockReason))
+{
+    <div class="alert alert-info" role="alert">@payout.BlockReason</div>
+}
+
+@if (TempData["SuccessMessage"] is string successMessage)
+{
+    <div class="alert alert-success" role="alert">@successMessage</div>
+}
+@if (TempData["ErrorMessage"] is string errorMessage)
+{
+    <div class="alert alert-danger" role="alert">@errorMessage</div>
+}
+
+<div class="pm-page-header">
+    <h1 class="pm-page-title">Settings</h1>
+    <p class="pm-page-lead">Manage your technician profile, alerts, and work preferences.</p>
+</div>
+
+@if (!ViewData.ModelState.IsValid)
+{
+    <div asp-validation-summary="All" class="pm-validation-summary"></div>
+}
+
+<div class="row g-4">
+    <div class="col-xl-4 d-flex flex-column gap-4">
+        <div class="pm-card">
+            <div class="pm-card__body">
+                <div class="row align-items-center g-4">
+                    <div class="col-auto text-center">
+                        @if (!string.IsNullOrWhiteSpace(Model.CurrentUserAvatarUrl))
+                        {
+                            <img src="@Model.CurrentUserAvatarUrl" alt="Profile" class="pm-avatar-lg d-block mx-auto" style="object-fit: cover;" />
+                        }
+                        else
+                        {
+                            <div class="pm-avatar-lg d-flex align-items-center justify-content-center" style="background:var(--pm-primary);color:#fff;font-weight:700;font-size:2rem">@Model.CurrentUserInitials</div>
+                        }
+                    </div>
+                    <div class="col">
+                        <h2 class="h4 mb-1">@Model.CurrentUserName</h2>
+                        <p class="pm-muted mb-2">@Model.CurrentUserEmail</p>
+                        <div class="d-flex flex-wrap gap-2">
+                            <a class="pm-btn pm-btn--secondary" asp-area="Technician" asp-controller="Settings" asp-action="ChangeAvatar">Change Avatar</a>
+                            @if (!string.IsNullOrWhiteSpace(Model.CurrentUserAvatarUrl))
+                            {
+                                <form method="post" asp-area="Technician" asp-controller="Settings" asp-action="RemoveAvatar" class="d-inline">
+                                    @Html.AntiForgeryToken()
+                                    <button type="submit" class="pm-btn pm-btn--link" style="color: #ba1a1a;"
+                                            data-confirm-title="Remove profile photo?"
+                                            data-confirm-message="Your current avatar will be removed from this technician profile."
+                                            data-confirm-action="Remove photo">Remove</button>
+                                </form>
+                            }
+                        </div>
+                    </div>
+                </div>
+                <div class="row g-3 mt-2">
+                    <div class="col-6">
+                        <div class="pm-stat" style="padding:1rem">
+                            <div class="pm-stat__label">Assigned</div>
+                            <div class="pm-stat__value" style="font-size:1.5rem">@Model.Requests.Count(r => r.Status != "Completed")</div>
+                        </div>
+                    </div>
+                    <div class="col-6">
+                        <div class="pm-stat" style="padding:1rem">
+                            <div class="pm-stat__label">Completed</div>
+                            <div class="pm-stat__value" style="font-size:1.5rem">@Model.Requests.Count(r => r.Status == "Completed")</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="pm-card">
+            <div class="pm-card__header"><h2 class="pm-card__title">Account status</h2></div>
+            <div class="pm-card__body">
+                @if (payout?.IsReady == true)
+                {
+                    <p class="pm-muted mb-2">Payout details on file</p>
+                    <p class="mb-0">You are ready to receive earnings after managers release payment for completed jobs.</p>
+                }
+                else
+                {
+                    <p class="pm-muted mb-2">Active technician</p>
+                    <p class="mb-0">Your account is ready for job assignments. Add bank payout details to receive earnings.</p>
+                }
+            </div>
+        </div>
+    </div>
+
+    <div class="col-xl-8 d-flex flex-column gap-4">
+        @if (payout?.CanSaveDetails == true)
+        {
+            <form method="post" asp-area="Technician" asp-controller="Settings" asp-action="UpdatePayoutDetails" class="pm-card">
+                @Html.AntiForgeryToken()
+                <div class="pm-card__body">
+                    <h3 class="h6 border-bottom pb-2 mb-3"><span class="material-symbols-outlined align-middle">account_balance</span> Bank payout details</h3>
+                    <p class="pm-muted mb-3">Used for manual bank transfers after a manager releases payment. Update anytime if your bank details change.</p>
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label class="pm-label pm-label--required" for="accountHolderName">Account holder name</label>
+                            <input class="pm-input" id="accountHolderName" name="AccountHolderName" value="@payout.AccountHolderName" autocomplete="name" required />
+                        </div>
+                        <div class="col-md-6">
+                            <label class="pm-label pm-label--required" for="bankName">Bank name</label>
+                            <input class="pm-input" id="bankName" name="BankName" value="@payout.BankName" placeholder="e.g. Maybank" autocomplete="organization" required />
+                        </div>
+                        <div class="col-md-6">
+                            <label class="pm-label pm-label--required" for="accountNumber">Account number</label>
+                            <input class="pm-input" id="accountNumber" name="AccountNumber" placeholder="@(payout.IsReady ? $"Current: {payout.AccountNumberMasked}" : "Enter full account number")" required />
+                            @if (payout.IsReady)
+                            {
+                                <p class="pm-field-hint">Enter the full number again to update your saved details.</p>
+                            }
+                            else
+                            {
+                                <p class="pm-field-hint">Use the full bank account number without masking.</p>
+                            }
+                        </div>
+                    </div>
+                    <div class="pm-actions border-top pt-3 mt-4" style="border-color:var(--pm-border)">
+                        <button type="submit" class="pm-btn pm-btn--primary">Save payout details</button>
+                    </div>
+                </div>
+            </form>
+        }
+
+        <form method="post" asp-area="Technician" asp-controller="Settings" asp-action="UpdateProfile" class="pm-card">
+            @Html.AntiForgeryToken()
+            <div class="pm-card__body">
+                <h3 class="h6 border-bottom pb-2 mb-3"><span class="material-symbols-outlined align-middle">badge</span> Profile information</h3>
+                <p class="pm-muted mb-3">Keep your contact details up to date for dispatch and property managers.</p>
+                <div class="row g-3">
+                    <div class="col-md-6">
+                        <label class="pm-label" for="fullName">Full name</label>
+                        <input class="pm-input" id="fullName" name="FullName" value="@Model.CurrentUserName" />
+                    </div>
+                    <div class="col-md-6">
+                        <label class="pm-label" for="email">Email address</label>
+                        <input class="pm-input" id="email" name="Email" type="email" value="@Model.CurrentUserEmail" />
+                        <p class="pm-field-hint">Use an email address managers can reach during active jobs.</p>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="pm-label" for="phone">Phone number</label>
+                        <input class="pm-input" id="phone" name="PhoneNumber" type="tel" value="@Model.CurrentUserPhoneNumber" placeholder="+1 (555) 000-0000" />
+                    </div>
+                    <div class="col-md-6">
+                        <label class="pm-label" for="specialization">Specialization</label>
+                        <input class="pm-input" id="specialization" name="Specialization" value="@(technician?.Specialization ?? "General Maintenance")" />
+                    </div>
+                    <div class="col-md-6">
+                        <label class="pm-label" for="availabilityStatus">Availability</label>
+                        <select class="pm-select" id="availabilityStatus" name="AvailabilityStatus">
+                            @foreach (var option in availabilityOptions)
+                            {
+                                <option value="@option" selected="@(option == technician?.AvailabilityStatus)">@option</option>
+                            }
+                        </select>
+                    </div>
+                </div>
+                <div class="pm-actions border-top pt-3 mt-4" style="border-color:var(--pm-border)">
+                    <a class="pm-btn pm-btn--outline" asp-area="Technician" asp-controller="Dashboard" asp-action="Index">Cancel</a>
+                    <button type="submit" class="pm-btn pm-btn--primary">Save changes</button>
+                </div>
+            </div>
+        </form>
+
+        <div class="row g-4">
+            <div class="col-lg-6">
+                <div class="pm-card h-100">
+                    <div class="pm-card__body">
+                        <h3 class="h6 border-bottom pb-2 mb-3"><span class="material-symbols-outlined align-middle">notifications</span> Notifications</h3>
+                        <div class="d-flex flex-column gap-3">
+                            <label class="d-flex justify-content-between gap-3 p-3 border rounded">
+                                <span>
+                                    <span class="d-block fw-semibold">Urgent job alerts</span>
+                                    <span class="pm-muted d-block mt-1" style="font-size:.875rem">Notify me when high priority jobs are assigned.</span>
+                                </span>
+                                <input class="form-check-input mt-1" type="checkbox" checked />
+                            </label>
+                            <label class="d-flex justify-content-between gap-3 p-3 border rounded">
+                                <span>
+                                    <span class="d-block fw-semibold">Proof reminders</span>
+                                    <span class="pm-muted d-block mt-1" style="font-size:.875rem">Remind me to upload completion evidence.</span>
+                                </span>
+                                <input class="form-check-input mt-1" type="checkbox" checked />
+                            </label>
+                            <label class="d-flex justify-content-between gap-3 p-3 border rounded">
+                                <span>
+                                    <span class="d-block fw-semibold">Daily job summary</span>
+                                    <span class="pm-muted d-block mt-1" style="font-size:.875rem">Send a summary before the work day starts.</span>
+                                </span>
+                                <input class="form-check-input mt-1" type="checkbox" />
+                            </label>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-lg-6">
+                <form method="post" asp-area="Technician" asp-controller="Settings" asp-action="UpdatePassword" class="pm-card h-100">
+                    <div class="pm-card__body">
+                        @Html.AntiForgeryToken()
+                        <h3 class="h6 border-bottom pb-2 mb-3"><span class="material-symbols-outlined align-middle">lock</span> Security</h3>
+                        <div class="d-flex flex-column gap-3">
+                            <div>
+                                <label class="pm-label" for="currentPassword">Current password</label>
+                                <input class="pm-input" id="currentPassword" name="CurrentPassword" type="password" autocomplete="current-password" />
+                            </div>
+                            <div>
+                                <label class="pm-label" for="newPassword">New password</label>
+                                <input class="pm-input" id="newPassword" name="NewPassword" type="password" autocomplete="new-password" minlength="8" />
+                                <p class="pm-field-hint">Use at least 8 characters.</p>
+                            </div>
+                            <button type="submit" class="pm-btn pm-btn--outline pm-w-100">Update password</button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>

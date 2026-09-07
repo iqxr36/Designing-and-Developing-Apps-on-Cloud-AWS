@@ -1,0 +1,108 @@
+@model List<CloudMVCApplication.ViewModels.SuperAdminCompanyListItemViewModel>
+@using CloudMVCApplication.Models
+@{
+    ViewData["Title"] = "Companies";
+    var includeDeleted = ViewBag.IncludeDeleted == true;
+}
+
+<div class="pm-page-header pm-flex-between">
+    <div>
+        <h1 class="pm-page-title">Companies</h1>
+        <p class="pm-page-lead">Manage companies, subscriptions, plans, and administrator accounts.</p>
+    </div>
+    <a class="pm-btn pm-btn--primary" asp-action="CreateCompany">Add Company</a>
+</div>
+
+<form method="get" class="pm-card mb-4">
+    <div class="pm-card__body">
+        <div class="row g-3 align-items-end">
+            <div class="col-md-3">
+                <label class="pm-label">Search</label>
+                <input class="pm-input" name="search" value="@ViewBag.Search" placeholder="Company name or email" />
+            </div>
+            <div class="col-md-2">
+                <label class="pm-label">Plan</label>
+                <select class="pm-select" name="plan">
+                    <option value="">All plans</option>
+                    @foreach (var plan in SubscriptionPlans.All)
+                    {
+                        <option value="@plan" selected="@(ViewBag.Plan as string == plan)">@plan</option>
+                    }
+                </select>
+            </div>
+            <div class="col-md-3">
+                <label class="pm-label">Subscription status</label>
+                <select class="pm-select" name="status">
+                    <option value="">All statuses</option>
+                    @foreach (var status in CompanySubscriptionStatuses.All)
+                    {
+                        <option value="@status" selected="@(ViewBag.Status as string == status)">@status</option>
+                    }
+                </select>
+            </div>
+            <div class="col-md-2">
+                <label class="pm-label d-flex align-items-center gap-2 mb-0 mt-4">
+                    <input type="checkbox" name="includeDeleted" value="true" checked="@includeDeleted" />
+                    Show deleted
+                </label>
+            </div>
+            <div class="col-md-2">
+                <button type="submit" class="pm-btn pm-btn--primary w-100">Filter</button>
+            </div>
+        </div>
+    </div>
+</form>
+
+<div class="pm-card">
+    <div class="pm-card__body pm-table-wrap">
+        @if (!Model.Any())
+        {
+            <div class="pm-empty-state">
+                <div class="pm-empty-state__icon"><span class="material-symbols-outlined">domain_disabled</span></div>
+                <h2 class="pm-empty-state__title">No companies found</h2>
+                <p class="pm-empty-state__text">No registered companies match the current search, plan, or subscription status filters.</p>
+                <div class="pm-empty-state__actions">
+                    <a class="pm-btn pm-btn--secondary" asp-action="Companies">Clear filters</a>
+                </div>
+            </div>
+        }
+        else
+        {
+        <table class="pm-table">
+            <thead>
+                <tr>
+                    <th>Company</th>
+                    <th>Plan</th>
+                    <th>Subscription</th>
+                    <th>Usage</th>
+                    <th>Created</th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var company in Model)
+                {
+                    <tr>
+                        <td>
+                            <strong>@company.CompanyName</strong>
+                            <div class="small pm-muted">@company.CompanyEmail</div>
+                        </td>
+                        <td>@company.SubscriptionPlan</td>
+                        <td>
+                            <span class="pm-badge @(company.SubscriptionStatus == CompanySubscriptionStatuses.Active || company.SubscriptionStatus == CompanySubscriptionStatuses.Trialing ? "pm-badge--subscription-active" : company.SubscriptionStatus == CompanySubscriptionStatuses.PastDue ? "pm-badge--subscription-warning" : "pm-badge--subscription-muted")">
+                                @company.SubscriptionStatus
+                            </span>
+                            <div class="small pm-muted">@company.Status</div>
+                        </td>
+                        <td>@company.PropertyCount properties · @company.UnitCount units</td>
+                        <td>@company.CreatedAt.ToLocalTime().ToString("d")</td>
+                        <td>
+                            <a class="pm-btn pm-btn--primary pm-btn--sm" asp-action="CompanyDetail" asp-route-id="@company.CompanyId">Manage</a>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+        }
+    </div>
+</div>

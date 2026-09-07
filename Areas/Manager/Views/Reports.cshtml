@@ -1,0 +1,145 @@
+@model CloudMVCApplication.ViewModels.AreaDashboardViewModel
+@{
+    Layout = "~/Areas/Manager/Views/Shared/_ManagerLayout.cshtml";
+    ViewData["Title"] = "Reports & Summary";
+    var total = Math.Max(Model.Requests.Count, 1);
+    var completed = Model.Requests.Count(r => r.Status == "Completed");
+    var inProgress = Model.Requests.Count(r => r.Status == "In Progress" || r.Status == "Assigned");
+    var pending = Model.Requests.Count(r => r.Status == "Pending");
+    var urgentCount = Model.Requests.Count(r => r.Priority == "High");
+    var avgRating = Model.Technicians.Any() ? Model.Technicians.Average(t => t.AverageRating) : 0;
+    var issueGroups = Model.Requests
+        .GroupBy(r => r.Category)
+        .OrderByDescending(g => g.Count())
+        .ToList();
+}
+
+<div class="pm-flex-between pm-page-header">
+    <div>
+        <h1 class="pm-page-title">Reports &amp; Summary</h1>
+        <p class="pm-page-lead">Track maintenance performance and service efficiency.</p>
+    </div>
+    <button type="button" class="pm-btn pm-btn--outline" disabled title="UI only">
+        <span class="material-symbols-outlined align-middle" style="font-size:18px">download</span>
+        Export report
+    </button>
+</div>
+
+<div class="pm-grid pm-grid--stats pm-mb-2">
+    <div class="pm-stat">
+        <span class="material-symbols-outlined pm-stat__icon">confirmation_number</span>
+        <div class="pm-stat__label">Monthly requests</div>
+        <div class="pm-stat__value">@Model.Requests.Count</div>
+        <div class="pm-muted" style="font-size:.8rem">Total submitted</div>
+    </div>
+    <div class="pm-stat">
+        <span class="material-symbols-outlined pm-stat__icon">task_alt</span>
+        <div class="pm-stat__label">Completion rate</div>
+        <div class="pm-stat__value">@(completed * 100 / total)%</div>
+        <div class="pm-muted" style="font-size:.8rem">@completed completed</div>
+    </div>
+    <div class="pm-stat">
+        <span class="material-symbols-outlined pm-stat__icon">pending_actions</span>
+        <div class="pm-stat__label">Open requests</div>
+        <div class="pm-stat__value">@pending</div>
+        <div class="pm-muted" style="font-size:.8rem">Needs triage</div>
+    </div>
+    <div class="pm-stat">
+        <span class="material-symbols-outlined pm-stat__icon">warning</span>
+        <div class="pm-stat__label">Urgent cases</div>
+        <div class="pm-stat__value" style="color:var(--pm-danger)">@urgentCount</div>
+        <div class="pm-muted" style="font-size:.8rem">High priority</div>
+    </div>
+    <div class="pm-stat">
+        <span class="material-symbols-outlined pm-stat__icon">star</span>
+        <div class="pm-stat__label">Technician performance</div>
+        <div class="pm-stat__value">@avgRating.ToString("0.0")</div>
+        <div class="pm-muted" style="font-size:.8rem">/ 5.0 average score</div>
+    </div>
+    <div class="pm-stat">
+        <span class="material-symbols-outlined pm-stat__icon">engineering</span>
+        <div class="pm-stat__label">Active technicians</div>
+        <div class="pm-stat__value">@Model.Technicians.Count</div>
+        <div class="pm-muted" style="font-size:.8rem">Platform pool</div>
+    </div>
+</div>
+
+<section class="pm-reports-analysis pm-mb-2" aria-label="Performance analysis">
+    <div class="pm-card pm-reports-card">
+        <div class="pm-card__header">
+            <h2 class="pm-card__title">Request status breakdown</h2>
+            <span class="pm-muted" style="font-size:.875rem">@Model.Requests.Count total</span>
+        </div>
+        <div class="pm-card__body">
+            <div class="pm-bar-row">
+                <span class="pm-bar-row__label">Completed</span>
+                <div class="pm-bar-row__track"><div class="pm-bar-row__fill pm-progress__bar--ok" style="width:@(completed * 100 / total)%"></div></div>
+                <span class="pm-bar-row__value">@(completed * 100 / total)%<small>@completed</small></span>
+            </div>
+            <div class="pm-bar-row">
+                <span class="pm-bar-row__label">In progress</span>
+                <div class="pm-bar-row__track"><div class="pm-bar-row__fill pm-progress__bar--warn" style="width:@(inProgress * 100 / total)%"></div></div>
+                <span class="pm-bar-row__value">@(inProgress * 100 / total)%<small>@inProgress</small></span>
+            </div>
+            <div class="pm-bar-row">
+                <span class="pm-bar-row__label">Pending</span>
+                <div class="pm-bar-row__track"><div class="pm-bar-row__fill" style="width:@(pending * 100 / total)%"></div></div>
+                <span class="pm-bar-row__value">@(pending * 100 / total)%<small>@pending</small></span>
+            </div>
+        </div>
+    </div>
+
+    <div class="pm-card pm-reports-card">
+        <div class="pm-card__header">
+            <h2 class="pm-card__title">Common issue types</h2>
+            <span class="pm-muted" style="font-size:.875rem">@issueGroups.Count categories</span>
+        </div>
+        <div class="pm-card__body">
+            @if (!issueGroups.Any())
+            {
+                <p class="pm-muted mb-0">No issue data yet.</p>
+            }
+            else
+            {
+                @foreach (var group in issueGroups)
+                {
+                    var count = group.Count();
+                    var percent = count * 100 / total;
+                    <div class="pm-bar-row">
+                        <span class="pm-bar-row__label pm-bar-row__label--issue" title="@group.Key">@group.Key</span>
+                        <div class="pm-bar-row__track"><div class="pm-bar-row__fill pm-progress__bar--warn" style="width:@percent%"></div></div>
+                        <span class="pm-bar-row__value">@percent%<small>@count</small></span>
+                    </div>
+                }
+            }
+        </div>
+    </div>
+</section>
+
+<div class="pm-card pm-reports-table">
+    <div class="pm-card__header">
+        <div>
+            <h2 class="pm-card__title">Metrics comparison</h2>
+            <p class="pm-muted mb-0" style="font-size:.875rem">This month vs. last month</p>
+        </div>
+    </div>
+    <div class="pm-table-wrap">
+        <table class="pm-table">
+            <thead>
+                <tr>
+                    <th>Metric</th>
+                    <th>This month</th>
+                    <th>Last month</th>
+                    <th>Change</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr><td>Total maintenance requests</td><td>@Model.Requests.Count</td><td class="pm-muted">@Model.Requests.Count</td><td><span class="pm-badge pm-badge--avail">Seeded</span></td></tr>
+                <tr><td>Completed requests</td><td>@completed</td><td class="pm-muted">@completed</td><td><span class="pm-badge pm-badge--avail">Seeded</span></td></tr>
+                <tr><td>Open requests</td><td>@pending</td><td class="pm-muted">@pending</td><td><span class="pm-badge pm-badge--avail">Seeded</span></td></tr>
+                <tr><td>Assigned requests</td><td>@inProgress</td><td class="pm-muted">@inProgress</td><td><span class="pm-badge pm-badge--avail">Seeded</span></td></tr>
+                <tr><td>Average technician rating</td><td>@avgRating.ToString("0.0")</td><td class="pm-muted">@avgRating.ToString("0.0")</td><td><span class="pm-badge pm-badge--avail">Seeded</span></td></tr>
+            </tbody>
+        </table>
+    </div>
+</div>

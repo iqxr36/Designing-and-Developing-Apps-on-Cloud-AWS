@@ -1,0 +1,177 @@
+@model CloudMVCApplication.ViewModels.AreaDashboardViewModel
+@{
+    Layout = "~/Areas/Administrator/Views/Shared/_AdministratorLayout.cshtml";
+    ViewData["Title"] = "Request Details";
+    var request = Model.SelectedRequest;
+}
+
+<div class="pm-flex-between pm-page-header">
+    <div>
+        <h1 class="pm-page-title">Request #@(request?.DisplayId ?? "No request")</h1>
+        <p class="pm-page-lead">@(request?.Title ?? "No request selected")</p>
+    </div>
+    <div class="d-flex gap-2 flex-wrap">
+        <a class="pm-btn pm-btn--secondary" asp-controller="Administrator" asp-action="Maintenance">
+            <span class="material-symbols-outlined">arrow_back</span> Back to Requests
+        </a>
+    </div>
+</div>
+
+@if (TempData["SuccessMessage"] is string successMessage)
+{
+    <div class="pm-card mb-3" style="border-left: 4px solid #0a5c2e;">
+        <div class="pm-card__body" style="color: #0a5c2e; font-weight: 600;">@successMessage</div>
+    </div>
+}
+
+<div class="row g-3" style="grid-template-columns: 2fr 1fr; gap: 24px;">
+    <div>
+        <div class="pm-card mb-3">
+            <div class="pm-card__header">
+                <h3 class="pm-card__title">Request Information</h3>
+                <span class="pm-badge pm-badge--urgent">@(request?.Priority ?? "Priority")</span>
+            </div>
+            <div class="pm-card__body">
+                <div class="row g-3 mb-3">
+                    <div>
+                        <p class="pm-muted small" style="margin: 0;">Property</p>
+                        <p style="font-weight: 600; margin: 4px 0 0;">@(request?.PropertyName ?? "No property")</p>
+                    </div>
+                    <div>
+                        <p class="pm-muted small" style="margin: 0;">Unit</p>
+                        <p style="font-weight: 600; margin: 4px 0 0;">Unit @(request?.UnitNumber ?? "N/A")</p>
+                    </div>
+                    <div>
+                        <p class="pm-muted small" style="margin: 0;">Submitted</p>
+                        <p style="font-weight: 600; margin: 4px 0 0;">@(request?.CreatedAt.ToLocalTime().ToString("MMM d, yyyy h:mm tt") ?? "N/A")</p>
+                    </div>
+                    <div>
+                        <p class="pm-muted small" style="margin: 0;">Category</p>
+                        <p style="font-weight: 600; margin: 4px 0 0;">@(request?.Category ?? "N/A")</p>
+                    </div>
+                </div>
+                <div class="mb-3">
+                    <label class="pm-label">Description</label>
+                    <p style="margin: 0; padding: 12px; background: var(--pm-surface-container); border-radius: 8px;">@(request?.Description ?? "No description provided.")</p>
+                </div>
+            </div>
+        </div>
+        <div class="pm-card mb-3">
+            <div class="pm-card__header">
+                <h3 class="pm-card__title">Issue evidence</h3>
+            </div>
+            <div class="pm-card__body">
+                <div class="row g-3">
+                    @if (Model.SelectedRequestImages.Any())
+                    {
+                        @foreach (var image in Model.SelectedRequestImages)
+                        {
+                            <div class="col-md-6">
+                                <div class="p-3 rounded border" style="border-color:var(--pm-border)!important">
+                                    <button type="button" class="pm-photo-thumb mb-2"
+                                            data-photo-preview
+                                            data-photo-group="admin-request-@request?.RequestId"
+                                            data-photo-src="@image.ImageUrl"
+                                            data-photo-title="@($"{image.ImageType} - {request?.DisplayId}")"
+                                            data-photo-type="@image.ImageType"
+                                            data-photo-by="@image.UploadedByName"
+                                            data-photo-time="@image.UploadedAt.ToLocalTime().ToString("MMM d, yyyy h:mm tt")">
+                                        <img src="@image.ImageUrl" alt="@image.ImageType" class="img-fluid rounded" />
+                                    </button>
+                                    <div class="pm-label">@image.ImageType</div>
+                                    <p class="pm-muted mb-0" style="font-size:.85rem">Uploaded by @image.UploadedByName on @image.UploadedAt.ToLocalTime().ToString("MMM d, h:mm tt")</p>
+                                </div>
+                            </div>
+                        }
+                    }
+                    else
+                    {
+                        <div class="col-12 d-flex align-items-center justify-content-center border border-2 border-dashed rounded text-center pm-muted p-3">
+                            No uploaded photos for @(request?.DisplayId ?? "this request").
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+        <div class="pm-card d-none">
+            <div class="pm-card__header">
+                <h3 class="pm-card__title">Activity Timeline</h3>
+            </div>
+            <div class="pm-timeline">
+                @if (Model.SelectedRequestStatusHistories.Count == 0)
+                {
+                    <p class="pm-muted">No status updates recorded yet.</p>
+                }
+                @foreach (var history in Model.SelectedRequestStatusHistories)
+                {
+                    <div class="pm-timeline__item">
+                        <span class="pm-timeline__item @(history == Model.SelectedRequestStatusHistories.First() ? "pm-timeline__item--current" : "pm-timeline__item--muted")"></span>
+                        <p class="fw-semibold mb-1">@(history.OldStatus ?? "Created") → @(history.NewStatus ?? "Updated")</p>
+                        @if (!string.IsNullOrWhiteSpace(history.Notes))
+                        {
+                            <p class="pm-muted small mb-1">@history.Notes</p>
+                        }
+                        <span class="small pm-muted">@history.ChangedByName · @history.ChangedAt.ToLocalTime().ToString("MMM d, h:mm tt")</span>
+                    </div>
+                }
+            </div>
+        </div>
+        <partial name="~/Views/Shared/_RequestTimeline.cshtml" model="Model" />
+    </div>
+    <div>
+        <div class="pm-card mb-3">
+            <div class="pm-card__header">
+                <h3 class="pm-card__title">Assigned Technician</h3>
+            </div>
+            <div class="pm-card__body">
+                <div class="d-flex align-items-center gap-3 mb-3">
+                    <div style="width: 48px; height: 48px; border-radius: 999px; background: #e1e3e4; display: flex; align-items: center; justify-content: center; font-weight: 700;">@((request?.TechnicianName ?? "NA").Split(' ', StringSplitOptions.RemoveEmptyEntries).Select(p => p[0]).Take(2).Aggregate("", (a, c) => a + c).ToUpperInvariant())</div>
+                    <div>
+                        <p style="font-weight: 600; margin: 0;">@(request?.TechnicianName ?? "Unassigned")</p>
+                        <p class="pm-muted small" style="margin: 0;">@(request?.Category ?? "General") Specialist</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="pm-card">
+            <div class="pm-card__header">
+                <h3 class="pm-card__title">Update Status</h3>
+            </div>
+            <div class="pm-card__body">
+                <form asp-controller="Administrator" asp-action="UpdateRequestStatus" asp-route-id="@request?.RequestId" method="post">
+                    @Html.AntiForgeryToken()
+                    <div asp-validation-summary="All" class="small" style="color: #ba1a1a; margin-bottom: 16px;"></div>
+                    <div class="mb-3">
+                        <label class="pm-label">Status</label>
+                        <select name="Status" class="pm-select">
+                            <option value="Pending" selected="@(request?.Status == "Pending")">Pending</option>
+                            <option value="Assigned" selected="@(request?.Status == "Assigned")">Assigned</option>
+                            <option value="In Progress" selected="@(request?.Status == "In Progress")">In Progress</option>
+                            <option value="On Hold" selected="@(request?.Status == "On Hold")">On Hold</option>
+                            <option value="Completed" selected="@(request?.Status == "Completed")">Completed</option>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label class="pm-label">Technician</label>
+                        <select name="TechnicianId" class="pm-select">
+                            <option value="">Keep unassigned</option>
+                            @foreach (var technician in Model.Technicians)
+                            {
+                                <option value="@technician.TechnicianId" selected="@(technician.FullName == request?.TechnicianName)">@technician.FullName (@technician.Specialization)</option>
+                            }
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label class="pm-label">Notes</label>
+                        <textarea name="Notes" class="pm-textarea" rows="3" placeholder="Optional update note"></textarea>
+                    </div>
+                    <button type="submit" class="pm-btn pm-btn--primary" style="width: 100%;">Update Request</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

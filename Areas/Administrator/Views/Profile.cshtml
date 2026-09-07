@@ -1,0 +1,106 @@
+@model CloudMVCApplication.ViewModels.AreaDashboardViewModel
+@{
+    Layout = "~/Areas/Administrator/Views/Shared/_AdministratorLayout.cshtml";
+    ViewData["Title"] = "My Profile";
+}
+
+<div class="pm-page-header">
+    <h1 class="pm-page-title">My Profile</h1>
+    <p class="pm-page-lead">Manage your account settings and preferences.</p>
+</div>
+
+@if (TempData["SuccessMessage"] is string successMessage)
+{
+    <div class="alert alert-success" role="alert">@successMessage</div>
+}
+
+<div class="row g-4">
+    <div class="col-lg-4 d-flex flex-column gap-4">
+        <div class="pm-card">
+            <div class="pm-card__body text-center">
+                @if (!string.IsNullOrWhiteSpace(Model.CurrentUserAvatarUrl))
+                {
+                    <img src="@Model.CurrentUserAvatarUrl" alt="Profile" class="pm-avatar-lg d-block mx-auto mb-3" style="object-fit: cover;" />
+                }
+                else
+                {
+                    <div class="pm-avatar-lg d-flex align-items-center justify-content-center mx-auto mb-3" style="background: #333d4d; color: #9da8bb; font-weight: 700; font-size: 2rem;">@Model.CurrentUserInitials</div>
+                }
+                <h2 class="h5 mb-1">@Model.CurrentUserName</h2>
+                <p class="pm-muted mb-2">@Model.CurrentUserEmail</p>
+                <span class="pm-badge pm-badge--completed">Administrator</span>
+                <div class="mt-3">
+                    <a class="pm-btn pm-btn--secondary pm-w-100" asp-controller="Administrator" asp-action="ChangeAvatar">Change Avatar</a>
+                </div>
+            </div>
+        </div>
+        <div class="pm-card">
+            <div class="pm-card__header"><h2 class="pm-card__title">Account status</h2></div>
+            <div class="pm-card__body">
+                <ul class="list-unstyled mb-0 pm-stack">
+                    <li class="d-flex justify-content-between"><span class="pm-muted">Role</span><span class="pm-badge pm-badge--low">Administrator</span></li>
+                    <li class="d-flex justify-content-between"><span class="pm-muted">Company</span><span>@(Model.CurrentCompanyName ?? "No company")</span></li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-8">
+        <div class="pm-card">
+            <div class="pm-card__body">
+                <form asp-controller="Administrator" asp-action="UpdateProfile" method="post">
+                    @Html.AntiForgeryToken()
+                    <div asp-validation-summary="All" class="pm-validation-summary"></div>
+
+                    <h3 class="h6 border-bottom pb-2 mb-3"><span class="material-symbols-outlined align-middle">badge</span> Account information</h3>
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label class="pm-label pm-label--required" for="fullName">Full name</label>
+                            <input class="pm-input" id="fullName" name="FullName" value="@Model.CurrentUserName" required />
+                        </div>
+                        <div class="col-md-6">
+                            <label class="pm-label" for="company">Company</label>
+                            <input class="pm-input" id="company" value="@(Model.CurrentCompanyName ?? "No company")" readonly />
+                        </div>
+                        <div class="col-md-6">
+                            <label class="pm-label" for="email">Email</label>
+                            <input class="pm-input" id="email" type="email" value="@Model.CurrentUserEmail" disabled style="background: var(--pm-surface-container); cursor: not-allowed;" />
+                            <p class="pm-field-hint">Administrator email is managed by the account owner.</p>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="pm-label" for="phone">Phone</label>
+                            <input class="pm-input" id="phone" name="PhoneNumber" type="tel" value="@(Model.CurrentUserPhoneNumber ?? string.Empty)" autocomplete="tel" />
+                        </div>
+                    </div>
+
+                    <h3 class="h6 border-bottom pb-2 mb-3 mt-4"><span class="material-symbols-outlined align-middle">lock</span> Password</h3>
+                    <p class="pm-muted">Leave these fields blank if you do not want to change your password.</p>
+                    <div class="row g-3">
+                        <div class="col-md-4">
+                            <label class="pm-label" for="currentPassword">Current password</label>
+                            <input class="pm-input" id="currentPassword" name="CurrentPassword" type="password" autocomplete="current-password" />
+                        </div>
+                        <div class="col-md-4">
+                            <label class="pm-label" for="newPassword">New password</label>
+                            <input class="pm-input" id="newPassword" name="NewPassword" type="password" autocomplete="new-password" minlength="8" />
+                            <p class="pm-field-hint">Use at least 8 characters.</p>
+                        </div>
+                        <div class="col-md-4">
+                            <label class="pm-label" for="confirmPassword">Confirm new password</label>
+                            <input class="pm-input" id="confirmPassword" name="ConfirmPassword" type="password" autocomplete="new-password" />
+                        </div>
+                    </div>
+
+                    <div class="pm-actions border-top pt-3 mt-4" style="border-color: var(--pm-border);">
+                        <a class="pm-btn pm-btn--outline" asp-controller="Administrator" asp-action="Dashboard">Cancel</a>
+                        <button type="submit" class="pm-btn pm-btn--primary">Save changes</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}
