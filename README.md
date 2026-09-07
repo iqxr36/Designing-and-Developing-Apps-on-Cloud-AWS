@@ -1,239 +1,209 @@
-# ZamMaintain
+<p align="center">
+  <img src="wwwroot/images/brand/zammaintain-logo.png" alt="ZamMaintain logo" width="260" />
+</p>
 
-ZamMaintain is an ASP.NET Core MVC property maintenance platform for managing property companies, users, units, maintenance requests, technician assignment, messaging, notifications, completion proof, and technician payment workflows.
+<h1 align="center">🏡 ZamMaintain — Cloud Property Maintenance Platform</h1>
 
-## System Summary
+<p align="center"><strong>Report issues. Coordinate repairs. Manage properties.</strong></p>
 
-The application supports a full maintenance workflow:
+<p align="center">An ASP.NET Core MVC and AWS application connecting tenants, property teams, and technicians through a shared maintenance workflow.</p>
 
-- Companies manage properties, units, managers, tenants, and reports.
-- Tenants submit and track maintenance requests.
-- Managers review requests, assign technicians, monitor workload, and confirm work progress.
-- Technicians view assigned jobs, update job status, upload completion proof, and track earnings.
-- Platform administrators manage companies, technician approvals, payouts, commission reporting, and platform audit logs.
+<p align="center">
+  <img src="https://img.shields.io/badge/.NET-8-512BD4" alt=".NET 8" />
+  <img src="https://img.shields.io/badge/Language-C%23-239120" alt="C#" />
+  <img src="https://img.shields.io/badge/Cloud-AWS-FF9900" alt="AWS" />
+  <img src="https://img.shields.io/badge/Database-PostgreSQL-4169E1" alt="PostgreSQL" />
+  <img src="https://img.shields.io/badge/Project-Academic_Assignment-blue" alt="Academic assignment project" />
+</p>
 
-## Tech Stack
+<p align="center"><a href="#overview">Overview</a> · <a href="#features">Features</a> · <a href="#architecture">Architecture</a></p>
 
-- ASP.NET Core MVC / Razor Pages
-- .NET 8
-- Entity Framework Core
-- ASP.NET Core Identity
-- PostgreSQL via Npgsql
-- SignalR for chat/messaging
-- Bootstrap, custom CSS, and JavaScript
+<a id="overview"></a>
 
-## Roles
+## 🌍 Overview
 
-- SuperAdmin: Platform-level administrator for company, technician, payout, commission, and audit oversight.
-- Administrator: Company administrator who manages users, properties, units, reports, maintenance, settings, and payments.
-- Manager: Company manager who reviews requests, assigns technicians, tracks repairs, messaging, reports, and payments.
-- Tenant: Resident/user who submits requests, tracks status, messages staff, and gives feedback.
-- Technician: Service provider who receives jobs, updates statuses, uploads proof, and views earnings.
+ZamMaintain is a property maintenance platform developed as an **academic assignment project** for **Designing and Developing Applications on the Cloud**. It helps property management companies organise buildings and units, receive maintenance requests, assign technicians, track repairs, and manage related payments.
 
-## Login URLs
+The project provides browser-based portals for tenants, technicians, managers, company administrators, and platform administrators. These interfaces share an ASP.NET Core backend, a PostgreSQL database on Amazon RDS, and Amazon S3 file storage. A separate AWS Lambda and API Gateway workflow demonstrates storage monitoring for the assignment.
 
-Standard company users:
+### Why ZamMaintain?
+
+Property maintenance involves more than reporting a broken fixture. Tenants need updates, managers need to coordinate technicians, and administrators need records of work, costs, and company activity.
+
+ZamMaintain addresses these needs through:
+
+- **Centralised property management:** companies, properties, units, and user accounts in one system.
+- **Structured maintenance:** request submission, assignment, progress updates, completion proof, and feedback.
+- **Connected communication:** real-time chat, inbox updates, and in-app notifications.
+- **Payment visibility:** service payments, technician earnings and payouts, and company subscription records.
+- **Administrative oversight:** dashboards, reports, technician approval, and audit logs.
+- **Cloud integration:** database hosting, object storage, application deployment configuration, and serverless monitoring.
+
+<a id="features"></a>
+
+## ✨ Key Features
+
+### 🏠 For Tenants
+
+| Area | Features |
+| --- | --- |
+| Account and profile | Sign in, manage profile information, update an avatar, and access password recovery. |
+| Property information | View assigned unit and property details. |
+| Maintenance requests | Submit issues with supporting photos and inspect request details. |
+| Progress tracking | Follow request status and repair progress. |
+| Messaging | Communicate through conversations with real-time chat updates. |
+| Notifications | View maintenance-related notifications. |
+| Feedback | Submit feedback on maintenance work. |
+
+### 🛠️ For Technicians
+
+| Area | Features |
+| --- | --- |
+| Registration and approval | Register a technician profile and submit supporting documents for review. |
+| Assigned work | View assigned requests and manage work progress. |
+| Completion evidence | Upload proof of completed repairs. |
+| Communication | Use messaging and receive work-related notifications. |
+| Earnings and payments | Inspect payment records, earnings, and payout information. |
+| Profile | Manage technician details and account information. |
+
+### 🖥️ For Managers and Administrators
+
+- **Manager dashboard:** review maintenance activity, pending work, and completed repairs.
+- **Request coordination:** inspect requests, assign technicians, and monitor technician workloads.
+- **Company administration:** manage properties, units, users, and company settings.
+- **Reports:** review maintenance and payment information through reporting screens.
+- **Communication:** access messages and notifications associated with operational work.
+- **Company billing:** manage subscription workflows and billing history.
+- **Platform oversight:** manage companies, review technician registrations, and inspect platform activity.
+- **Financial oversight:** review technician payouts, commission reporting, and payment records.
+- **Audit history:** inspect recorded administrative actions.
+
+Administrative access is separated into **Manager**, **Administrator**, and **SuperAdmin** roles. Tenants and technicians have their own portals. Platform administrators use `/SuperAdmin/Login`; other users sign in through `/Identity/Account/Login`.
+
+## 🔄 How It Works
+
+1. **Set up the company:** register and organise company users, properties, and units.
+2. **Report an issue:** a tenant submits a maintenance request with a description and supporting photos.
+3. **Coordinate the repair:** the property team reviews the request and assigns a technician.
+4. **Track the work:** the technician updates progress while participants communicate and receive notifications.
+5. **Record completion:** upload completion evidence, review the repair, and collect tenant feedback.
+6. **Review operations:** inspect applicable payment records, reports, subscriptions, and audit history.
+
+## 🛡️ Trust and Verification
+
+Access and accountability are implemented across the application and its cloud integrations:
+
+- **Identity and roles:** ASP.NET Core Identity manages accounts and cookie-based sign-in; role restrictions separate the five user groups.
+- **Technician review:** registration includes supporting documents and an administrator approval workflow.
+- **Conversation access:** the SignalR hub checks membership before joining a conversation or updating its read state.
+- **Request accountability:** status history, completion photos, feedback, and audit records support review of maintenance activity.
+- **Form protection:** controller actions use anti-forgery validation for protected form submissions.
+- **Transport and cookies:** HTTPS redirection, production HSTS, and secure production authentication cookies are configured.
+- **File storage:** S3 stores uploaded files; the application includes an authenticated storage route for retrieving objects.
+- **Payment callbacks:** the Xendit integration checks the configured callback token when validating webhook requests.
+
+Database credentials, payment keys, and SMTP credentials should be supplied through private configuration. The GitHub copy uses a placeholder database password.
+
+## 🧰 Technology Stack
+
+| Layer | Technologies |
+| --- | --- |
+| Web application | ASP.NET Core MVC and Razor Pages on .NET 8 |
+| Application language | C# |
+| User interface | Razor views, HTML, CSS, JavaScript, and Bootstrap |
+| Client-side validation | jQuery Validation and jQuery Unobtrusive Validation |
+| Application organisation | MVC Areas, view models, dependency injection, and application services |
+| Authentication | ASP.NET Core Identity, roles, and authentication cookies |
+| Data access | Entity Framework Core 8 and the Npgsql PostgreSQL provider |
+| Database | PostgreSQL hosted on Amazon RDS |
+| File storage | Amazon S3 and the AWS SDK for .NET |
+| Real-time messaging | ASP.NET Core SignalR and the JavaScript SignalR client |
+| Payments | Xendit integration, with application services for subscriptions and technician payments/payouts |
+| Email | SMTP through MailKit and MimeKit |
+| Serverless monitoring | AWS Lambda, Python 3.12, and Boto3 |
+| Monitoring endpoint | Amazon API Gateway |
+| Cloud observability | Amazon CloudWatch logs and the assignment monitoring dashboard |
+| Cloud permissions | AWS Identity and Access Management (IAM) roles and policies |
+| Deployment configuration | AWS Elastic Beanstalk, Amazon EC2, Amazon Linux, and Nginx |
+| Development and delivery | .NET SDK, NuGet, Visual Studio deployment settings, AWS CLI, Git, and GitHub |
+
+### ☁️ AWS Services and Their Roles
+
+| Service | Use in the project |
+| --- | --- |
+| AWS Elastic Beanstalk | Saved deployment settings for the ASP.NET Core application environment. |
+| Amazon EC2 | Compute instance configuration underlying the Beanstalk environment. |
+| Amazon RDS | PostgreSQL storage for accounts, companies, properties, maintenance, messages, and payment records. |
+| Amazon S3 | Storage for avatars, issue photos, completion proof, property images, and technician documents. |
+| AWS Lambda | Runs the S3 status function that lists object metadata and returns a JSON summary. |
+| Amazon API Gateway | Exposes the assignment's GET /s3-status monitoring endpoint. |
+| Amazon CloudWatch | Captures Lambda execution logs and supports the assignment monitoring dashboard. |
+| AWS IAM | Provides service roles and permissions for application hosting and Lambda access to S3 and logs. |
+
+The saved AWS configuration and monitoring evidence use **Asia Pacific (Singapore), ap-southeast-1**. These files describe the assignment setup; they do not establish current cloud resource availability. Email delivery and Xendit API operations require their respective private settings.
+
+<a id="architecture"></a>
+
+## 🏗️ Architecture
+
+ZamMaintain separates its role-specific interfaces into MVC Areas while sharing domain models, database access, and application services. Controllers handle requests, services coordinate workflows and integrations, and Razor views render the browser interface. Entity Framework Core connects to PostgreSQL, the storage service handles S3 files, and SignalR provides real-time conversation updates.
 
 ```text
-/Identity/Account/Login
+Browser: tenant / technician / manager / administrator / super admin
+                              |
+                    ASP.NET Core MVC application
+                    Controllers, views, and services
+                       |          |          |
+                 RDS PostgreSQL   S3     Xendit / SMTP
+
+Monitoring: API Gateway → Python Lambda → S3 object metadata
+                                  |
+                           CloudWatch logs
 ```
-
-Platform Super Admin:
-
-```text
-/SuperAdmin/Login
-```
-
-SuperAdmin users must use `/SuperAdmin/Login`. The normal login page blocks SuperAdmin sign-in and tells the user to use the platform login.
-
-## Seeded Demo Accounts
-
-These accounts are created by `Data/DbSeeder.cs` when the app runs in `Development` and seeding is enabled.
-
-| Role | Name | Email | Password | Login URL |
-| --- | --- | --- | --- | --- |
-| SuperAdmin | Platform Super Admin | `platform@zammaintain.test` | `Platform12345` | `/SuperAdmin/Login` |
-| Administrator | Rania Aziz | `admin@login.test` | `abdullah100` | `/Identity/Account/Login` |
-| Administrator | Amina Rahman | `admin@cedarheights.test` | `abdullah100` | `/Identity/Account/Login` |
-| Manager | Farid Hakim | `manager@login.test` | `abdullah100` | `/Identity/Account/Login` |
-| Manager | Marcus Tan | `admin@test.com` | `Admin12345` | `/Identity/Account/Login` |
-| Manager | Omar Khalid | `manager@cedarheights.test` | `abdullah100` | `/Identity/Account/Login` |
-| Tenant | Aisha Karim | `tenant@login.test` | `abdullah100` | `/Identity/Account/Login` |
-| Tenant | Maya Chen | `maya.chen@cedarheights.test` | `abdullah100` | `/Identity/Account/Login` |
-| Tenant | Daniel Brooks | `daniel.brooks@cedarheights.test` | `abdullah100` | `/Identity/Account/Login` |
-| Technician | Daniel Wong | `technician@login.test` | `abdullah100` | `/Identity/Account/Login` |
-| Technician | Luis Rivera | `luis.rivera@zammaintain.test` | `abdullah100` | `/Identity/Account/Login` |
-| Technician | Priya Nair | `priya.nair@zammaintain.test` | `abdullah100` | `/Identity/Account/Login` |
-| Pending Technician | Jordan Ellis | `pending.tech@zammaintain.test` | `abdullah100` | `/Identity/Account/Login` |
-
-## Requirements
-
-Install:
-
-- .NET 8 SDK
-- PostgreSQL 18 or compatible PostgreSQL server
-- Visual Studio 2022 or another .NET-capable editor
-
-Optional for AWS deployment:
-
-- AWS CLI
-- AWS Toolkit for Visual Studio
-- Amazon RDS PostgreSQL
-- EC2 Windows Server with IIS
-
-## Local Setup
-
-1. Restore dependencies:
-
-```powershell
-dotnet restore
-```
-
-2. Configure the database connection string.
-
-For local PostgreSQL, set `ConnectionStrings:DefaultConnection` in `appsettings.json` or use an environment variable:
-
-```powershell
-$env:ConnectionStrings__DefaultConnection="Host=localhost;Port=5432;Database=PropertyMaintenanceDb;Username=postgres;Password=YOUR_LOCAL_PASSWORD"
-```
-
-3. Run the app:
-
-```powershell
-dotnet run
-```
-
-4. Open the local URL shown in the terminal.
-
-## Database And Seeding
-
-The app reads:
-
-```text
-ConnectionStrings:DefaultConnection
-```
-
-from configuration.
-
-In `Development`, `Program.cs` calls:
-
-```csharp
-await DbSeeder.SeedDevelopmentDataAsync(app.Services);
-```
-
-The seeder applies migrations through:
-
-```csharp
-await context.Database.MigrateAsync();
-```
-
-That means running the app in `Development` creates/updates the database schema and inserts seed data.
-
-To reset an RDS PostgreSQL database before reseeding, run this in DBeaver or another SQL client connected to the target database:
-
-```sql
-DROP SCHEMA public CASCADE;
-CREATE SCHEMA public;
-```
-
-Then run the app again with the RDS connection string.
-
-## AWS/RDS Configuration
-
-Use the RDS endpoint as the host:
-
-```text
-Host=YOUR_RDS_ENDPOINT;Port=5432;Database=postgres;Username=postgres;Password=YOUR_RDS_PASSWORD;SSL Mode=Require;Trust Server Certificate=true
-```
-
-For deployment, do not store RDS credentials in `appsettings.json`. Set this environment variable on the server:
-
-```text
-ConnectionStrings__DefaultConnection
-```
-
-RDS security group rules should allow PostgreSQL port `5432` from:
-
-- Your local IP for local testing.
-- The EC2 security group for production app traffic.
-
-Avoid opening RDS to `0.0.0.0/0`.
-
-## Common Commands
-
-Build:
-
-```powershell
-dotnet build
-```
-
-Run:
-
-```powershell
-dotnet run
-```
-
-Apply migrations manually:
-
-```powershell
-dotnet ef database update
-```
-
-NuGet Package Manager Console alternative:
-
-```powershell
-Update-Database
-```
-
-In this project, `dotnet run` in `Development` already applies migrations and seeds data.
-
-## Project Structure
 
 ```text
 Areas/
-  Administrator/    Company admin portal
-  Identity/         Login, registration, password pages
-  Manager/          Manager portal
-  SuperAdmin/       Platform admin portal
-  Technician/       Technician portal
-  Tenant/           Tenant portal
-Controllers/        Public/root MVC controllers
-Data/               EF DbContext and seed data
-Hubs/               SignalR hubs
-Migrations/         EF Core migrations
-Models/             Domain and Identity models
-Services/           Business services
-ViewModels/         View-specific models
-Views/              Shared/root MVC views
-wwwroot/            Static assets, CSS, JS, images
-Program.cs          App startup and routing
-appsettings.json    Non-secret app configuration
+├── Administrator/        Company administration portal
+├── Identity/             Login, registration, and account pages
+├── Manager/              Maintenance coordination portal
+├── SuperAdmin/           Platform administration portal
+├── Technician/           Technician work and payment portal
+└── Tenant/               Tenant requests, feedback, and messages
+
+Controllers/              Shared entry points, storage, and payments
+Data/                     Entity Framework database context
+Hubs/                     SignalR chat hub
+Models/                   Domain entities and Identity models
+Services/                 Business workflows and external integrations
+ViewModels/               Data prepared for application views
+Views/                    Shared layouts and public pages
+wwwroot/                  Styles, scripts, libraries, and branding
+.platform/                Nginx deployment configuration
+lambda/                   Python S3 status monitoring function
+docs/task2-evidence/      Saved Lambda/API responses and monitoring notes
+docs/study-guide/         Application walkthrough documentation
+Program.cs                Service registration, middleware, and routing
+appsettings.json          Application configuration
+CloudMVCApplication.csproj .NET target and NuGet dependencies
 ```
 
-## Deployment Notes
+The monitoring Lambda is a separate assignment component. The main web application accesses RDS and S3 through its own backend services.
 
-Before deployment:
+## 🧪 Testing
 
-- Remove real passwords and API keys from `appsettings.json`.
-- Use environment variables or AWS Secrets Manager for secrets.
-- Confirm RDS security group allows traffic from the EC2 security group.
-- Publish the app using Visual Studio or `dotnet publish`.
-- Configure IIS with the ASP.NET Core Hosting Bundle.
-- Set `ASPNETCORE_ENVIRONMENT` intentionally. Production should normally be `Production`.
+The repository includes saved assignment evidence for the Lambda S3 status invocation, the API Gateway response, and CloudWatch execution logs in [docs/task2-evidence/](docs/task2-evidence/). These records document the captured monitoring demonstration.
 
-## Security Notes
+A dedicated automated test project is not included in this source snapshot. Functional review should cover role-based access, maintenance submission and assignment, completion proof, messaging, feedback, and configured payment and email flows.
 
-- Do not commit AWS access keys, RDS passwords, Xendit keys, or other secrets.
-- Rotate any secret that was shared in screenshots or chat.
-- Keep `.gitignore` excluding generated and local files such as `bin/`, `obj/`, `_build_out/`, `verify-build/`, `.vscode/`, and `*.user`.
+The current snapshot references `DbSeeder` in startup but does not include its implementation or an EF Core migrations directory. Those database setup files need to be restored or the startup setup revised before this snapshot can support a complete fresh build and database setup.
 
-## Useful Pages
+## 🎓 Project Status and Credits
 
-```text
-/                       Home page
-/Identity/Account/Login Standard user login
-/SuperAdmin/Login       Platform admin login
-/Home/Privacy           Privacy policy
-/Home/Terms             Terms of service
-```
+ZamMaintain is an **academic assignment project** for **Designing and Developing Applications on the Cloud**, developed at **Asia Pacific University (APU)**. This repository presents the web application, cloud integration code, and supporting assignment evidence for authorised academic review.
+
+**Developer:** Faisal Mohammed Ezzaddin Saif Ahmed.
+
+## 🔒 Access and Usage
+
+Access is limited to authorised reviewers. The source code is provided for academic review only. Running the application, using its connected APIs or billed cloud services, copying, modifying, or redistributing the project requires the author's explicit permission.
 
